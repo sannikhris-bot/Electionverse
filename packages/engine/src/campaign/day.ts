@@ -12,7 +12,7 @@ import type {
   Stop,
   StopResult,
 } from '../types';
-import { clamp, nationalShares, partyName, regionById, round, shiftSupport, travelCost, travelHours } from '../util';
+import { clamp, nationalShares, partyName, regionById, round, shiftSupport, standsIn, travelCost, travelHours } from '../util';
 import { DIFFICULTY, energyMultiplier, issueMultiplier, traitMultiplier } from './modifiers';
 
 export const MAX_STOPS = 3;
@@ -57,6 +57,9 @@ export function previewDay(pack: CountryPack, state: CampaignState, stops: Stop[
     funds += travelCost(pack, loc, s.regionId, mode) + act.funds;
     energy += act.energy;
     volunteers += act.volunteers ?? 0;
+    if (act.reach === 'local' && act.base > 0 && !standsIn(pack, state.playerPartyId, s.regionId)) {
+      problems.push(`${partyName(pack, state.playerPartyId)} does not stand in ${regionById(pack, s.regionId).name}.`);
+    }
     loc = s.regionId;
   }
   if (hours > pack.calendar.hoursPerDay) problems.push(`The day needs ${hours.toFixed(1)} hours; only ${pack.calendar.hoursPerDay} available.`);
@@ -89,6 +92,7 @@ function rollTier(rng: Rng, act: ActivityConfig, energy: number, momentum: numbe
 }
 
 function applyRegionDelta(
+  pack: CountryPack,
   regions: Record<string, RegionState>,
   regionId: string,
   partyId: string,
@@ -96,6 +100,7 @@ function applyRegionDelta(
   persuasion: number,
   diminish: boolean,
 ): number {
+  if (delta > 0 && !standsIn(pack, partyId, regionId)) return 0;
   const r = regions[regionId]!;
   const visits = r.visits[partyId] ?? 0;
   const share = r.shares[partyId] ?? 0;
@@ -131,24 +136,24 @@ function resolveStop(
   let supportDelta = 0;
   if (act.base > 0) {
     if (act.reach === 'local') {
-      supportDelta = applyRegionDelta(state.regions, stop.regionId, partyId, act.base * mult, act.persuasion, true);
+      supportDelta = applyRegionDelta(pack, state.regions, stop.regionId, partyId, act.base * mult, act.persuasion, true);
       const spill = pack.zoneSpillover ?? 0;
       if (spill > 0 && region.group) {
         for (const r of pack.regions) {
-          if (r.id !== stop.regionId && r.group === region.group) applyRegionDelta(state.regions, r.id, partyId, act.base * mult * spill, act.persuasion, false);
+          if (r.id !== stop.regionId && r.group === region.group) applyRegionDelta(pack, state.regions, r.id, partyId, act.base * mult * spill, act.persuasion, false);
         }
       }
     } else {
       // Media reach: full effect where the interview happens, a fraction everywhere.
-      supportDelta = applyRegionDelta(state.regions, stop.regionId, partyId, act.base * mult, act.persuasion, true);
+      supportDelta = applyRegionDelta(pack, state.regions, stop.regionId, partyId, act.base * mult, act.persuasion, true);
       for (const r of pack.regions) {
         if (r.id === stop.regionId) continue;
-        applyRegionDelta(state.regions, r.id, partyId, act.base * mult * 0.18, act.persuasion, false);
+        applyRegionDelta(pack, state.regions, r.id, partyId, act.base * mult * 0.18, act.persuasion, false);
       }
     }
   }
   if (tier === 'incident') {
-    supportDelta += applyRegionDelta(state.regions, stop.regionId, partyId, -act.base * 0.6, 0, false);
+    supportDelta += applyRegionDelta(pack, state.regions, stop.regionId, partyId, -act.base * 0.6, 0, false);
   }
   const rs = state.regions[stop.regionId]!;
   rs.visits[partyId] = (rs.visits[partyId] ?? 0) + 1;
@@ -297,7 +302,7 @@ export function applyEffects(pack: CountryPack, state: CampaignState, effects: E
     } else if (e.type === 'support' || e.type === 'rivalSupport') {
       const targets = e.scope === 'here' ? [regionId] : pack.regions.map((r) => r.id);
       const parties = e.type === 'support' ? [state.playerPartyId] : state.rivals.map((r) => r.partyId);
-      for (const t of targets) for (const p of parties) applyRegionDelta(state.regions, t, p, e.delta, 0.3, false);
+      for (const t of targets) for (const p of parties) applyRegionDelta(pack, state.regions, t, p, e.delta, 0.3, false);
     } else if (e.type === 'recognition') {
       const targets = e.scope === 'here' ? [regionId] : pack.regions.map((r) => r.id);
       for (const t of targets) state.regions[t]!.recognition = clamp(state.regions[t]!.recognition + e.delta, 0, 1);
@@ -337,7 +342,7 @@ function rivalTurn(pack: CountryPack, state: CampaignState, rng: Rng): DayReport
     // Score regions by value: stake x closeness x room to grow, discounted by travel and repeat visits.
     const spread = pack.winRule.type === 'presidentialSpread' ? pack.winRule : null;
     const meanReg = pack.regions.reduce((a, r) => a + r.registeredVoters, 0) / pack.regions.length;
-    const scored = pack.regions.map((r) => {
+    const scored = pack.regions.filter((r) => standsIn(pack, rival.partyId, r.id)).map((r) => {
       const rs = state.regions[r.id]!;
       const mine = rs.shares[rival.partyId] ?? 0;
       const top = Math.max(...Object.entries(rs.shares).filter(([p]) => p !== rival.partyId).map(([, v]) => v), 0);
@@ -396,7 +401,7 @@ function rivalTurn(pack: CountryPack, state: CampaignState, rng: Rng): DayReport
 function momentumDrift(pack: CountryPack, state: CampaignState) {
   const apply = (partyId: string, m: number) => {
     if (Math.abs(m) < 0.5) return;
-    for (const r of pack.regions) applyRegionDelta(state.regions, r.id, partyId, m * 0.0007, 0.4, false);
+    for (const r of pack.regions) applyRegionDelta(pack, state.regions, r.id, partyId, m * 0.0007, 0.4, false);
   };
   apply(state.playerPartyId, state.meters.momentum);
   for (const rv of state.rivals) apply(rv.partyId, rv.momentum);

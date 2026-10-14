@@ -22,7 +22,7 @@ npx expo start              # scan the QR code with Expo Go, or press w for web
 | Path | What it is |
 | --- | --- |
 | `packages/engine` | Pure TypeScript campaign engine. No UI, no country code. Seeded, deterministic, replayable. |
-| `packages/packs` | Country packs (data only) and the world list. US and Nigeria are playable; UK, South Africa and Canada are listed as in development. |
+| `packages/packs` | Country packs (data only) and the world list. US, Nigeria and the UK are playable; South Africa and Canada are listed as in development. |
 | `apps/mobile` | Expo Router app (iOS, Android, web). |
 
 ## What works
@@ -41,12 +41,12 @@ npx expo start              # scan the QR code with Expo Go, or press w for web
 ## Engine
 
 - `newCampaign(pack, opts)` and `applyAction(pack, state, action)`: a pure reducer. `replay(pack, opts, actions)` rebuilds any run exactly.
-- Win rules: `electoralCollege`, `firstPastThePost` (seat clusters with seeded seat-level swing), `proportionalList` (Hare quota, largest remainder, threshold), `presidentialSpread` (plurality + minimum share in N units, optional runoff), plus coalition formation.
+- Win rules: `electoralCollege`, `firstPastThePost` (seat clusters with seeded seat-level swing), `proportionalList` (Hare quota, largest remainder, threshold), `presidentialSpread` (plurality + minimum share in N units, optional runoff), plus coalition formation (only the largest party in a coalition leads it). Packs can say where a party does not stand (`notStanding`), and can add a broadcasters' exit poll on Election Night (`electionNight.exitPoll`).
 - `validatePack(pack, blockedNames)`: baselines sum correctly, every playable party has a baseline in every region, win rule is satisfiable, platform items are sourced, real-person name blocklist.
 
 ## Tests
 
-40 tests: every win rule against hand-checked counts, determinism and exact replay, delayed events, debate scoring, full campaigns under all four rules, pack validation, and a balance check over 20 simulated US campaigns per side. A browser play-through (create nominee, 15 days, events, two debates, Election Night, passport) runs with no errors.
+50 tests: every win rule against hand-checked counts, determinism and exact replay, delayed events, debate scoring, full campaigns under all four rules, pack validation, and a balance check over 20 simulated US campaigns per side. A browser play-through (create nominee, 15 days, events, two debates, Election Night, passport) runs with no errors.
 
 Balance figures are in the table below.
 
@@ -81,6 +81,15 @@ Playable. Starting position from INEC-declared 2023 results and INEC registratio
 - **Runoff**: as in section 134(3) of the Constitution, the leader meets the remaining candidate who won the most states (ties broken by votes), not simply the runner-up by votes.
 - Nigeria's next presidential election is on 16 January 2027 and its campaign is under way. Keep this pack in playtesting until after that vote.
 
+## United Kingdom pack
+
+Playable, with **placeholder starting support** until the House of Commons Library 2024 results are imported (the lobby says so).
+
+- **Real**: 650 constituencies (2024 boundaries) with the real seat count in Scotland (57), Wales (32), Northern Ireland (18) and each English region (543 in all); 326 for a majority; first past the post in each seat (seat-level swing within each region); a hung parliament and coalition talks otherwise; Great Britain's parties do not stand in Northern Ireland, the SNP stands only in Scotland and Plaid Cymru only in Wales.
+- **Placeholder (TODO-VERIFY)**: starting vote shares by region (narrowed by 3.5 points between Labour and the Conservatives so the race starts as a contest), electors per region (73,000 per seat), turnout (60%) and issue priorities. Northern Ireland's parties are grouped as "Others". The Speaker's seat is treated like any other.
+- **Look**: UK screens use the Union Flag: navy surfaces (from #012169), flag red (#C8102E) for buttons and highlights with white text (5.9:1), a lighter red (#FF5C70) for red text on navy (6.5:1), white as the second accent, and a small Union Flag with the cross's white-red-white arm at the top of every UK screen.
+- **Signature mechanics**: the 10 p.m. exit poll before any seat is declared (close to the result, not exact), an internal seat projection at Campaign HQ, battle bus tours, knock-up operations, hustings, and UK events (fictional people only).
+
 ## Balance (scripted player that reads debate tells, Normal, 20 runs each)
 
 | Scenario | Wins |
@@ -91,6 +100,9 @@ Playable. Starting position from INEC-declared 2023 results and INEC registratio
 | Nigeria, APC (front-runner) | 19 |
 | Nigeria, PDP with alliance talks | 10 |
 | Nigeria, PDP without an alliance | 0 |
+| UK, Labour (placeholder start), majority or coalition | 16 |
+| UK, Conservative, marginal-seat campaign, majority or coalition | 8 |
+| UK, Conservative, only in its safe South East | 4 |
 
 Debates are contested: the rival also performs, and only the difference moves the race. Rivals have their own good and bad news days.
 
@@ -105,7 +117,7 @@ Debates are contested: the rival also performs, and only the difference moves th
 ## Next steps (blueprint build order)
 
 1. Add sourced party platforms and regional issue data; split Maine and Nebraska by district.
-2. UK pack (FPTP clusters, exit poll at 10 p.m., hung parliament).
-3. Verify Nigeria with INEC files; then South Africa, Canada and UK packs.
+2. Import the House of Commons Library 2024 constituency results into the UK pack (replacing the placeholder).
+3. Verify Nigeria with INEC files; then South Africa and Canada packs.
 4. Illustrated street scenes, sound, Election Night animation.
 5. Supabase sync, Daily Crisis, accessibility pass, performance on midrange Android.

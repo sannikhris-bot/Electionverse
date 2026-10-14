@@ -3,6 +3,7 @@ import { Modal, Pressable, ScrollView, Text, View, useWindowDimensions } from 'r
 import { router } from 'expo-router';
 import {
   allianceOptions,
+  firstPastThePost,
   MAX_STOPS,
   previewDay,
   regionEstimate,
@@ -40,6 +41,14 @@ function spreadEstimate(pack: CountryPack, state: CampaignState, partyId: string
 }
 
 function projection(pack: CountryPack, state: CampaignState) {
+  const rule = pack.winRule;
+  if (rule.type === 'firstPastThePost') {
+    // Seats within a region split by local swing, so project seats rather than giving the leader all of them.
+    // A fixed seed keeps the projection independent of the real count.
+    const votes: Record<string, Record<string, number>> = {};
+    for (const r of pack.regions) votes[r.id] = Object.fromEntries(Object.entries(regionEstimate(state, r.id)).map(([p, s]) => [p, s * r.registeredVoters]));
+    return firstPastThePost({ pack, votes, seed: 1 }, rule).tally;
+  }
   const tally: Record<string, number> = {};
   for (const r of pack.regions) {
     const { leader } = leaderOf(regionEstimate(state, r.id));
@@ -221,7 +230,7 @@ function CampaignHQInner() {
       {/* Map */}
       <Card style={{ padding: space(1) }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 4, marginBottom: space(1) }}>
-          <Text style={type.label}>{pack.winRule.type === 'presidentialSpread' ? 'States led (internal)' : 'Internal projection'}</Text>
+          <Text style={type.label}>{pack.winRule.type === 'presidentialSpread' ? 'States led (internal)' : pack.winRule.type === 'firstPastThePost' ? 'Seat projection (internal)' : 'Internal projection'}</Text>
           <Text style={type.small}>
             {Object.entries(proj)
               .sort((a, b) => b[1] - a[1])

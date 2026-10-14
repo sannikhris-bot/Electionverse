@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Pressable, ScrollView, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
+import Svg, { ClipPath, Defs, G, Path, Rect } from 'react-native-svg';
 import { ThemeContext, paletteFor, radius, space, useColors, useType } from '@/theme';
 
 /**
@@ -12,20 +13,55 @@ export function CountryTheme({ countryId, children }: { countryId?: string | nul
   return <ThemeContext.Provider value={paletteFor(countryId)}>{children}</ThemeContext.Provider>;
 }
 
-/** Thin flag band (e.g. green-white-green for Nigeria) shown at the top of country screens. */
+/** The Union Flag (decoration only; not interactive). */
+export function UnionFlag({ width = 30 }: { width?: number }) {
+  const h = width / 2;
+  return (
+    <Svg width={width} height={h} viewBox="0 0 60 30" accessible={false}>
+      <Defs>
+        <ClipPath id="uf-s">
+          <Path d="M0,0 v30 h60 v-30 z" />
+        </ClipPath>
+        <ClipPath id="uf-t">
+          <Path d="M30,15 h30 v15 z v15 h-30 z h-30 v-15 z v-15 h30 z" />
+        </ClipPath>
+      </Defs>
+      <G clipPath="url(#uf-s)">
+        <Rect x={0} y={0} width={60} height={30} fill="#012169" />
+        <Path d="M0,0 L60,30 M60,0 L0,30" stroke="#FFFFFF" strokeWidth={6} />
+        <Path d="M0,0 L60,30 M60,0 L0,30" clipPath="url(#uf-t)" stroke="#C8102E" strokeWidth={4} />
+        <Path d="M30,0 v30 M0,15 h60" stroke="#FFFFFF" strokeWidth={10} />
+        <Path d="M30,0 v30 M0,15 h60" stroke="#C8102E" strokeWidth={6} />
+      </G>
+    </Svg>
+  );
+}
+
+/** Flag band shown at the top of country screens (green-white-green for Nigeria; the Union Flag and its red cross arm for the UK). */
 export function FlagBand() {
   const c = useColors();
   if (!c.band) return null;
+  const dir = c.bandDirection ?? 'row';
+  const bar = (
+    <View style={{ flex: 1, flexDirection: dir, height: dir === 'column' ? 5 : 6, borderRadius: 3, overflow: 'hidden' }}>
+      {c.band.map((col, i) => (
+        <View key={i} style={{ flex: c.bandWeights?.[i] ?? 1, backgroundColor: col }} />
+      ))}
+    </View>
+  );
   return (
     <View
       accessible
       accessibilityRole="image"
       accessibilityLabel="Flag colours"
-      style={{ flexDirection: 'row', height: 6, borderRadius: 3, overflow: 'hidden', marginTop: space(1), marginBottom: space(0.5) }}
+      style={{ flexDirection: 'row', alignItems: 'center', gap: space(1), marginTop: space(1), marginBottom: space(0.5) }}
     >
-      {c.band.map((col, i) => (
-        <View key={i} style={{ flex: 1, backgroundColor: col }} />
-      ))}
+      {c.flagMark === 'union' ? (
+        <View style={{ borderRadius: 2, overflow: 'hidden' }}>
+          <UnionFlag width={28} />
+        </View>
+      ) : null}
+      {bar}
     </View>
   );
 }

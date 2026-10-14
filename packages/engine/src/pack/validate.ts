@@ -45,6 +45,14 @@ export function validatePack(pack: CountryPack, blockedNames: string[] = DEFAULT
     if (r.stake < 0 || r.registeredVoters <= 0) err(`Region ${r.id} needs a non-negative stake and positive registered voters.`);
   }
   for (const b of pack.baselines) if (!regionIds.has(b.regionId)) err(`Baseline for unknown region ${b.regionId}.`);
+  for (const [pid, ids] of Object.entries(pack.notStanding ?? {})) {
+    if (!partyIds.has(pid)) err(`notStanding names unknown party ${pid}.`);
+    for (const id of ids) {
+      if (!regionIds.has(id)) err(`notStanding for ${pid} names unknown region ${id}.`);
+      const share = pack.baselines.find((b) => b.regionId === id)?.shares[pid] ?? 0;
+      if (share > 0) err(`${pid} does not stand in ${id} but has a baseline share there.`);
+    }
+  }
 
   // Issue profiles
   for (const ip of pack.issueProfiles) {

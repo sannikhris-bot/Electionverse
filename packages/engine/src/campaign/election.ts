@@ -1,7 +1,7 @@
 import { Rng, hashString } from '../rng';
-import { applyWinRule, majorityOf, usesCoalitions, type RegionVotes } from '../winRules';
+import { applyWinRule, largestRemainder, majorityOf, usesCoalitions, type RegionVotes } from '../winRules';
 import type { CampaignState, CoalitionOption, CountryPack, ElectionResult, Explanation, WinRuleOutcome } from '../types';
-import { clamp, partyName, regionById, round } from '../util';
+import { clamp, partyName, regionById, round, standsIn } from '../util';
 import { clone } from './day';
 import { OTHER_PARTY } from './setup';
 
@@ -31,6 +31,10 @@ export function countVotes(pack: CountryPack, state: CampaignState): RegionVotes
     const turnout = clamp(rs.baseTurnout + rng.normal(0, 0.015), 0.2, 0.95);
     const out: Record<string, number> = {};
     for (const [p, s] of Object.entries(rs.shares)) {
+      if (!standsIn(pack, p, region.id)) {
+        out[p] = 0;
+        continue;
+      }
       const fromUndecided = wTotal > 0 ? rs.undecided * 0.85 * (weights[p]! / wTotal) : 0;
       let share = s + fromUndecided;
       if (p === state.playerPartyId) share += nationalError;
@@ -63,6 +67,8 @@ export function coalitionOptions(pack: CountryPack, state: CampaignState, outcom
       seats += others[i]![1];
     }
     if (partners.length > 3 || seats < majority) continue;
+    // Only the largest party in a coalition leads it.
+    if (partners.some((p) => (outcome.tally[p] ?? 0) > mySeats)) continue;
     // Minimal: dropping any partner loses the majority.
     const minimal = partners.every((p) => seats - (outcome.tally[p] ?? 0) < majority);
     if (!minimal) continue;
@@ -114,7 +120,7 @@ function explain(pack: CountryPack, state: CampaignState, outcome: WinRuleOutcom
   const debates = state.reports.filter((r) => r.debate);
   if (debates.length) summary.push(`Debates: ${debates.map((d) => d.debate!.verdict).join(', ')}.`);
   const gotvRegions = Object.entries(state.regions).filter(([, r]) => (r.gotv[me] ?? 0) > 0.02).length;
-  summary.push(gotvRegions ? `Your get-out-the-vote operation lifted turnout in ${gotvRegions} regions.` : 'You ran no serious get-out-the-vote operation.');
+  summary.push(gotvRegions ? `Your get-out-the-vote operation lifted turnout in ${gotvRegions} ${gotvRegions === 1 ? 'region' : 'regions'}.` : 'You ran no serious get-out-the-vote operation.');
   return { decisiveRegions: decisive, keyDays, summary };
 }
 
@@ -126,6 +132,22 @@ function headlineFor(pack: CountryPack, state: CampaignState, outcome: WinRuleOu
   if (player === 'minority') return `${name} to lead a minority government`;
   if (outcome.winnerPartyId) return `${partyName(pack, outcome.winnerPartyId)} wins; ${name} concedes`;
   return `No outright winner; ${name} heads into opposition`;
+}
+
+/**
+ * The exit poll: the real seat result blurred by a seeded relative error per
+ * party, re-scaled to the seat total. Close to the result, rarely exact.
+ */
+export function exitPoll(pack: CountryPack, seed: number, outcome: WinRuleOutcome): Record<string, number> | null {
+  const cfg = pack.electionNight.exitPoll;
+  const rule = pack.winRule;
+  if (!cfg || (rule.type !== 'firstPastThePost' && rule.type !== 'proportionalList')) return null;
+  const rng = new Rng(seed ^ hashString(`exitpoll:${pack.id}`));
+  const est: Record<string, number> = {};
+  for (const [p, seats] of Object.entries(outcome.tally).sort(([a], [b]) => a.localeCompare(b))) {
+    if (seats > 0) est[p] = Math.max(0, seats * (1 + rng.normal(0, cfg.seatError)));
+  }
+  return largestRemainder(est, rule.totalSeats);
 }
 
 export function holdElection(pack: CountryPack, prev: CampaignState): CampaignState {
@@ -152,6 +174,8 @@ export function holdElection(pack: CountryPack, prev: CampaignState): CampaignSt
     coalitionOptions: coalitionOpts,
     explanation: explain(pack, state, outcome),
   };
+  const ep = exitPoll(pack, state.seed, outcome);
+  if (ep) state.result.exitPoll = ep;
   const largest = Object.entries(outcome.tally).sort((a, b) => b[1] - a[1])[0]?.[0];
   if (coalitionOpts && (coalitionOpts.length || largest === me)) {
     state.phase = 'coalition';

@@ -27,15 +27,17 @@ function ElectionNightInner() {
   const { pack, state, dispatch } = useGame();
   const [revealed, setRevealed] = useState(0);
   const result = state?.result;
+  // With an exit poll, the night opens on the 10 p.m. projection before any seat is declared.
+  const [counting, setCounting] = useState(false);
   const order = useMemo(() => (pack && result ? revealOrder(pack, result.outcome.regionResults.map((r) => r.regionId)) : []), [pack, result]);
   const total = order.length;
   const finishedReveal = revealed >= total && total > 0;
 
   useEffect(() => {
-    if (!result || revealed >= total) return;
+    if (!result || revealed >= total || (result.exitPoll && !counting)) return;
     const t = setTimeout(() => setRevealed((n) => n + 1), revealed < total - 6 ? REVEAL_MS : REVEAL_MS * 6);
     return () => clearTimeout(t);
-  }, [result, revealed, total]);
+  }, [result, revealed, total, counting]);
 
   if (!pack || !state) {
     return (
@@ -75,9 +77,51 @@ function ElectionNightInner() {
   const target = majorityOf(pack);
   const totalStake = pack.winRule.type === 'electoralCollege' ? pack.winRule.totalVotes : pack.winRule.type === 'firstPastThePost' || pack.winRule.type === 'proportionalList' ? pack.winRule.totalSeats : 1;
   const name = (id: string) => pack.parties.find((p) => p.id === id)?.shortName ?? id;
+  const fullName = (id: string) => pack.parties.find((p) => p.id === id)?.name.en ?? id;
   const colour = (id: string) => pack.parties.find((p) => p.id === id)?.colour ?? colors.textFaint;
   const anchor = pack.electionNight.anchors[0];
   const nationalTotal = Object.values(result.outcome.nationalVotes).reduce((a, b) => a + b, 0) || 1;
+
+  if (result.exitPoll && !counting) {
+    const ep = Object.entries(result.exitPoll).sort((a, b) => b[1] - a[1]);
+    const [lead, leadSeats] = ep[0] ?? ['', 0];
+    const short = target !== null ? target - leadSeats : 0;
+    return (
+      <Screen>
+        <Text style={[type.label, { color: colors.goldText, marginTop: space(2) }]}>Election Night · {pack.names.en}</Text>
+        <Text style={type.display}>{pack.electionNight.exitPoll?.label ?? 'Exit poll'}</Text>
+        {anchor ? (
+          <Text style={[type.small, { marginVertical: 4 }]}>
+            {anchor.name}, {pack.mediaOutlets[0]?.name}: "Big Ben strikes ten, the polls have closed, and our exit poll suggests{' '}
+            {short > 0 ? `a hung parliament, with the ${fullName(lead)} the largest party, ${short} short of a majority` : `the ${fullName(lead)} will win a majority`}."
+          </Text>
+        ) : null}
+        <Card accent>
+          <Text style={type.label}>Projected seats</Text>
+          {ep
+            .filter(([, v]) => v > 0)
+            .map(([p, v]) => (
+              <View key={p} style={{ marginVertical: 5 }} testID={`exit-${p}`}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                  <Text style={[type.body, { fontWeight: p === me ? '800' : '500' }]}>
+                    {name(p)}
+                    {p === me ? ' (you)' : ''}
+                  </Text>
+                  <Text style={type.heading}>{v}</Text>
+                </View>
+                <View style={{ height: 10, backgroundColor: colors.surfaceRaised, borderRadius: 5, overflow: 'hidden' }}>
+                  <View style={{ width: `${(v / totalStake) * 100}%`, height: 10, backgroundColor: colour(p) }} />
+                  {target !== null ? <View style={{ position: 'absolute', left: `${(target / totalStake) * 100}%`, top: 0, bottom: 0, width: 2, backgroundColor: colors.cyan }} /> : null}
+                </View>
+              </View>
+            ))}
+          <Text style={[type.small, { marginTop: 6 }]}>A projection from interviews at polling stations. It can be wrong; the declarations decide.</Text>
+        </Card>
+        <SimLabel />
+        <Button label="Start the count" onPress={() => setCounting(true)} testID="start-count" />
+      </Screen>
+    );
+  }
 
   return (
     <Screen>

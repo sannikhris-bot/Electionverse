@@ -273,3 +273,49 @@ describe('validatePack', () => {
     expect(validatePack(pack, ['Real Person']).some((i) => i.level === 'error')).toBe(true);
   });
 });
+
+describe('parties that do not stand everywhere', () => {
+  function packWithout(): CountryPack {
+    const pack = testPack();
+    // Party b fields no candidates in r6: move its share to "other".
+    const b6 = pack.baselines.find((b) => b.regionId === 'r6')!;
+    b6.shares = { a: b6.shares.a!, b: 0, other: 1 - b6.shares.a! };
+    return { ...pack, notStanding: { b: ['r6'] } };
+  }
+
+  it('validates, gains nothing there and wins no votes there', () => {
+    const pack = packWithout();
+    expect(validatePack(pack).filter((i) => i.level === 'error')).toEqual([]);
+    const { state } = autoplay(pack, newCampaign(pack, opts));
+    const r6 = state.result!.outcome.regionResults.find((r) => r.regionId === 'r6')!;
+    expect(r6.votes.b ?? 0).toBe(0);
+  });
+
+  it('stops the player planning a local stop where their party does not stand', () => {
+    const pack = packWithout();
+    const s = newCampaign(pack, { ...opts, partyId: 'b' });
+    const p = previewDay(pack, s, [{ regionId: 'r6', activityId: 'canvass' }]);
+    expect(p.valid).toBe(false);
+    expect(p.problems.join(' ')).toMatch(/does not stand in/);
+  });
+
+  it('rejects a baseline share for a party that does not stand', () => {
+    const pack = { ...testPack(), notStanding: { b: ['r6'] } };
+    expect(validatePack(pack).map((i) => i.message).join(' ')).toMatch(/does not stand in r6/);
+  });
+});
+
+describe('exit poll', () => {
+  it('projects seats close to the result and adds up to the seat total', () => {
+    const rule = { type: 'firstPastThePost' as const, totalSeats: 36, majority: 19, seatSpread: 0.03, coalition: true };
+    const base = testPack(rule);
+    const pack: CountryPack = { ...base, electionNight: { ...base.electionNight, exitPoll: { label: '10 p.m. exit poll', seatError: 0.06 } } };
+    const { state } = autoplay(pack, newCampaign(pack, opts));
+    const ep = state.result!.exitPoll!;
+    expect(Object.values(ep).reduce((a, b) => a + b, 0)).toBe(36);
+    for (const [p, seats] of Object.entries(state.result!.outcome.tally)) expect(Math.abs((ep[p] ?? 0) - seats)).toBeLessThanOrEqual(6);
+    // No exit poll without the config.
+    const plain = testPack(rule);
+    expect(autoplay(plain, newCampaign(plain, opts)).state.result!.exitPoll).toBeUndefined();
+  });
+});

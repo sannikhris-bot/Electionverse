@@ -26,8 +26,14 @@ export interface Palette {
   good: string;
   bad: string;
   warn: string;
-  /** Optional flag band shown at the top of country screens (top to bottom or left to right). */
+  /** Optional flag band shown at the top of country screens. */
   band?: string[];
+  /** Band layout: stripes side by side ('row', default) or stacked ('column'). */
+  bandDirection?: 'row' | 'column';
+  /** Relative stripe sizes (defaults to equal). */
+  bandWeights?: number[];
+  /** A small flag drawn at the start of the band, for flags that are not simple stripes. */
+  flagMark?: 'union';
 }
 
 export const BASE_PALETTE: Palette = {
@@ -70,8 +76,38 @@ export const NIGERIA_PALETTE: Palette = {
   band: ['#008751', '#FFFFFF', '#008751'],
 };
 
+/**
+ * United Kingdom: the Union Flag's navy (#012169), red (#C8102E) and white.
+ * Navy surfaces, flag red for buttons and highlights (white text on it is
+ * 5.9:1), a lighter red for red text on navy (6.5:1), white as the second accent.
+ */
+export const UK_PALETTE: Palette = {
+  bg: '#040A22',
+  surface: '#0A1640',
+  surfaceRaised: '#11205A',
+  border: '#2A3C82',
+  gold: '#C8102E',
+  goldSoft: 'rgba(200, 16, 46, 0.22)',
+  onGold: '#FFFFFF',
+  goldText: '#FF5C70',
+  cyan: '#FFFFFF',
+  cyanSoft: 'rgba(255, 255, 255, 0.12)',
+  text: '#F3F5FC',
+  textMuted: '#A7B2D6',
+  textFaint: '#7A88B5',
+  good: '#4ADE80',
+  bad: '#FF8A8A',
+  warn: '#F5C451',
+  // The flag's horizontal arm: white, red, white.
+  band: ['#FFFFFF', '#C8102E', '#FFFFFF'],
+  bandDirection: 'column',
+  bandWeights: [1, 3, 1],
+  flagMark: 'union',
+};
+
 const PALETTES: Record<string, Palette> = {
   ng: NIGERIA_PALETTE,
+  uk: UK_PALETTE,
 };
 
 export function paletteFor(countryId?: string | null): Palette {

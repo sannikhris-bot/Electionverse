@@ -42,6 +42,11 @@ export interface CountryPack {
    * Pre-election alliance talks (a party stands down and endorses the player).
    * Absent for countries where this is not part of campaign politics.
    */
+  /**
+   * Regions where a party fields no candidates (e.g. Great Britain's parties in
+   * Northern Ireland). The party cannot gain support or win votes there.
+   */
+  notStanding?: Record<string, string[]>;
   allianceTalks?: { fromDay: number; toDay: number; /** Share of the partner's support that follows the endorsement. */ transfer: number };
   /**
    * Historical civic statistics shown for reference in the lobby (e.g. registered
@@ -314,6 +319,11 @@ export interface ResultsPresentationConfig {
   unitLabel: string;
   anchors: FictionalPerson[];
   revealOrder: 'byStake' | 'byGroup' | 'random';
+  /**
+   * A broadcasters' exit poll shown when polls close, before any results.
+   * `seatError` is the relative error on each party's projected seats (e.g. 0.06).
+   */
+  exitPoll?: { label: string; seatError: number };
 }
 
 // ---------------------------------------------------------------------------
@@ -534,6 +544,8 @@ export interface ElectionResult {
   coalitionOptions?: CoalitionOption[];
   coalition?: { partners: string[]; formed: boolean };
   explanation: Explanation;
+  /** Projected seats from the exit poll (seat-based win rules with electionNight.exitPoll). */
+  exitPoll?: Record<string, number>;
 }
 
 export interface Explanation {

@@ -7,6 +7,11 @@ export const round = (v: number, dp = 4) => {
   return Math.round(v * f) / f;
 };
 
+/** Whether a party fields candidates in a region (see CountryPack.notStanding). */
+export function standsIn(pack: CountryPack, partyId: string, regionId: string): boolean {
+  return !pack.notStanding?.[partyId]?.includes(regionId);
+}
+
 /** Re-normalise a region so party shares + undecided sum to exactly 1. */
 export function normaliseRegion(r: RegionState): RegionState {
   const total = Object.values(r.shares).reduce((s, v) => s + Math.max(0, v), 0) + Math.max(0, r.undecided);

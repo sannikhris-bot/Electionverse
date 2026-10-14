@@ -1,6 +1,6 @@
 export * from './types';
 export { Rng, hashString, dailySeed } from './rng';
-export { nationalShares, travelHours, travelCost, partyName, regionById } from './util';
+export { nationalShares, travelHours, travelCost, partyName, regionById, standsIn } from './util';
 export {
   applyWinRule,
   electoralCollege,
@@ -16,7 +16,7 @@ export { newCampaign, activeParties, ENGINE_VERSION, OTHER_PARTY } from './campa
 export { previewDay, planDay, resolveEvent, regionEstimate, MAX_STOPS, RIVAL_NEWS } from './campaign/day';
 export type { DayPreview } from './campaign/day';
 export { debateRounds, scoreDebate, runDebate, rivalScoreFor, RESPONSE_LABELS, DEBATE_ROUNDS, DEBATE_EFFECT } from './campaign/debate';
-export { holdElection, formCoalition, coalitionOptions, countVotes } from './campaign/election';
+export { holdElection, formCoalition, coalitionOptions, countVotes, exitPoll } from './campaign/election';
 export { applyAction, replay } from './campaign/actions';
 export { allianceOptions, proposeAlliance } from './campaign/alliance';
 export type { AllianceOption } from './campaign/alliance';
