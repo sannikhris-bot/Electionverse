@@ -121,7 +121,7 @@ function explain(pack: CountryPack, state: CampaignState, outcome: WinRuleOutcom
 function headlineFor(pack: CountryPack, state: CampaignState, outcome: WinRuleOutcome, player: ElectionResult['playerOutcome']): string {
   const office = pack.office.title.en;
   const name = state.nominee.name;
-  if (player === 'won') return `${name} wins for the ${partyName(pack, state.playerPartyId)} and will be ${office}`;
+  if (player === 'won') return `${name} wins for the ${pack.parties.find((p) => p.id === state.playerPartyId)?.name.en ?? partyName(pack, state.playerPartyId)} and will be ${office}`;
   if (player === 'coalition') return `${name} to lead a coalition government`;
   if (player === 'minority') return `${name} to lead a minority government`;
   if (outcome.winnerPartyId) return `${partyName(pack, outcome.winnerPartyId)} wins; ${name} concedes`;
