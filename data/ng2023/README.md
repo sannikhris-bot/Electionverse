@@ -1,4 +1,11 @@
-# Nigeria 2023 presidential results: status
+# Nigeria 2023 data: status
+
+| Data | Status | Location |
+| --- | --- | --- |
+| Registered voters and PVCs collected by state (INEC, as at 5 Feb 2023) | Imported; reconciles to INEC national totals (93,469,008 and 87,209,007); 15 of 16 states match an independent source; not yet checked against the original INEC PDF | `registration/` |
+| Presidential votes by state | **UNVERIFIED placeholder** (below) | `raw/source_a_thenigerialawyer.txt` |
+
+## Presidential votes by state
 
 **Status: UNVERIFIED. Placeholder for playtesting only. Do not publish as official data.**
 
@@ -47,12 +54,12 @@ Anambra, Bauchi and Bayelsa agree on all four parties.
 ## What is needed to verify
 
 1. INEC Form EC8D (state collation) for each of the 37 units, or the EC8E national summary.
-2. INEC registered voters by state: https://www.inecnigeria.org/wp-content/uploads/2023/02/PVCs-Collected-Registered-Voters.pdf
+2. Registered voters by state: received (see `registration/`); confirm against the original INEC PDF.
 
-Acceptance: every party column sums exactly to the INEC totals above; registered voters sum to 93,469,008; valid votes sum to 24,025,940.
+Acceptance: every party column sums exactly to the INEC totals above; valid votes sum to 24,025,940.
 
 ## How the game uses the placeholder
 
 - Shares for APC, PDP, LP and NNPP come from Source A; "other" uses the national residual share (2.70%) in every state.
-- Turnout uses the national rate (24,025,940 / 93,469,008 = 25.71% valid votes per registered voter) in every state; registered voters are derived from it.
+- Registered voters are INEC's by state. Turnout by state = placeholder valid votes / INEC registered voters (so it varies by state, e.g. Lagos low, Kano higher).
 - All of this is replaced when INEC files are supplied.

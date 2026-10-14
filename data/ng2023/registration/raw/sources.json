@@ -1,0 +1,17 @@
+{
+  "primary_source": {
+    "name": "INEC PVCs Collected Registered Voters",
+    "url": "https://www.inecnigeria.org/wp-content/uploads/2023/02/PVCs-Collected-Registered-Voters.pdf",
+    "as_of": "2023-02-05",
+    "retrieval_status": "Indexed web text available, binary PDF direct download failed"
+  },
+  "corroborating_official_report": {
+    "name": "INEC 2023 General Election Report Table 8.13",
+    "url": "https://inecnigeria.org/wp-content/uploads/2024/02/2023-GENERAL-ELECTION-REPORT-1.pdf",
+    "note": "Later cumulative figure differs from February 5 snapshot"
+  },
+  "registration_figures_mirror": {
+    "url": "https://www.studocu.com/row/document/university-of-port-harcourt/social-sciences/pvcs-collected-registered-voters/122740592",
+    "role": "Transcribed full table used for numeric checks"
+  }
+}

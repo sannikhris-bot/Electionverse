@@ -14,9 +14,9 @@ import {
   type Stop,
 } from '@electionverse/engine';
 import { TileMap, type TileInfo } from '@/components/TileMap';
-import { Button, Card, Chip, Meter, Screen } from '@/components/ui';
+import { CountryTheme, Button, Card, Chip, Meter, Screen } from '@/components/ui';
 import { useGame } from '@/store/game';
-import { colors, radius, space, type } from '@/theme';
+import { radius, space, useColors, useType } from '@/theme';
 
 const pct = (v: number) => `${(v * 100).toFixed(1)}%`;
 
@@ -48,7 +48,9 @@ function projection(pack: CountryPack, state: CampaignState) {
   return tally;
 }
 
-export default function CampaignHQ() {
+function CampaignHQInner() {
+  const colors = useColors();
+  const type = useType();
   const { width } = useWindowDimensions();
   const { pack, state, dispatch, error, clearError, abandon } = useGame();
   const [stops, setStops] = useState<Stop[]>([]);
@@ -149,7 +151,7 @@ export default function CampaignHQ() {
       {/* Phase banners */}
       {state.phase === 'awaitingDebate' ? (
         <Card accent>
-          <Text style={[type.label, { color: colors.gold }]}>Tonight</Text>
+          <Text style={[type.label, { color: colors.goldText }]}>Tonight</Text>
           <Text style={[type.title, { marginVertical: 4 }]}>Televised debate</Text>
           <Text style={type.small}>The whole country is watching. Read your rival, pick your answers.</Text>
           <Button label="Walk on stage" onPress={() => router.push('/campaign/debate')} />
@@ -157,7 +159,7 @@ export default function CampaignHQ() {
       ) : null}
       {state.phase === 'pollingDay' || state.phase === 'coalition' || state.phase === 'finished' ? (
         <Card accent>
-          <Text style={[type.label, { color: colors.gold }]}>{state.phase === 'pollingDay' ? 'Polling day' : 'Results'}</Text>
+          <Text style={[type.label, { color: colors.goldText }]}>{state.phase === 'pollingDay' ? 'Polling day' : 'Results'}</Text>
           <Text style={[type.title, { marginVertical: 4 }]}>{state.phase === 'pollingDay' ? 'The polls are open' : state.result?.headline}</Text>
           <Button label={state.phase === 'pollingDay' ? 'Go to Election Night' : 'See the results'} onPress={() => router.push('/campaign/results')} />
         </Card>
@@ -166,7 +168,7 @@ export default function CampaignHQ() {
       {/* Alliance talks */}
       {state.phase === 'campaign' && allianceOptions(pack, state).length ? (
         <Card accent>
-          <Text style={[type.label, { color: colors.gold }]}>Alliance talks · until day {pack.allianceTalks?.toDay}</Text>
+          <Text style={[type.label, { color: colors.goldText }]}>Alliance talks · until day {pack.allianceTalks?.toDay}</Text>
           <Text style={[type.title, { marginVertical: 4 }]}>Unite the opposition?</Text>
           <Text style={[type.small, { marginBottom: space(1) }]}>
             Ask one party to stand down and endorse you. If talks succeed, about {Math.round((pack.allianceTalks?.transfer ?? 0) * 100)}% of its supporters follow you and it stops campaigning. If they fail, your party's unity and momentum suffer. You only get one attempt.
@@ -250,7 +252,7 @@ export default function CampaignHQ() {
         <Card accent>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
             <Text style={type.title}>{region.name}</Text>
-            <Text style={[type.heading, { color: colors.gold }]}>{region.stake}</Text>
+            <Text style={[type.heading, { color: colors.goldText }]}>{region.stake}</Text>
           </View>
           <Text style={type.small}>
             {Object.entries(regionEst)
@@ -331,7 +333,7 @@ export default function CampaignHQ() {
             const r = pack.regions.find((x) => x.id === s.regionId);
             return (
               <View key={i} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 6 }}>
-                <Text style={[type.heading, { color: colors.gold, width: 24 }]}>{i + 1}</Text>
+                <Text style={[type.heading, { color: colors.goldText, width: 24 }]}>{i + 1}</Text>
                 <View style={{ flex: 1 }}>
                   <Text style={type.body}>
                     {a?.name} · {r?.name}
@@ -389,7 +391,7 @@ export default function CampaignHQ() {
         <View style={{ flex: 1, backgroundColor: 'rgba(3,6,15,0.85)', justifyContent: 'center', padding: space(2) }}>
           <View style={{ maxWidth: 560, width: '100%', alignSelf: 'center' }}>
             <Card accent>
-              <Text style={[type.label, { color: colors.gold }]}>Decision · {pack.regions.find((r) => r.id === state.pending?.regionId)?.name}</Text>
+              <Text style={[type.label, { color: colors.goldText }]}>Decision · {pack.regions.find((r) => r.id === state.pending?.regionId)?.name}</Text>
               <Text style={[type.title, { marginVertical: 6 }]}>{pending?.title}</Text>
               <Text style={[type.body, { marginBottom: space(1.5) }]}>{pending?.body}</Text>
               {pending?.choices.map((c) => (
@@ -406,7 +408,7 @@ export default function CampaignHQ() {
           <View style={{ maxWidth: 720, width: '100%', alignSelf: 'center', maxHeight: '85%' }}>
             <Card style={{ borderBottomLeftRadius: 0, borderBottomRightRadius: 0, marginBottom: 0 }}>
               <ScrollView>
-                <Text style={[type.label, { color: colors.gold }]}>Evening news · day {report?.day}</Text>
+                <Text style={[type.label, { color: colors.goldText }]}>Evening news · day {report?.day}</Text>
                 <Text style={[type.title, { marginVertical: 6 }]}>
                   {report && report.nationalDelta >= 0 ? 'A good day on the trail' : 'A tough day on the trail'}
                 </Text>
@@ -457,5 +459,14 @@ export default function CampaignHQ() {
         </View>
       </Modal>
     </Screen>
+  );
+}
+
+export default function CampaignHQ() {
+  const packId = useGame((s) => s.pack?.id);
+  return (
+    <CountryTheme countryId={packId}>
+      <CampaignHQInner />
+    </CountryTheme>
   );
 }

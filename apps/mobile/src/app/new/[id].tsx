@@ -4,11 +4,13 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { BACKGROUNDS, TRAITS, type CandidateBackground, type Trait } from '@electionverse/engine';
 import { getPack } from '@electionverse/packs';
 import { TileMap } from '@/components/TileMap';
-import { Button, Card, Chip, Screen } from '@/components/ui';
+import { CountryTheme, Button, Card, Chip, Screen } from '@/components/ui';
 import { newSeed, useGame } from '@/store/game';
-import { colors, space, type } from '@/theme';
+import { space, useColors, useType, type Palette } from '@/theme';
 
-const inputStyle = {
+
+
+const makeInputStyle = (colors: Palette) => ({
   backgroundColor: colors.surfaceRaised,
   borderColor: colors.border,
   borderWidth: 1,
@@ -18,9 +20,12 @@ const inputStyle = {
   paddingVertical: 12,
   fontSize: 16,
   marginTop: 6,
-};
+});
 
-export default function NomineeCreator() {
+function NomineeCreatorInner() {
+  const colors = useColors();
+  const type = useType();
+  const inputStyle = makeInputStyle(colors);
   const { id, party } = useLocalSearchParams<{ id: string; party: string }>();
   const pack = getPack(id ?? '');
   const start = useGame((s) => s.start);
@@ -123,5 +128,14 @@ export default function NomineeCreator() {
         }}
       />
     </Screen>
+  );
+}
+
+export default function NomineeCreator() {
+  const { id } = useLocalSearchParams<{ id: string; party: string }>();
+  return (
+    <CountryTheme countryId={id}>
+      <NomineeCreatorInner />
+    </CountryTheme>
   );
 }

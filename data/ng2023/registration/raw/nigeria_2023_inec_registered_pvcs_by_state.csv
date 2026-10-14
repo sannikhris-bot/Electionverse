@@ -1,0 +1,38 @@
+country,year,jurisdiction,registered_voters,pvcs_collected,pvcs_uncollected_calculated,pvc_collection_rate_pct_calculated,actual_voter_turnout,presidential_votes_by_party,source_date,source_url
+Nigeria,2023,Abia,2120808,1949197,171611,91.91,,,2023-02-05,https://www.inecnigeria.org/wp-content/uploads/2023/02/PVCs-Collected-Registered-Voters.pdf
+Nigeria,2023,Adamawa,2196566,1970650,225916,89.72,,,2023-02-05,https://www.inecnigeria.org/wp-content/uploads/2023/02/PVCs-Collected-Registered-Voters.pdf
+Nigeria,2023,Akwa Ibom,2357418,2198628,158790,93.26,,,2023-02-05,https://www.inecnigeria.org/wp-content/uploads/2023/02/PVCs-Collected-Registered-Voters.pdf
+Nigeria,2023,Anambra,2656437,2624764,31673,98.81,,,2023-02-05,https://www.inecnigeria.org/wp-content/uploads/2023/02/PVCs-Collected-Registered-Voters.pdf
+Nigeria,2023,Bauchi,2749268,2721780,27488,99.0,,,2023-02-05,https://www.inecnigeria.org/wp-content/uploads/2023/02/PVCs-Collected-Registered-Voters.pdf
+Nigeria,2023,Bayelsa,1056862,1009895,46967,95.56,,,2023-02-05,https://www.inecnigeria.org/wp-content/uploads/2023/02/PVCs-Collected-Registered-Voters.pdf
+Nigeria,2023,Benue,2777727,2607141,170586,93.86,,,2023-02-05,https://www.inecnigeria.org/wp-content/uploads/2023/02/PVCs-Collected-Registered-Voters.pdf
+Nigeria,2023,Borno,2513281,2447209,66072,97.37,,,2023-02-05,https://www.inecnigeria.org/wp-content/uploads/2023/02/PVCs-Collected-Registered-Voters.pdf
+Nigeria,2023,Cross River,1766466,1672810,93656,94.7,,,2023-02-05,https://www.inecnigeria.org/wp-content/uploads/2023/02/PVCs-Collected-Registered-Voters.pdf
+Nigeria,2023,Delta,3221697,2989514,232183,92.79,,,2023-02-05,https://www.inecnigeria.org/wp-content/uploads/2023/02/PVCs-Collected-Registered-Voters.pdf
+Nigeria,2023,Ebonyi,1597646,1551795,45851,97.13,,,2023-02-05,https://www.inecnigeria.org/wp-content/uploads/2023/02/PVCs-Collected-Registered-Voters.pdf
+Nigeria,2023,Edo,2501081,2128288,372793,85.09,,,2023-02-05,https://www.inecnigeria.org/wp-content/uploads/2023/02/PVCs-Collected-Registered-Voters.pdf
+Nigeria,2023,Ekiti,987647,958052,29595,97.0,,,2023-02-05,https://www.inecnigeria.org/wp-content/uploads/2023/02/PVCs-Collected-Registered-Voters.pdf
+Nigeria,2023,Enugu,2112793,1995389,117404,94.44,,,2023-02-05,https://www.inecnigeria.org/wp-content/uploads/2023/02/PVCs-Collected-Registered-Voters.pdf
+Nigeria,2023,Gombe,1575794,1534954,40840,97.41,,,2023-02-05,https://www.inecnigeria.org/wp-content/uploads/2023/02/PVCs-Collected-Registered-Voters.pdf
+Nigeria,2023,Imo,2419922,2280339,139583,94.23,,,2023-02-05,https://www.inecnigeria.org/wp-content/uploads/2023/02/PVCs-Collected-Registered-Voters.pdf
+Nigeria,2023,Jigawa,2351298,2298365,52933,97.75,,,2023-02-05,https://www.inecnigeria.org/wp-content/uploads/2023/02/PVCs-Collected-Registered-Voters.pdf
+Nigeria,2023,Kaduna,4335208,4164473,170735,96.06,,,2023-02-05,https://www.inecnigeria.org/wp-content/uploads/2023/02/PVCs-Collected-Registered-Voters.pdf
+Nigeria,2023,Kano,5921370,5594193,327177,94.47,,,2023-02-05,https://www.inecnigeria.org/wp-content/uploads/2023/02/PVCs-Collected-Registered-Voters.pdf
+Nigeria,2023,Katsina,3516719,3459945,56774,98.39,,,2023-02-05,https://www.inecnigeria.org/wp-content/uploads/2023/02/PVCs-Collected-Registered-Voters.pdf
+Nigeria,2023,Kebbi,2032041,1980171,51870,97.45,,,2023-02-05,https://www.inecnigeria.org/wp-content/uploads/2023/02/PVCs-Collected-Registered-Voters.pdf
+Nigeria,2023,Kogi,1932654,1813741,118913,93.85,,,2023-02-05,https://www.inecnigeria.org/wp-content/uploads/2023/02/PVCs-Collected-Registered-Voters.pdf
+Nigeria,2023,Kwara,1695927,1537275,158652,90.65,,,2023-02-05,https://www.inecnigeria.org/wp-content/uploads/2023/02/PVCs-Collected-Registered-Voters.pdf
+Nigeria,2023,Lagos,7060195,6214970,845225,88.03,,,2023-02-05,https://www.inecnigeria.org/wp-content/uploads/2023/02/PVCs-Collected-Registered-Voters.pdf
+Nigeria,2023,Nasarawa,1899244,1847752,51492,97.29,,,2023-02-05,https://www.inecnigeria.org/wp-content/uploads/2023/02/PVCs-Collected-Registered-Voters.pdf
+Nigeria,2023,Niger,2698344,2633728,64616,97.61,,,2023-02-05,https://www.inecnigeria.org/wp-content/uploads/2023/02/PVCs-Collected-Registered-Voters.pdf
+Nigeria,2023,Ogun,2688305,2278063,410242,84.74,,,2023-02-05,https://www.inecnigeria.org/wp-content/uploads/2023/02/PVCs-Collected-Registered-Voters.pdf
+Nigeria,2023,Ondo,1991344,1729641,261703,86.86,,,2023-02-05,https://www.inecnigeria.org/wp-content/uploads/2023/02/PVCs-Collected-Registered-Voters.pdf
+Nigeria,2023,Osun,1954800,1594066,360734,81.55,,,2023-02-05,https://www.inecnigeria.org/wp-content/uploads/2023/02/PVCs-Collected-Registered-Voters.pdf
+Nigeria,2023,Oyo,3276675,2761421,515254,84.28,,,2023-02-05,https://www.inecnigeria.org/wp-content/uploads/2023/02/PVCs-Collected-Registered-Voters.pdf
+Nigeria,2023,Plateau,2789528,2687533,101995,96.34,,,2023-02-05,https://www.inecnigeria.org/wp-content/uploads/2023/02/PVCs-Collected-Registered-Voters.pdf
+Nigeria,2023,Rivers,3537190,3285785,251405,92.89,,,2023-02-05,https://www.inecnigeria.org/wp-content/uploads/2023/02/PVCs-Collected-Registered-Voters.pdf
+Nigeria,2023,Sokoto,2172056,2097798,74258,96.58,,,2023-02-05,https://www.inecnigeria.org/wp-content/uploads/2023/02/PVCs-Collected-Registered-Voters.pdf
+Nigeria,2023,Taraba,2022374,1825325,197049,90.26,,,2023-02-05,https://www.inecnigeria.org/wp-content/uploads/2023/02/PVCs-Collected-Registered-Voters.pdf
+Nigeria,2023,Yobe,1485146,1437851,47295,96.82,,,2023-02-05,https://www.inecnigeria.org/wp-content/uploads/2023/02/PVCs-Collected-Registered-Voters.pdf
+Nigeria,2023,Zamfara,1926870,1850055,76815,96.01,,,2023-02-05,https://www.inecnigeria.org/wp-content/uploads/2023/02/PVCs-Collected-Registered-Voters.pdf
+Nigeria,2023,Federal Capital Territory,1570307,1476451,93856,94.02,,,2023-02-05,https://www.inecnigeria.org/wp-content/uploads/2023/02/PVCs-Collected-Registered-Voters.pdf

@@ -46,7 +46,7 @@ npx expo start              # scan the QR code with Expo Go, or press w for web
 
 ## Tests
 
-38 tests: every win rule against hand-checked counts, determinism and exact replay, delayed events, debate scoring, full campaigns under all four rules, pack validation, and a balance check over 20 simulated US campaigns per side. A browser play-through (create nominee, 15 days, events, two debates, Election Night, passport) runs with no errors.
+39 tests: every win rule against hand-checked counts, determinism and exact replay, delayed events, debate scoring, full campaigns under all four rules, pack validation, and a balance check over 20 simulated US campaigns per side. A browser play-through (create nominee, 15 days, events, two debates, Election Night, passport) runs with no errors.
 
 Balance figures are in the table below.
 
@@ -73,7 +73,9 @@ All nominees, rivals, anchors, outlets and pollsters are fictional.
 Playable, with **placeholder starting data** (shown in the app).
 
 - **Real**: the 36 states and FCT, the six geopolitical zones, the win rule (most votes and at least 25% in 24 of 37 units, with the FCT counted as a unit as the Supreme Court held in 2023; otherwise a runoff), campaigning ending 24 hours before polling day.
-- **Placeholder (TODO-VERIFY)**: starting vote shares come from a press transcription of INEC's 2023 state declarations that does not add up to INEC's national totals; turnout and minor-party share use national averages. Details and the evidence are in `data/ng2023/README.md`. Needed to verify: INEC Form EC8D for each state (or the EC8E summary) and INEC registered voters by state.
+- **INEC registration**: registered voters by state (as at 5 February 2023) from the INEC pack in `data/ng2023/registration` (validated; reconciles to 93,469,008). Shown in the lobby as a 2023 civic record with PVC collection by state.
+- **Placeholder (TODO-VERIFY)**: starting vote shares come from a press transcription of INEC's 2023 state declarations that does not add up to INEC's national totals; minor-party share uses the national average. Details and the evidence are in `data/ng2023/README.md`. Still needed: INEC Form EC8D for each state (or the EC8E summary).
+- **Look**: Nigeria screens use the flag's green (#008751) and white, with a green-white-green band; other countries keep the navy and gold.
 - **Signature mechanics**: the 25% spread tracker (Campaign HQ and Election Night), zone-by-zone results, zone spillover from big events, and **alliance talks** (days 2 to 8: ask another party to stand down and endorse you; smaller parties are likelier to agree; one attempt).
 - **Gap**: the real runoff is between the leader and the candidate who won the most states; the engine uses the top two by votes.
 - Nigeria's next presidential election is on 16 January 2027 and its campaign is under way. Keep this pack in playtesting until after that vote.

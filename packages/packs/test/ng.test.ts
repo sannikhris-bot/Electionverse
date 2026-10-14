@@ -42,6 +42,24 @@ describe('Nigeria pack', () => {
     expect(byZone).toEqual({ 'North West': 7, 'North East': 6, 'North Central': 7, 'South West': 6, 'South East': 5, 'South South': 6 });
   });
 
+  it('uses INEC 2023 registration for every state', () => {
+    expect(ngPack.regions.reduce((a, r) => a + r.registeredVoters, 0)).toBe(93_469_008);
+    expect(ngPack.regions.find((r) => r.id === 'la')!.registeredVoters).toBe(7_060_195);
+    expect(ngPack.regions.find((r) => r.id === 'kn')!.registeredVoters).toBe(5_921_370);
+    const rec = ngPack.civicRecord!;
+    expect(rec.rows).toHaveLength(37);
+    expect(new Set(rec.rows.map((r) => r.regionId))).toEqual(new Set(ngPack.regions.map((r) => r.id)));
+    expect(rec.rows.reduce((a, r) => a + (r.collected ?? 0), 0)).toBe(87_209_007);
+    for (const r of rec.rows) expect(r.collected!).toBeLessThanOrEqual(r.registered);
+    for (const b of ngPack.baselines) {
+      expect(b.turnout).toBeGreaterThanOrEqual(0.1);
+      expect(b.turnout).toBeLessThanOrEqual(0.6);
+    }
+    // Lagos had notably lower turnout than Kano in 2023.
+    const t = (id: string) => ngPack.baselines.find((b) => b.regionId === id)!.turnout;
+    expect(t('la')).toBeLessThan(t('kn'));
+  });
+
   it('uses the spread rule: 25% in 24 of 37 units, FCT not separately required, runoff', () => {
     const rule = ngPack.winRule;
     expect(rule.type).toBe('presidentialSpread');

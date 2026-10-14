@@ -2,6 +2,7 @@ import type { CountryPack, Region } from '@electionverse/engine';
 import { hashString } from '@electionverse/engine';
 import { buildActivities, COMMON_EVENTS, RIVAL_ARCHETYPES } from '../common';
 import { NG_EVENTS } from './events';
+import { NG_REGISTRATION_2023 } from './registration2023';
 
 /**
  * Nigeria pack.
@@ -13,8 +14,8 @@ import { NG_EVENTS } from './events';
  *
  * TODO-VERIFY (placeholder): starting vote shares come from a press
  * transcription of INEC's declared state results that does NOT reconcile with
- * INEC's national totals (see data/ng2023/README.md). "Other" share and
- * turnout use national averages in every state. Replace with INEC Form EC8D
+ * INEC's national totals (see data/ng2023/README.md). "Other" share uses the
+ * national average. Registered voters are INEC's (data/ng2023/registration). Replace with INEC Form EC8D
  * figures and INEC registered voters by state before release.
  * Issue priorities are placeholders. Party platforms are empty until sourced.
  *
@@ -88,16 +89,22 @@ const PLACEHOLDER_VOTES: Record<string, [apc: number, pdp: number, lp: number, n
 /** INEC national figures (declared 1 March 2023). */
 const NATIONAL = { valid: 24_025_940, registered: 93_469_008, top4: 8_794_726 + 6_984_520 + 6_101_533 + 1_496_687 };
 const OTHER_SHARE = 1 - NATIONAL.top4 / NATIONAL.valid; // about 2.70%, applied in every state (placeholder)
-const TURNOUT = NATIONAL.valid / NATIONAL.registered; // about 25.7%, applied in every state (placeholder)
+
+/** INEC registered voters by state (snapshot 5 February 2023), from data/ng2023/registration. */
+const REGISTERED = new Map(NG_REGISTRATION_2023.map((r) => [r.id, r.registered]));
 
 function placeholderBaseline(id: string) {
   const v = PLACEHOLDER_VOTES[id];
   if (!v) throw new Error(`No placeholder votes for ${id}`);
+  const registered = REGISTERED.get(id);
+  if (!registered) throw new Error(`No INEC registration for ${id}`);
   const top4 = v[0] + v[1] + v[2] + v[3];
   const k = (1 - OTHER_SHARE) / top4;
   const shares = { apc: v[0] * k, pdp: v[1] * k, lp: v[2] * k, nnpp: v[3] * k, adc: 0, other: OTHER_SHARE };
+  // TODO-VERIFY: valid votes are estimated from the placeholder party votes; registration is INEC's.
   const valid = top4 / (1 - OTHER_SHARE);
-  return { shares, registered: Math.round(valid / TURNOUT) };
+  const turnout = Math.min(0.6, Math.max(0.1, valid / registered));
+  return { shares, registered, turnout };
 }
 
 const ISSUES = [
@@ -131,7 +138,7 @@ export const ngPack: CountryPack = {
   placeholderData: true,
   dataNotes: [
     'Starting support is a PLACEHOLDER from a press transcription of INEC\'s 2023 state declarations that does not add up to INEC\'s national totals. It will be replaced with INEC\'s official state forms.',
-    'Turnout and minor-party share use national averages in every state for now.',
+    'Registered voters by state: INEC figures as at 5 February 2023 (they add up to INEC\'s 93,469,008; still to be checked against the original INEC PDF). Turnout by state follows from the placeholder votes; minor-party share uses the national average.',
     'Regional issue priorities are placeholders. Party platforms will be added from published sources.',
     'Win rule: most votes plus at least 25% in 24 of the 37 units (36 states and the FCT), as the Supreme Court held in 2023; otherwise a runoff.',
     'Alliance talks (days 2 to 8): ask another party to stand down and endorse you. Smaller parties are likelier to say yes.',
@@ -168,7 +175,7 @@ export const ngPack: CountryPack = {
     { id: 'other', name: { en: 'Other parties' }, shortName: 'Other', colour: '#8A94A6', platform: [], manifestoSource: null, resources: { funds: 0, volunteers: 0 }, difficulty: 5, playable: false },
   ],
   // TODO-VERIFY: placeholder baselines (see header).
-  baselines: STATES.map(([id]) => ({ regionId: id, shares: placeholderBaseline(id).shares, turnout: TURNOUT })),
+  baselines: STATES.map(([id]) => ({ regionId: id, shares: placeholderBaseline(id).shares, turnout: placeholderBaseline(id).turnout })),
   issues: ISSUES,
   // TODO-VERIFY: placeholder issue priorities.
   issueProfiles: STATES.map(([id, , , , zone]) => {
@@ -223,7 +230,16 @@ export const ngPack: CountryPack = {
     ],
     revealOrder: 'byGroup',
   },
+  civicRecord: {
+    title: '2023 voter registration (INEC)',
+    asOf: '5 February 2023',
+    source: 'INEC, Registered Voters and PVCs Collected (inecnigeria.org)',
+    status: 'Historical record for reference, not a prediction. Checked against national totals; to be verified against the original INEC PDF.',
+    collectedLabel: 'PVCs collected',
+    rows: NG_REGISTRATION_2023.map((r) => ({ regionId: r.id, registered: r.registered, collected: r.pvcsCollected })),
+  },
   sources: [
+    { id: 'inec-registration-2023', title: 'INEC, Registered Voters and PVCs Collected for the 2023 General Election (as at 5 February 2023)', url: 'https://www.inecnigeria.org/wp-content/uploads/2023/02/PVCs-Collected-Registered-Voters.pdf', note: 'Registered voters by state. QA: data/ng2023/registration/output/qa_report.md.' },
     { id: 'constitution-134', title: 'Constitution of the Federal Republic of Nigeria 1999 (as amended), section 134', note: 'Presidential election win requirements and second election.' },
     { id: 'sc-2023-fct', title: 'Supreme Court of Nigeria, judgment of 26 October 2023 (Atiku Abubakar and Peter Obi appeals)', url: 'https://www.icirnigeria.org/supreme-court-upholds-pepc-ruling-on-25-votes-in-fct/', note: 'Upheld that 25% in the FCT is not separately required.' },
     { id: 'inec-2023-totals', title: 'INEC declaration of the 2023 presidential election result, 1 March 2023', note: 'National totals used to check state figures. State figures pending INEC Form EC8D.' },

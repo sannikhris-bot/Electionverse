@@ -2,13 +2,15 @@ import { useMemo, useState } from 'react';
 import { Text, View } from 'react-native';
 import { router } from 'expo-router';
 import { RESPONSE_LABELS, debateRounds, type DebateResponse } from '@electionverse/engine';
-import { Button, Card, Screen } from '@/components/ui';
+import { CountryTheme, Button, Card, Screen } from '@/components/ui';
 import { useGame } from '@/store/game';
-import { colors, space, type } from '@/theme';
+import { space, useColors, useType } from '@/theme';
 
 const STYLE_WORDS = { attack: 'a personal attack', policy: 'a policy challenge', record: 'your own record' } as const;
 
-export default function DebateScreen() {
+function DebateScreenInner() {
+  const colors = useColors();
+  const type = useType();
   const { pack, state, dispatch } = useGame();
   const rounds = useMemo(() => (pack && state && state.phase === 'awaitingDebate' ? debateRounds(pack, state) : []), [pack, state]);
   const [answers, setAnswers] = useState<DebateResponse[]>([]);
@@ -21,7 +23,7 @@ export default function DebateScreen() {
     const report = state.pendingDebate;
     return (
       <Screen>
-        <Text style={[type.label, { color: colors.gold, marginTop: space(2) }]}>Debate verdict</Text>
+        <Text style={[type.label, { color: colors.goldText, marginTop: space(2) }]}>Debate verdict</Text>
         <Text style={type.display}>
           {report?.verdict === 'won' ? 'You won the night' : report?.verdict === 'lost' ? 'You lost the night' : 'No knockout blow'}
         </Text>
@@ -64,7 +66,7 @@ export default function DebateScreen() {
 
   return (
     <Screen>
-      <Text style={[type.label, { color: colors.gold, marginTop: space(2) }]}>
+      <Text style={[type.label, { color: colors.goldText, marginTop: space(2) }]}>
         Debate · round {i + 1} of {rounds.length}
       </Text>
       <Text style={type.display}>{round.topic}</Text>
@@ -80,5 +82,14 @@ export default function DebateScreen() {
         ))}
       </View>
     </Screen>
+  );
+}
+
+export default function DebateScreen() {
+  const packId = useGame((s) => s.pack?.id);
+  return (
+    <CountryTheme countryId={packId}>
+      <DebateScreenInner />
+    </CountryTheme>
   );
 }

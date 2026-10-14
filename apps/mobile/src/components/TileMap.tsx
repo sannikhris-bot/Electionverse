@@ -1,7 +1,7 @@
 import { memo, useMemo } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import type { CountryPack } from '@electionverse/engine';
-import { colors, fade } from '@/theme';
+import { fade, useColors } from '@/theme';
 
 export interface TileInfo {
   /** Leading party id and its margin over the runner-up (0-1). */
@@ -35,6 +35,7 @@ function TileMapImpl({
   onSelect?: (regionId: string) => void;
   width: number;
 }) {
+  const colors = useColors();
   const { cols, rows } = useMemo(() => {
     const xs = pack.regions.map((r) => r.x);
     const ys = pack.regions.map((r) => r.y);
@@ -52,7 +53,7 @@ function TileMapImpl({
       {pack.regions.map((r) => {
         const t = tiles[r.id] ?? {};
         const strength = t.hidden ? 1 : Math.max(0, 0.72 - Math.min(1, (t.margin ?? 0) * 6) * 0.72);
-        const bg = t.hidden ? colors.surface : t.leader ? fade(colourOf(t.leader), strength) : colors.surfaceRaised;
+        const bg = t.hidden ? colors.surface : t.leader ? fade(colourOf(t.leader), strength, colors.surfaceRaised) : colors.surfaceRaised;
         const isSel = selected === r.id;
         const label = `${r.name}. ${t.hidden ? 'Not yet called' : t.leader ? `${nameOf(t.leader)} ahead` : 'No leader yet'}.${showStake ? ` ${r.stake} ${pack.electionNight.unitLabel}.` : ''}`;
         return (
@@ -95,7 +96,7 @@ function TileMapImpl({
                   justifyContent: 'center',
                 }}
               >
-                <Text style={{ color: colors.bg, fontWeight: '900', fontSize: Math.max(8, size * 0.26) }}>{t.badge}</Text>
+                <Text style={{ color: colors.onGold, fontWeight: '900', fontSize: Math.max(8, size * 0.26) }}>{t.badge}</Text>
               </View>
             ) : null}
           </Pressable>

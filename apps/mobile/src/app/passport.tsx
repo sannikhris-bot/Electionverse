@@ -25,7 +25,7 @@ export default function Passport() {
           ['Parties', parties],
         ].map(([l, v]) => (
           <View key={String(l)} style={{ alignItems: 'center' }}>
-            <Text style={[type.title, { color: colors.gold }]}>{v}</Text>
+            <Text style={[type.title, { color: colors.goldText }]}>{v}</Text>
             <Text style={type.label}>{l}</Text>
           </View>
         ))}

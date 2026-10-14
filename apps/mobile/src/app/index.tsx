@@ -84,7 +84,7 @@ export default function WorldScreen() {
   return (
     <Screen>
       <View style={{ marginTop: space(2), marginBottom: space(2) }}>
-        <Text style={[type.label, { color: colors.gold }]}>ElectionVerse</Text>
+        <Text style={[type.label, { color: colors.goldText }]}>ElectionVerse</Text>
         <Text style={type.display}>Choose your campaign</Text>
         <Text style={[type.small, { marginTop: 4 }]}>Real parties. Real maps. Fictional nominees. Every country plays differently.</Text>
       </View>

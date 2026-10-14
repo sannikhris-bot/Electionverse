@@ -43,6 +43,18 @@ export interface CountryPack {
    * Absent for countries where this is not part of campaign politics.
    */
   allianceTalks?: { fromDay: number; toDay: number; /** Share of the partner's support that follows the endorsement. */ transfer: number };
+  /**
+   * Historical civic statistics shown for reference in the lobby (e.g. registered
+   * voters). Never used as a prediction; separate from the fictional game.
+   */
+  civicRecord?: {
+    title: string;
+    asOf: string;
+    source: string;
+    status: string;
+    collectedLabel?: string;
+    rows: { regionId: string; registered: number; collected?: number }[];
+  };
   names: Localized<string>;
   status: 'playable' | 'preview';
   continent: string;

@@ -3,9 +3,9 @@ import { Text, View, useWindowDimensions } from 'react-native';
 import { router } from 'expo-router';
 import { majorityOf, type CountryPack } from '@electionverse/engine';
 import { TileMap, type TileInfo } from '@/components/TileMap';
-import { Button, Card, Screen, SimLabel } from '@/components/ui';
+import { CountryTheme, Button, Card, Screen, SimLabel } from '@/components/ui';
 import { useGame } from '@/store/game';
-import { colors, space, type } from '@/theme';
+import { space, useColors, useType } from '@/theme';
 
 const REVEAL_MS = 160;
 
@@ -20,7 +20,9 @@ function revealOrder(pack: CountryPack, regionIds: string[]): string[] {
   return [...regionIds].sort((a, b) => reg(a).stake - reg(b).stake || a.localeCompare(b));
 }
 
-export default function ElectionNight() {
+function ElectionNightInner() {
+  const colors = useColors();
+  const type = useType();
   const { width } = useWindowDimensions();
   const { pack, state, dispatch } = useGame();
   const [revealed, setRevealed] = useState(0);
@@ -47,7 +49,7 @@ export default function ElectionNight() {
   if (state.phase === 'pollingDay') {
     return (
       <Screen>
-        <Text style={[type.label, { color: colors.gold, marginTop: space(3) }]}>Polling day</Text>
+        <Text style={[type.label, { color: colors.goldText, marginTop: space(3) }]}>Polling day</Text>
         <Text style={type.display}>The campaign is over.</Text>
         <Text style={[type.body, { marginVertical: space(2) }]}>
           Millions of voters are heading to the polls. Everything you did over {pack.calendar.days} days now comes down to who turns out.
@@ -79,7 +81,7 @@ export default function ElectionNight() {
 
   return (
     <Screen>
-      <Text style={[type.label, { color: colors.gold, marginTop: space(2) }]}>Election Night · {pack.names.en}</Text>
+      <Text style={[type.label, { color: colors.goldText, marginTop: space(2) }]}>Election Night · {pack.names.en}</Text>
       <Text style={type.display}>{finishedReveal ? result.headline : 'Results are coming in…'}</Text>
       {anchor ? (
         <Text style={[type.small, { marginVertical: 4 }]}>
@@ -181,7 +183,7 @@ export default function ElectionNight() {
 
           {state.phase === 'coalition' ? (
             <Card accent>
-              <Text style={[type.label, { color: colors.gold }]}>Coalition talks</Text>
+              <Text style={[type.label, { color: colors.goldText }]}>Coalition talks</Text>
               <Text style={[type.body, { marginVertical: 6 }]}>Nobody has a majority. Who will you negotiate with?</Text>
               {result.coalitionOptions?.map((o) => (
                 <Button
@@ -228,5 +230,14 @@ export default function ElectionNight() {
         </>
       ) : null}
     </Screen>
+  );
+}
+
+export default function ElectionNight() {
+  const packId = useGame((s) => s.pack?.id);
+  return (
+    <CountryTheme countryId={packId}>
+      <ElectionNightInner />
+    </CountryTheme>
   );
 }

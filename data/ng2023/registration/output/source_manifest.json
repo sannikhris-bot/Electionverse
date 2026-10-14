@@ -1,0 +1,12 @@
+{
+  "status": "imported_unverified_against_original_pdf",
+  "source_date": "2023-02-05",
+  "files": {
+    "CLAUDE_CODE_PROMPT.md": "a7007bb211e089ae9b741e842ea8c856d87eeabdcafc298fcffdcfc752bfb760",
+    "README.md": "700c030451d943623f8eac7695a1068e4b529307d30d2a18302432bb87b7e94a",
+    "nigeria_2023_inec_registered_pvcs_by_state.csv": "974529e93a94e93fcf7c634427f984e8d13e980bab4b18ee4b8672f8a1392e26",
+    "nigeria_2023_inec_registered_pvcs_by_state.json": "b8fda3856f1f5f15f9e0f238440fbe2bf5ea930ae945f01d726bca543d4193ee",
+    "sources.json": "eabef2f40849620bae7ee146cd53e6aa0d7f6bde1e8427ee72ae569259a3ba23"
+  },
+  "note": "Provided by the project owner on 2026-10-14. The pack itself states its figures were transcribed from a mirrored table, not parsed from the original INEC PDF."
+}
