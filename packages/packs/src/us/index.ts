@@ -1,73 +1,76 @@
 import type { CountryPack, Region } from '@electionverse/engine';
 import { hashString } from '@electionverse/engine';
 import { buildActivities, COMMON_EVENTS, RIVAL_ARCHETYPES } from '../common';
+import { US_BASELINE_2024 } from './baseline2024';
 import { US_EVENTS } from './events';
 
 /**
  * United States pack.
  *
- * REAL: state names, 2024-2028 electoral vote apportionment, 270-to-win rule.
- * TODO-VERIFY (placeholder): every baseline share, turnout figure and
- * registered-voter count below is an illustrative approximation for
- * playtesting only. Replace with certified 2024 state results before release.
+ * REAL: state names, 2024-2028 electoral vote apportionment, 270-to-win rule,
+ * and the starting position: certified 2024 presidential results (FEC) and
+ * registration (EAC EAVS), generated into baseline2024.ts from data/us2024.
+ * Game-only fallbacks for registered voters in HI, ME and ND are marked there.
+ * TODO-VERIFY (placeholder): regional issue priorities.
  * Party platforms are empty until summarised from published platforms with sources.
+ * KNOWN GAP: Maine and Nebraska award some electoral votes by congressional
+ * district; the game currently treats every state as winner-take-all.
  */
 
-type Row = [id: string, name: string, ev: number, x: number, y: number, group: string, lean: number, place: string];
+type Row = [id: string, name: string, ev: number, x: number, y: number, group: string, place: string];
 
-// lean = PLACEHOLDER Democratic two-party share, rounded, for playtesting only.
 const STATES: Row[] = [
-  ['ak', 'Alaska', 3, 0, 0, 'West', 0.44, 'Anchorage'],
-  ['me', 'Maine', 4, 10, 0, 'Northeast', 0.53, 'Portland'],
-  ['vt', 'Vermont', 3, 9, 1, 'Northeast', 0.64, 'Burlington'],
-  ['nh', 'New Hampshire', 4, 10, 1, 'Northeast', 0.51, 'Manchester'],
-  ['wa', 'Washington', 12, 0, 2, 'West', 0.58, 'Seattle'],
-  ['id', 'Idaho', 4, 1, 2, 'West', 0.32, 'Boise'],
-  ['mt', 'Montana', 4, 2, 2, 'West', 0.39, 'Billings'],
-  ['nd', 'North Dakota', 3, 3, 2, 'Midwest', 0.31, 'Fargo'],
-  ['mn', 'Minnesota', 10, 4, 2, 'Midwest', 0.52, 'Minneapolis'],
-  ['il', 'Illinois', 19, 5, 2, 'Midwest', 0.56, 'Chicago'],
-  ['wi', 'Wisconsin', 10, 6, 2, 'Midwest', 0.49, 'Milwaukee'],
-  ['mi', 'Michigan', 15, 7, 2, 'Midwest', 0.49, 'Detroit'],
-  ['ny', 'New York', 28, 8, 2, 'Northeast', 0.56, 'New York City'],
-  ['ri', 'Rhode Island', 4, 9, 2, 'Northeast', 0.56, 'Providence'],
-  ['ma', 'Massachusetts', 11, 10, 2, 'Northeast', 0.62, 'Boston'],
-  ['or', 'Oregon', 8, 0, 3, 'West', 0.56, 'Portland'],
-  ['nv', 'Nevada', 6, 1, 3, 'West', 0.49, 'Las Vegas'],
-  ['wy', 'Wyoming', 3, 2, 3, 'West', 0.27, 'Cheyenne'],
-  ['sd', 'South Dakota', 3, 3, 3, 'Midwest', 0.35, 'Sioux Falls'],
-  ['ia', 'Iowa', 6, 4, 3, 'Midwest', 0.43, 'Des Moines'],
-  ['in', 'Indiana', 11, 5, 3, 'Midwest', 0.4, 'Indianapolis'],
-  ['oh', 'Ohio', 17, 6, 3, 'Midwest', 0.44, 'Columbus'],
-  ['pa', 'Pennsylvania', 19, 7, 3, 'Northeast', 0.49, 'Philadelphia'],
-  ['nj', 'New Jersey', 14, 8, 3, 'Northeast', 0.53, 'Newark'],
-  ['ct', 'Connecticut', 7, 9, 3, 'Northeast', 0.57, 'Hartford'],
-  ['ca', 'California', 54, 0, 4, 'West', 0.6, 'Los Angeles'],
-  ['ut', 'Utah', 6, 1, 4, 'West', 0.39, 'Salt Lake City'],
-  ['co', 'Colorado', 10, 2, 4, 'West', 0.55, 'Denver'],
-  ['ne', 'Nebraska', 5, 3, 4, 'Midwest', 0.4, 'Omaha'],
-  ['mo', 'Missouri', 10, 4, 4, 'Midwest', 0.41, 'St. Louis'],
-  ['ky', 'Kentucky', 8, 5, 4, 'South', 0.34, 'Louisville'],
-  ['wv', 'West Virginia', 4, 6, 4, 'South', 0.29, 'Charleston'],
-  ['va', 'Virginia', 13, 7, 4, 'South', 0.53, 'Richmond'],
-  ['md', 'Maryland', 10, 8, 4, 'South', 0.63, 'Baltimore'],
-  ['de', 'Delaware', 3, 9, 4, 'South', 0.57, 'Wilmington'],
-  ['az', 'Arizona', 11, 1, 5, 'West', 0.49, 'Phoenix'],
-  ['nm', 'New Mexico', 5, 2, 5, 'West', 0.53, 'Albuquerque'],
-  ['ks', 'Kansas', 6, 3, 5, 'Midwest', 0.42, 'Wichita'],
-  ['ar', 'Arkansas', 6, 4, 5, 'South', 0.34, 'Little Rock'],
-  ['tn', 'Tennessee', 11, 5, 5, 'South', 0.35, 'Nashville'],
-  ['nc', 'North Carolina', 16, 6, 5, 'South', 0.48, 'Charlotte'],
-  ['sc', 'South Carolina', 9, 7, 5, 'South', 0.41, 'Columbia'],
-  ['dc', 'District of Columbia', 3, 8, 5, 'South', 0.9, 'Washington'],
-  ['ok', 'Oklahoma', 7, 3, 6, 'South', 0.32, 'Oklahoma City'],
-  ['la', 'Louisiana', 8, 4, 6, 'South', 0.39, 'New Orleans'],
-  ['ms', 'Mississippi', 6, 5, 6, 'South', 0.38, 'Jackson'],
-  ['al', 'Alabama', 9, 6, 6, 'South', 0.35, 'Birmingham'],
-  ['ga', 'Georgia', 16, 7, 6, 'South', 0.49, 'Atlanta'],
-  ['hi', 'Hawaii', 4, 0, 7, 'West', 0.62, 'Honolulu'],
-  ['tx', 'Texas', 40, 3, 7, 'South', 0.43, 'Houston'],
-  ['fl', 'Florida', 30, 8, 7, 'South', 0.44, 'Miami'],
+  ['ak', 'Alaska', 3, 0, 0, 'West', 'Anchorage'],
+  ['me', 'Maine', 4, 10, 0, 'Northeast', 'Portland'],
+  ['vt', 'Vermont', 3, 9, 1, 'Northeast', 'Burlington'],
+  ['nh', 'New Hampshire', 4, 10, 1, 'Northeast', 'Manchester'],
+  ['wa', 'Washington', 12, 0, 2, 'West', 'Seattle'],
+  ['id', 'Idaho', 4, 1, 2, 'West', 'Boise'],
+  ['mt', 'Montana', 4, 2, 2, 'West', 'Billings'],
+  ['nd', 'North Dakota', 3, 3, 2, 'Midwest', 'Fargo'],
+  ['mn', 'Minnesota', 10, 4, 2, 'Midwest', 'Minneapolis'],
+  ['il', 'Illinois', 19, 5, 2, 'Midwest', 'Chicago'],
+  ['wi', 'Wisconsin', 10, 6, 2, 'Midwest', 'Milwaukee'],
+  ['mi', 'Michigan', 15, 7, 2, 'Midwest', 'Detroit'],
+  ['ny', 'New York', 28, 8, 2, 'Northeast', 'New York City'],
+  ['ri', 'Rhode Island', 4, 9, 2, 'Northeast', 'Providence'],
+  ['ma', 'Massachusetts', 11, 10, 2, 'Northeast', 'Boston'],
+  ['or', 'Oregon', 8, 0, 3, 'West', 'Portland'],
+  ['nv', 'Nevada', 6, 1, 3, 'West', 'Las Vegas'],
+  ['wy', 'Wyoming', 3, 2, 3, 'West', 'Cheyenne'],
+  ['sd', 'South Dakota', 3, 3, 3, 'Midwest', 'Sioux Falls'],
+  ['ia', 'Iowa', 6, 4, 3, 'Midwest', 'Des Moines'],
+  ['in', 'Indiana', 11, 5, 3, 'Midwest', 'Indianapolis'],
+  ['oh', 'Ohio', 17, 6, 3, 'Midwest', 'Columbus'],
+  ['pa', 'Pennsylvania', 19, 7, 3, 'Northeast', 'Philadelphia'],
+  ['nj', 'New Jersey', 14, 8, 3, 'Northeast', 'Newark'],
+  ['ct', 'Connecticut', 7, 9, 3, 'Northeast', 'Hartford'],
+  ['ca', 'California', 54, 0, 4, 'West', 'Los Angeles'],
+  ['ut', 'Utah', 6, 1, 4, 'West', 'Salt Lake City'],
+  ['co', 'Colorado', 10, 2, 4, 'West', 'Denver'],
+  ['ne', 'Nebraska', 5, 3, 4, 'Midwest', 'Omaha'],
+  ['mo', 'Missouri', 10, 4, 4, 'Midwest', 'St. Louis'],
+  ['ky', 'Kentucky', 8, 5, 4, 'South', 'Louisville'],
+  ['wv', 'West Virginia', 4, 6, 4, 'South', 'Charleston'],
+  ['va', 'Virginia', 13, 7, 4, 'South', 'Richmond'],
+  ['md', 'Maryland', 10, 8, 4, 'South', 'Baltimore'],
+  ['de', 'Delaware', 3, 9, 4, 'South', 'Wilmington'],
+  ['az', 'Arizona', 11, 1, 5, 'West', 'Phoenix'],
+  ['nm', 'New Mexico', 5, 2, 5, 'West', 'Albuquerque'],
+  ['ks', 'Kansas', 6, 3, 5, 'Midwest', 'Wichita'],
+  ['ar', 'Arkansas', 6, 4, 5, 'South', 'Little Rock'],
+  ['tn', 'Tennessee', 11, 5, 5, 'South', 'Nashville'],
+  ['nc', 'North Carolina', 16, 6, 5, 'South', 'Charlotte'],
+  ['sc', 'South Carolina', 9, 7, 5, 'South', 'Columbia'],
+  ['dc', 'District of Columbia', 3, 8, 5, 'South', 'Washington'],
+  ['ok', 'Oklahoma', 7, 3, 6, 'South', 'Oklahoma City'],
+  ['la', 'Louisiana', 8, 4, 6, 'South', 'New Orleans'],
+  ['ms', 'Mississippi', 6, 5, 6, 'South', 'Jackson'],
+  ['al', 'Alabama', 9, 6, 6, 'South', 'Birmingham'],
+  ['ga', 'Georgia', 16, 7, 6, 'South', 'Atlanta'],
+  ['hi', 'Hawaii', 4, 0, 7, 'West', 'Honolulu'],
+  ['tx', 'Texas', 40, 3, 7, 'South', 'Houston'],
+  ['fl', 'Florida', 30, 8, 7, 'South', 'Miami'],
 ];
 
 const ISSUES = [
@@ -82,23 +85,35 @@ const ISSUES = [
   { id: 'farming', name: 'Farming and rural life' },
 ];
 
-const regions: Region[] = STATES.map(([id, name, ev, x, y, group, , place]) => ({
+const BASE = new Map(US_BASELINE_2024.map((b) => [b.id, b]));
+function base(id: string) {
+  const b = BASE.get(id);
+  if (!b) throw new Error(`No 2024 baseline for ${id}`);
+  return b;
+}
+
+const regions: Region[] = STATES.map(([id, name, ev, x, y, group, place]) => ({
   id,
   name,
   group,
   x,
   y,
   stake: ev,
-  // TODO-VERIFY: placeholder registered voters scaled from electoral votes.
-  registeredVoters: Math.round((ev - 2) * 480_000 + 300_000),
+  registeredVoters: base(id).registeredVoters,
   landmark: place,
 }));
 
 export const usPack: CountryPack = {
   id: 'us',
-  version: '0.1.0-placeholder',
+  version: '0.2.0',
   contentReviewedOn: null,
   placeholderData: true,
+  dataNotes: [
+    'Starting support and turnout: actual certified 2024 results (FEC and EAC). Everything that happens in play is fictional.',
+    'Regional issue priorities are placeholders until survey data is added.',
+    'Party platforms will be added from published sources.',
+    'Maine and Nebraska are treated as winner-take-all for now; in reality they split some electoral votes by district.',
+  ],
   names: { en: 'United States' },
   status: 'playable',
   continent: 'North America',
@@ -118,11 +133,8 @@ export const usPack: CountryPack = {
     { id: 'grn', name: { en: 'Green Party' }, shortName: 'Green', colour: '#2BA84A', platform: [], manifestoSource: null, resources: { funds: 220, volunteers: 280 }, difficulty: 5, playable: true },
     { id: 'other', name: { en: 'Other candidates' }, shortName: 'Other', colour: '#8A94A6', platform: [], manifestoSource: null, resources: { funds: 0, volunteers: 0 }, difficulty: 5, playable: false },
   ],
-  // TODO-VERIFY: placeholder baselines for playtesting. Replace with certified 2024 results.
-  baselines: STATES.map(([id, , , , , , lean]) => {
-    const major = 0.97;
-    return { regionId: id, shares: { dem: lean * major, rep: (1 - lean) * major, lib: 0.01, grn: 0.008, other: 0.012 }, turnout: 0.6 + ((hashString(id) % 100) / 100) * 0.1 };
-  }),
+  // Actual certified election results, 2024 (starting position only).
+  baselines: STATES.map(([id]) => ({ regionId: id, shares: { ...base(id).shares }, turnout: base(id).turnout })),
   issues: ISSUES,
   // TODO-VERIFY: placeholder issue priorities. Replace with aggregated public survey data.
   issueProfiles: STATES.map(([id, , , , , group]) => {
@@ -176,6 +188,8 @@ export const usPack: CountryPack = {
     revealOrder: 'byStake',
   },
   sources: [
+    { id: 'fec2024', title: 'FEC, Official 2024 Presidential General Election Results (compiled January 16, 2025)', url: 'https://www.fec.gov/documents/5645/2024presgeresults.xlsx', note: 'Vote shares by state. Dataset and QA report: data/us2024.' },
+    { id: 'eavs2024', title: 'EAC, 2024 Election Administration and Voting Survey, v2.0', url: 'https://www.eac.gov/sites/default/files/2026-02/2024_EAVS_for_Public_Release_nolabel_V2_csv.zip', note: 'Registered voters (A1a). Dataset and QA report: data/us2024.' },
     { id: 'apportionment', title: 'Electoral vote apportionment for the 2024 and 2028 elections (based on the 2020 Census)', note: 'Electoral vote counts per state. Verify against the National Archives Electoral College pages before release.' },
   ],
 };

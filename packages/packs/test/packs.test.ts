@@ -46,6 +46,28 @@ describe('US pack', () => {
     expect(issues.some((i) => i.message.includes('placeholder'))).toBe(true);
   });
 
+  it('starts from the certified 2024 result', () => {
+    // Winner-take-all on the certified shares gives Trump 312 and Harris 226: Maine's and Nebraska's
+    // district splits (1 and 1) cancel out under winner-take-all.
+    const ev: Record<string, number> = {};
+    for (const r of usPack.regions) {
+      const b = usPack.baselines.find((x) => x.regionId === r.id)!;
+      const w = b.shares.dem! > b.shares.rep! ? 'dem' : 'rep';
+      ev[w] = (ev[w] ?? 0) + r.stake;
+    }
+    expect(ev).toEqual({ rep: 312, dem: 226 });
+    // Spot checks against the FEC file (candidate votes / total votes).
+    const pa = usPack.baselines.find((b) => b.regionId === 'pa')!;
+    expect(pa.shares.rep).toBeCloseTo(3543308 / 7058732, 5);
+    expect(pa.shares.dem).toBeCloseTo(3423042 / 7058732, 5);
+    for (const b of usPack.baselines) {
+      const total = Object.values(b.shares).reduce((a, v) => a + v, 0);
+      expect(total).toBeCloseTo(1, 4);
+      expect(b.turnout).toBeGreaterThan(0.3);
+      expect(b.turnout).toBeLessThan(1);
+    }
+  });
+
   it('has a unique tile for every state on the map', () => {
     const tiles = new Set(usPack.regions.map((r) => `${r.x},${r.y}`));
     expect(tiles.size).toBe(51);

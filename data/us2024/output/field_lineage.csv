@@ -1,0 +1,16 @@
+field,source,rule
+state,jurisdictions.json,name
+state_abbr,jurisdictions.json; FEC column STATE; EAVS State_Abbr,join key
+year,constant,"2024 general election, 5 November 2024"
+presidential_votes_total,FEC TOTAL VOTES,"as published; equals the sum of all candidate, none-of-these and scattered write-in columns"
+democratic_votes,FEC HARRIS,candidate-aligned across all ballot lines (includes fusion lines)
+republican_votes,FEC TRUMP,candidate-aligned across all ballot lines (includes fusion lines)
+other_presidential_votes,derived,presidential_votes_total - democratic_votes - republican_votes
+democratic_share_pct,derived,"100 * democratic_votes / presidential_votes_total, rounded to 4 dp from integers"
+republican_share_pct,derived,100 * republican_votes / presidential_votes_total
+other_share_pct,derived,100 * other_presidential_votes / presidential_votes_total
+registered_total,EAVS A1a,sum over all non-territory jurisdictions in the state; null if any jurisdiction is blank or a negative special code
+registered_active,EAVS A1b,same aggregation rule as A1a
+counted_ballots_total,EAVS F1a,ballots counted in the 2024 general election across all offices; same aggregation rule
+turnout_pct_total_registration,derived,100 * F1a / A1a; null when either is null
+turnout_pct_active_registration,derived,"100 * F1a / A1b; null when either is null; values over 100 are flagged, not capped"

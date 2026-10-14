@@ -46,17 +46,25 @@ npx expo start              # scan the QR code with Expo Go, or press w for web
 
 ## Tests
 
-30 tests: every win rule against hand-checked counts, determinism and exact replay, delayed events, debate scoring, full campaigns under all four rules, pack validation, and a balance check over 20 simulated US campaigns per side. A browser play-through (create nominee, 15 days, events, two debates, Election Night, passport) runs with no errors.
+31 tests: every win rule against hand-checked counts, determinism and exact replay, delayed events, debate scoring, full campaigns under all four rules, pack validation, and a balance check over 20 simulated US campaigns per side. A browser play-through (create nominee, 15 days, events, two debates, Election Night, passport) runs with no errors.
 
-Balance today (scripted strong player, Normal): the side starting behind on the map wins about 3 in 4; the side starting ahead wins about 19 in 20; camping in one safe state wins under half.
+Balance on the real 2024 map (scripted strong player, Normal): from the Democratic position 16 in 20, from the Republican position 19 in 20; camping in one safe state 7 in 20.
 
-## Placeholder data: must be replaced before release
+## US data
 
-The US pack is marked `placeholderData: true` and shows a "Playtest build" notice in the app.
+The US starting position now comes from **actual certified 2024 results**, built and checked in `data/us2024`:
 
-- **Real**: state names, electoral votes per state (2024 to 2028 apportionment), 270 to win.
-- **Placeholder (TODO-VERIFY)**: every baseline share, turnout figure, registered-voter count and regional issue priority. Replace with certified 2024 state results and aggregated survey data.
-- **Empty**: party platforms. Add summaries from the parties' published platforms, each with a source, before release.
+```bash
+cd data/us2024
+python3 -I etl/build_dataset.py        # FEC + EAC -> output/ (fails loudly on any QA break)
+python3 -I etl/test_dataset.py         # independent re-read of the raw files
+python3 -I etl/export_game_baseline.py # output/ -> packages/packs/src/us/baseline2024.ts
+```
+
+- **Real**: state names, electoral votes, 270 to win, starting vote shares by state (FEC), registered voters (EAC EAVS A1a), turnout (presidential votes / registered).
+- **Game-only fallbacks** (marked in `baseline2024.ts`, never written to the dataset): registered voters for Hawaii and Maine (a few tiny jurisdictions unreported) and North Dakota (no voter registration).
+- **Still placeholder**: regional issue priorities. **Empty**: party platforms (to be summarised from published platforms, with sources).
+- **Gap**: Maine and Nebraska split some electoral votes by district; the game treats every state as winner-take-all. Under winner-take-all the 2024 map still totals 312 to 226.
 
 All nominees, rivals, anchors, outlets and pollsters are fictional.
 
@@ -70,7 +78,7 @@ All nominees, rivals, anchors, outlets and pollsters are fictional.
 
 ## Next steps (blueprint build order)
 
-1. Replace US placeholder data with certified results and sourced platforms; rerun the balance test.
+1. Add sourced party platforms and regional issue data; split Maine and Nebraska by district.
 2. UK pack (FPTP clusters, exit poll at 10 p.m., hung parliament).
 3. South Africa, Canada and Nigeria packs (the Nigeria pack ships after its 16 January 2027 election).
 4. Illustrated street scenes, sound, Election Night animation.

@@ -1,0 +1,22 @@
+{
+  "built_utc": "2026-10-14T19:37:33+00:00",
+  "script": "etl/build_dataset.py",
+  "sources": {
+    "fec_xlsx": {
+      "path": "raw/2024presgeresults.xlsx",
+      "origin_url": "https://www.fec.gov/documents/5645/2024presgeresults.xlsx",
+      "title": "Official 2024 Presidential General Election Results (FEC, compiled January 16, 2025)",
+      "sha256": "68acdee2924d771b92a05cd950dec850b462c633c05563207ac7e206116e7366",
+      "bytes": 21376,
+      "acquired": "Uploaded by the project owner on 2026-10-14. Not fetched directly from origin_url (the build environment could not reach fec.gov or eac.gov)."
+    },
+    "eavs_zip": {
+      "path": "raw/2024_EAVS_for_Public_Release_nolabel_V2_csv.zip",
+      "origin_url": "https://www.eac.gov/sites/default/files/2026-02/2024_EAVS_for_Public_Release_nolabel_V2_csv.zip",
+      "title": "EAC 2024 Election Administration and Voting Survey, public release v2.0 (CSV)",
+      "sha256": "4073b9f48e1791d44a78ddc543379f6c040c31ce733dfa47676330b4d7f6d6df",
+      "bytes": 2119187,
+      "acquired": "Uploaded by the project owner on 2026-10-14. Not fetched directly from origin_url (the build environment could not reach fec.gov or eac.gov)."
+    }
+  }
+}

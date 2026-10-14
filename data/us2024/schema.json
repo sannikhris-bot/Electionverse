@@ -1,0 +1,10 @@
+{
+  "title": "ElectionVerse 2024 US certified presidential votes and EAC election participation",
+  "scope": "50 states and District of Columbia",
+  "year": 2024,
+  "status": "schema_only_not_populated",
+  "source_release": {"fec": "2025-01-16 official compilation", "eac": "EAVS v2.0, 2026-02-12"},
+  "required_fields": ["state", "state_abbr", "year", "presidential_votes_total", "democratic_votes", "republican_votes", "other_presidential_votes", "democratic_share_pct", "republican_share_pct", "other_share_pct", "registered_total", "registered_active", "counted_ballots_total", "turnout_pct_total_registration", "turnout_pct_active_registration"],
+  "types": {"state":"string","state_abbr":"string","year":"integer","presidential_votes_total":"integer|null","democratic_votes":"integer|null","republican_votes":"integer|null","other_presidential_votes":"integer|null","democratic_share_pct":"number|null","republican_share_pct":"number|null","other_share_pct":"number|null","registered_total":"integer|null","registered_active":"integer|null","counted_ballots_total":"integer|null","turnout_pct_total_registration":"number|null","turnout_pct_active_registration":"number|null"},
+  "note": "Democratic/Republican columns refer to votes for Harris/Trump across ballot lines, not necessarily party registration or voter identification."
+}

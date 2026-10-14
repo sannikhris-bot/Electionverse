@@ -25,6 +25,8 @@ export interface CountryPack {
   contentReviewedOn: string | null;
   /** True while any figure in the pack is a placeholder that must be verified. */
   placeholderData: boolean;
+  /** Plain-language notes on what in the pack is real and what is placeholder, shown in the lobby. */
+  dataNotes?: string[];
   names: Localized<string>;
   status: 'playable' | 'preview';
   continent: string;

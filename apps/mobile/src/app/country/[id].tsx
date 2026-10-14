@@ -51,9 +51,11 @@ export default function CountryLobby() {
           {pack.placeholderData ? (
             <Card style={{ borderColor: colors.warn }}>
               <Text style={[type.label, { color: colors.warn }]}>Playtest build</Text>
-              <Text style={[type.small, { marginTop: 4 }]}>
-                Starting support and turnout in this pack are placeholder figures for testing, not official results. Party platforms will be added from published sources.
-              </Text>
+              {(pack.dataNotes ?? ['Some figures in this pack are placeholders for testing.']).map((note) => (
+                <Text key={note} style={[type.small, { marginTop: 4 }]}>
+                  • {note}
+                </Text>
+              ))}
             </Card>
           ) : null}
           <Text style={[type.title, { marginTop: space(2), marginBottom: space(1) }]}>Choose your party</Text>
