@@ -78,7 +78,7 @@ Playable. Starting position from INEC-declared 2023 results and INEC registratio
 - **Placeholder (TODO-VERIFY)**: the 14 minor candidates' share uses the national 2.70% in every state; regional issue priorities. Details and the evidence are in `data/ng2023/README.md`. Still needed to fully verify: INEC Form EC8D for each state (or the EC8E summary) and the original INEC registration PDF.
 - **Look**: Nigeria screens use the flag's green (#008751) and white, with a green-white-green band; other countries keep the navy and gold.
 - **Signature mechanics**: the 25% spread tracker (Campaign HQ and Election Night), zone-by-zone results, zone spillover from big events, and **alliance talks** (days 2 to 8: ask another party to stand down and endorse you; smaller parties are likelier to agree; one attempt).
-- **Gap**: the real runoff is between the leader and the candidate who won the most states; the engine uses the top two by votes.
+- **Runoff**: as in section 134(3) of the Constitution, the leader meets the remaining candidate who won the most states (ties broken by votes), not simply the runner-up by votes.
 - Nigeria's next presidential election is on 16 January 2027 and its campaign is under way. Keep this pack in playtesting until after that vote.
 
 ## Balance (scripted player that reads debate tells, Normal, 20 runs each)

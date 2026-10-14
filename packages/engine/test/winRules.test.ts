@@ -100,6 +100,26 @@ describe('presidentialSpread', () => {
     expect(['a', 'b']).toContain(out.winnerPartyId);
   });
 
+  it('pairs the leader with the candidate who won the most units when configured (Nigeria s.134(3))', () => {
+    // a leads nationally with big wins in r1-r2; b is second by votes but wins only r3;
+    // c wins r4-r6 narrowly. Nobody meets the spread, so there is a runoff.
+    const votes = {
+      r1: { a: 900, b: 50, c: 50 },
+      r2: { a: 900, b: 50, c: 50 },
+      r3: { a: 100, b: 800, c: 100 },
+      r4: { a: 10, b: 300, c: 320 },
+      r5: { a: 10, b: 300, c: 320 },
+      r6: { a: 10, b: 300, c: 320 },
+    };
+    const cfg = { ...base, requiredUnits: 6, minShare: 0.4 };
+    const topTwo = presidentialSpread({ pack: testPack(cfg), votes, seed: 1 }, cfg);
+    expect(topTwo.runoff?.partyIds).toEqual(['a', 'b']);
+    const most = { ...cfg, runoffPairing: 'mostUnitsWon' as const };
+    const out = presidentialSpread({ pack: testPack(most), votes, seed: 1 }, most);
+    expect(out.status).toBe('runoff');
+    expect(out.runoff?.partyIds).toEqual(['a', 'c']);
+  });
+
   it('honours regions where the minimum share is also required', () => {
     const cfg = { ...base, alsoRequired: ['r6'], runoff: false };
     const pack = testPack(cfg);

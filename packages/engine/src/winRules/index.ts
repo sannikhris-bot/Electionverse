@@ -11,6 +11,9 @@ import type {
 
 export type RegionVotes = Record<string, Record<string, number>>;
 
+/** Aggregate of minor candidates; never treated as a runoff contender. */
+const OTHER_ID = 'other';
+
 export interface WinRuleInput {
   pack: CountryPack;
   votes: RegionVotes;
@@ -224,7 +227,16 @@ export function presidentialSpread(input: WinRuleInput, cfg: PresidentialSpreadC
   // Runoff between the top two. Votes for eliminated parties transfer in
   // proportion to the finalists' first-round shares, tilted by momentum,
   // with some abstention.
-  const [a, b] = [ranked[0]![0], ranked[1]![0]];
+  const a = ranked[0]![0];
+  let b = ranked[1]![0];
+  if (cfg.runoffPairing === 'mostUnitsWon') {
+    // The remaining candidate who leads in the most units; ties go to the higher national vote.
+    const unitsWon: Record<string, number> = {};
+    for (const r of regionResults) if (cfg.unitRegionIds.includes(r.regionId)) unitsWon[r.winnerPartyId] = (unitsWon[r.winnerPartyId] ?? 0) + 1;
+    const contenders = ranked.slice(1).map(([p]) => p).filter((p) => p !== OTHER_ID);
+    b = contenders.sort((x, y) => (unitsWon[y] ?? 0) - (unitsWon[x] ?? 0) || (national[y] ?? 0) - (national[x] ?? 0) || x.localeCompare(y))[0] ?? b;
+    notes.push(`Runoff opponent: the remaining candidate who won the most units (${unitsWon[b] ?? 0}).`);
+  }
   const rng = new Rng(input.seed ^ hashString('runoff'));
   const ma = input.momentum?.[a] ?? 0;
   const mb = input.momentum?.[b] ?? 0;

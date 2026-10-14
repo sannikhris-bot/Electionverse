@@ -20,8 +20,8 @@ import { NG_NATIONAL_2023, NG_RESULTS_2023 } from './results2023';
  * TODO-VERIFY: minor-candidate share by state uses the national figure.
  * Issue priorities are placeholders. Party platforms are empty until sourced.
  *
- * KNOWN GAP: the real runoff is between the leader and the candidate who won
- * a majority in the most states; the engine uses the top two by votes.
+ * Runoff (section 134(3)): the leader meets the remaining candidate who won the
+ * most states, ties broken by votes.
  */
 
 type Row = [id: string, name: string, x: number, y: number, zone: string, place: string];
@@ -150,6 +150,7 @@ export const ngPack: CountryPack = {
     unitRegionIds: STATES.map(([id]) => id),
     alsoRequired: [],
     runoff: true,
+    runoffPairing: 'mostUnitsWon',
   },
   regions,
   // Difficulty follows the placeholder starting map. Colours are distinct map colours, not official branding.

@@ -138,6 +138,12 @@ export interface PresidentialSpreadConfig {
   /** Region ids where minShare is also required (empty when not applied). */
   alsoRequired: string[];
   runoff: boolean;
+  /**
+   * Who meets the leader in a runoff: the runner-up by votes ('topTwo', default), or the
+   * remaining candidate who won the most units, ties broken by votes ('mostUnitsWon',
+   * as in section 134(3) of Nigeria's Constitution).
+   */
+  runoffPairing?: 'topTwo' | 'mostUnitsWon';
 }
 
 export interface Region {
