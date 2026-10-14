@@ -1,0 +1,3 @@
+state,party,received,corrected,source,reason
+Kano,APC,517341,506412,"Wikipedia, '2023 Nigerian presidential election in Kano State', statewide results table (retrieved 2026-10-14)","The APC column is 10,929 over INEC's national total as received; this alternative accounts for exactly that difference."
+Nasarawa,PDP,147083,147093,"Alternative transcription listed in the pack's own README ('Nasarawa PDP: 147,083 vs 147,093')",The PDP column is 10 under INEC's national total as received; this alternative accounts for exactly that difference.

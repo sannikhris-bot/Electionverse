@@ -3,6 +3,7 @@ import { hashString } from '@electionverse/engine';
 import { buildActivities, COMMON_EVENTS, RIVAL_ARCHETYPES } from '../common';
 import { NG_EVENTS } from './events';
 import { NG_REGISTRATION_2023 } from './registration2023';
+import { NG_NATIONAL_2023, NG_RESULTS_2023 } from './results2023';
 
 /**
  * Nigeria pack.
@@ -12,11 +13,11 @@ import { NG_REGISTRATION_2023 } from './registration2023';
  * counted as a unit as the Supreme Court held in 2023, otherwise a runoff),
  * and the campaign ending 24 hours before polling day.
  *
- * TODO-VERIFY (placeholder): starting vote shares come from a press
- * transcription of INEC's declared state results that does NOT reconcile with
- * INEC's national totals (see data/ng2023/README.md). "Other" share uses the
- * national average. Registered voters are INEC's (data/ng2023/registration). Replace with INEC Form EC8D
- * figures and INEC registered voters by state before release.
+ * Starting position: 2023 presidential votes by state for APC, PDP, LP and
+ * NNPP (published INEC-declared figures, reconciled to INEC's national totals;
+ * EC8D forms not individually verified; data/ng2023/results) and INEC
+ * registered voters by state (data/ng2023/registration).
+ * TODO-VERIFY: minor-candidate share by state uses the national figure.
  * Issue priorities are placeholders. Party platforms are empty until sourced.
  *
  * KNOWN GAP: the real runoff is between the leader and the candidate who won
@@ -66,42 +67,28 @@ const STATES: Row[] = [
 ];
 
 /**
- * TODO-VERIFY: APC, PDP, LP, NNPP votes by state as printed in a press
- * transcription of INEC's declarations (data/ng2023/raw/source_a_thenigerialawyer.txt).
- * Known not to reconcile with INEC national totals. Placeholder only.
+ * 2023 presidential votes by state for APC, PDP, LP and NNPP: published
+ * INEC-declared figures (EC8D not individually verified), reconciled exactly to
+ * INEC's national totals with two documented corrections
+ * (data/ng2023/results/output/corrections_log.csv).
  */
-const PLACEHOLDER_VOTES: Record<string, [apc: number, pdp: number, lp: number, nnpp: number]> = {
-  fc: [90902, 74194, 281717, 4517], ab: [8914, 22676, 327095, 1239], ad: [182881, 417611, 105648, 8006],
-  ak: [160620, 214012, 132683, 7796], an: [5111, 9036, 584621, 1967], ba: [316694, 426607, 27373, 72103],
-  by: [42572, 68818, 49975, 540], be: [310648, 130081, 308372, 4740], bo: [252282, 190921, 7205, 4626],
-  cr: [130520, 95425, 179917, 16644], de: [90183, 161600, 341866, 3122], eb: [42402, 13503, 259738, 1661],
-  ed: [144471, 89585, 331163, 2743], ek: [201494, 89554, 11396, 264], en: [4772, 15749, 428740, 1808],
-  go: [146977, 319123, 26160, 10520], im: [66406, 30234, 360495, 1552], ji: [421390, 386587, 1889, 98234],
-  kd: [399293, 554360, 294494, 92969], kn: [517341, 131716, 28513, 997279], kt: [482283, 489045, 6376, 69386],
-  ke: [248088, 285175, 10682, 5038], ko: [240751, 145104, 56217, 4238], kw: [263572, 136909, 31166, 3141],
-  la: [572606, 75750, 582454, 8442], na: [172922, 147083, 191361, 12715], ni: [375183, 284898, 80452, 21836],
-  og: [341554, 123831, 85829, 2200], on: [369924, 115463, 47350, 930], os: [343945, 354366, 23283, 713],
-  oy: [449884, 182977, 99110, 4095], pl: [307195, 243808, 466272, 8869], ri: [231591, 88468, 175071, 1322],
-  so: [285444, 288679, 6568, 1300], ta: [135165, 189017, 146315, 12818], yo: [151459, 198567, 2406, 18270],
-  za: [298396, 93978, 1660, 4044],
-};
+const RESULTS = new Map(NG_RESULTS_2023.map((r) => [r.id, r]));
 
-/** INEC national figures (declared 1 March 2023). */
-const NATIONAL = { valid: 24_025_940, registered: 93_469_008, top4: 8_794_726 + 6_984_520 + 6_101_533 + 1_496_687 };
-const OTHER_SHARE = 1 - NATIONAL.top4 / NATIONAL.valid; // about 2.70%, applied in every state (placeholder)
+/** Votes for the 14 other candidates, nationally; their share by state is not available. */
+const OTHER_SHARE = 1 - (NG_NATIONAL_2023.apc + NG_NATIONAL_2023.pdp + NG_NATIONAL_2023.lp + NG_NATIONAL_2023.nnpp) / NG_NATIONAL_2023.valid; // about 2.70%
 
 /** INEC registered voters by state (snapshot 5 February 2023), from data/ng2023/registration. */
 const REGISTERED = new Map(NG_REGISTRATION_2023.map((r) => [r.id, r.registered]));
 
-function placeholderBaseline(id: string) {
-  const v = PLACEHOLDER_VOTES[id];
-  if (!v) throw new Error(`No placeholder votes for ${id}`);
+function baseline2023(id: string) {
+  const v = RESULTS.get(id);
+  if (!v) throw new Error(`No 2023 results for ${id}`);
   const registered = REGISTERED.get(id);
   if (!registered) throw new Error(`No INEC registration for ${id}`);
-  const top4 = v[0] + v[1] + v[2] + v[3];
+  const top4 = v.apc + v.pdp + v.lp + v.nnpp;
+  // Four-party votes are real; the minor-candidate share uses the national figure (TODO-VERIFY by state).
   const k = (1 - OTHER_SHARE) / top4;
-  const shares = { apc: v[0] * k, pdp: v[1] * k, lp: v[2] * k, nnpp: v[3] * k, adc: 0, other: OTHER_SHARE };
-  // TODO-VERIFY: valid votes are estimated from the placeholder party votes; registration is INEC's.
+  const shares = { apc: v.apc * k, pdp: v.pdp * k, lp: v.lp * k, nnpp: v.nnpp * k, adc: 0, other: OTHER_SHARE };
   const valid = top4 / (1 - OTHER_SHARE);
   const turnout = Math.min(0.6, Math.max(0.1, valid / registered));
   return { shares, registered, turnout };
@@ -127,18 +114,18 @@ const regions: Region[] = STATES.map(([id, name, x, y, zone, place]) => ({
   y,
   // The spread rule counts states, so every unit carries one "state" of stake.
   stake: 1,
-  registeredVoters: placeholderBaseline(id).registered,
+  registeredVoters: baseline2023(id).registered,
   landmark: place,
 }));
 
 export const ngPack: CountryPack = {
   id: 'ng',
-  version: '0.1.0-placeholder',
+  version: '0.2.0',
   contentReviewedOn: null,
   placeholderData: true,
   dataNotes: [
-    'Starting support is a PLACEHOLDER from a press transcription of INEC\'s 2023 state declarations that does not add up to INEC\'s national totals. It will be replaced with INEC\'s official state forms.',
-    'Registered voters by state: INEC figures as at 5 February 2023 (they add up to INEC\'s 93,469,008; still to be checked against the original INEC PDF). Turnout by state follows from the placeholder votes; minor-party share uses the national average.',
+    'Starting support: 2023 presidential votes by state for APC, PDP, LP and NNPP, as declared by INEC. They add up exactly to INEC\'s national totals (two transcription corrections, documented); the state collation forms (EC8D) have not been individually checked. Everything that happens in play is fictional.',
+    'Registered voters by state: INEC figures as at 5 February 2023 (93,469,008 in total). The 14 minor candidates\' share uses the national figure (2.7%) in every state.',
     'Regional issue priorities are placeholders. Party platforms will be added from published sources.',
     'Win rule: most votes plus at least 25% in 24 of the 37 units (36 states and the FCT), as the Supreme Court held in 2023; otherwise a runoff.',
     'Alliance talks (days 2 to 8): ask another party to stand down and endorse you. Smaller parties are likelier to say yes.',
@@ -174,8 +161,8 @@ export const ngPack: CountryPack = {
     { id: 'adc', name: { en: 'African Democratic Congress' }, shortName: 'ADC', colour: '#8E44AD', platform: [], manifestoSource: null, resources: { funds: 700, volunteers: 800 }, difficulty: 5, playable: true },
     { id: 'other', name: { en: 'Other parties' }, shortName: 'Other', colour: '#8A94A6', platform: [], manifestoSource: null, resources: { funds: 0, volunteers: 0 }, difficulty: 5, playable: false },
   ],
-  // TODO-VERIFY: placeholder baselines (see header).
-  baselines: STATES.map(([id]) => ({ regionId: id, shares: placeholderBaseline(id).shares, turnout: placeholderBaseline(id).turnout })),
+  // 2023 starting position (see header).
+  baselines: STATES.map(([id]) => ({ regionId: id, shares: baseline2023(id).shares, turnout: baseline2023(id).turnout })),
   issues: ISSUES,
   // TODO-VERIFY: placeholder issue priorities.
   issueProfiles: STATES.map(([id, , , , zone]) => {

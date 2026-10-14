@@ -1,0 +1,14 @@
+{
+  "status": "published INEC-declared figures; EC8D not individually verified",
+  "received_files": {
+    "README_Nigeria_2023_Claude.txt": "564f3d1cea8724562e1869a91bbc40076bc1245d629b869cfdb2e20a9434fe30",
+    "nigeria_2023_presidential_4party_states.csv": "aa991cbe5cb0b5a457936faf0b496244a1efa298b329a941a9d004e26e345082",
+    "nigeria_2023_presidential_4party_states.json": "6f4b753e8a01449dae0482bdfbe4ad68d989e19103855926d9e2747d715cf581"
+  },
+  "pack_sources": [
+    "https://www.inecnigeria.org/wp-content/uploads/2024/02/2023-GENERAL-ELECTION-REPORT-1.pdf",
+    "https://github.com/nigeria2/data-ng-election-2023/blob/main/presidential-elections-results-inec-announced.csv",
+    "https://www.thisdaylive.com/2023/03/01/live-updates-final-results-of-2023-presidential-election-as-declared-by-inec-2/"
+  ],
+  "note": "Provided by the project owner on 2026-10-14. Received file kept unchanged; reconciled file applies the documented corrections in corrections_log.csv."
+}

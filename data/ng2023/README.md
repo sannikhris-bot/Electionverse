@@ -3,11 +3,12 @@
 | Data | Status | Location |
 | --- | --- | --- |
 | Registered voters and PVCs collected by state (INEC, as at 5 Feb 2023) | Imported; reconciles to INEC national totals (93,469,008 and 87,209,007); 15 of 16 states match an independent source; not yet checked against the original INEC PDF | `registration/` |
-| Presidential votes by state | **UNVERIFIED placeholder** (below) | `raw/source_a_thenigerialawyer.txt` |
+| Presidential votes by state (APC, PDP, LP, NNPP) | **In use.** Published INEC-declared figures from the results pack; reconcile exactly to INEC national totals after two documented corrections; EC8D forms not individually verified | `results/` |
+| Minor-candidate votes and total valid votes by state | Not available; the game uses the national minor-candidate share (2.70%) in every state | none |
 
-## Presidential votes by state
+The sections below record the earlier press transcription (Source A), which is **no longer used** by the game. It is kept for the record of how the discrepancies were found.
 
-**Status: UNVERIFIED. Placeholder for playtesting only. Do not publish as official data.**
+## Earlier work: Source A (superseded)
 
 The Nigeria game pack needs state-by-state 2023 presidential results (36 states + FCT). The official INEC sources could not be reached from the build environment (inecnigeria.org is blocked), so the pack currently uses a press transcription that is known to contain errors.
 
@@ -53,13 +54,13 @@ Anambra, Bauchi and Bayelsa agree on all four parties.
 
 ## What is needed to verify
 
-1. INEC Form EC8D (state collation) for each of the 37 units, or the EC8E national summary.
-2. Registered voters by state: received (see `registration/`); confirm against the original INEC PDF.
+1. INEC Form EC8D (state collation) for each of the 37 units, or the EC8E national summary, to verify the results pack cell by cell.
+2. The original INEC registration PDF, to verify `registration/`.
 
 Acceptance: every party column sums exactly to the INEC totals above; valid votes sum to 24,025,940.
 
-## How the game uses the placeholder
+## How the game uses the data now
 
-- Shares for APC, PDP, LP and NNPP come from Source A; "other" uses the national residual share (2.70%) in every state.
-- Registered voters are INEC's by state. Turnout by state = placeholder valid votes / INEC registered voters (so it varies by state, e.g. Lagos low, Kano higher).
-- All of this is replaced when INEC files are supplied.
+- Shares for APC, PDP, LP and NNPP: the reconciled results pack (`results/output/ng_2023_presidential_4party_reconciled.csv`), grossed up so the 14 minor candidates take the national 2.70% in every state.
+- Registered voters: INEC by state (`registration/`). Turnout by state = estimated valid votes / registered voters.
+- Remaining verification: EC8D forms for each state (especially Kano APC and Nasarawa PDP, the two corrected cells) and the original INEC registration PDF.

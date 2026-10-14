@@ -1,0 +1,714 @@
+{
+  "election": "Nigeria 2023 presidential",
+  "date": "2023-02-25",
+  "units": 37,
+  "party_scope": [
+    "APC",
+    "PDP",
+    "LP",
+    "NNPP"
+  ],
+  "percent_denominator": "Only votes for APC, PDP, LP and NNPP within each state; NOT total valid ballots",
+  "official_national_totals": {
+    "APC": 8794726,
+    "PDP": 6984520,
+    "LP": 6101533,
+    "NNPP": 1496687
+  },
+  "source_urls": [
+    "https://www.inecnigeria.org/wp-content/uploads/2024/02/2023-GENERAL-ELECTION-REPORT-1.pdf",
+    "https://github.com/nigeria2/data-ng-election-2023/blob/main/presidential-elections-results-inec-announced.csv",
+    "https://www.thisdaylive.com/2023/03/01/live-updates-final-results-of-2023-presidential-election-as-declared-by-inec-2/"
+  ],
+  "verification": "Secondary transcriptions; actual INEC forms EC8D/EC8D(A) not obtained/verified",
+  "rows": [
+    {
+      "state": "Abia",
+      "votes": {
+        "APC": 8914,
+        "PDP": 22676,
+        "LP": 327095,
+        "NNPP": 1239
+      },
+      "four_party_total": 359924,
+      "four_party_shares_pct": {
+        "APC": 2.4766,
+        "PDP": 6.3002,
+        "LP": 90.8789,
+        "NNPP": 0.3442
+      },
+      "leader_among_four": "LP",
+      "status": "secondary_transcription_not_EC8D_verified"
+    },
+    {
+      "state": "Adamawa",
+      "votes": {
+        "APC": 182881,
+        "PDP": 417611,
+        "LP": 105648,
+        "NNPP": 8006
+      },
+      "four_party_total": 714146,
+      "four_party_shares_pct": {
+        "APC": 25.6083,
+        "PDP": 58.477,
+        "LP": 14.7936,
+        "NNPP": 1.1211
+      },
+      "leader_among_four": "PDP",
+      "status": "secondary_transcription_not_EC8D_verified"
+    },
+    {
+      "state": "Akwa Ibom",
+      "votes": {
+        "APC": 160620,
+        "PDP": 214012,
+        "LP": 132683,
+        "NNPP": 7796
+      },
+      "four_party_total": 515111,
+      "four_party_shares_pct": {
+        "APC": 31.1816,
+        "PDP": 41.5468,
+        "LP": 25.7581,
+        "NNPP": 1.5135
+      },
+      "leader_among_four": "PDP",
+      "status": "secondary_transcription_not_EC8D_verified"
+    },
+    {
+      "state": "Anambra",
+      "votes": {
+        "APC": 5111,
+        "PDP": 9036,
+        "LP": 584621,
+        "NNPP": 1967
+      },
+      "four_party_total": 600735,
+      "four_party_shares_pct": {
+        "APC": 0.8508,
+        "PDP": 1.5042,
+        "LP": 97.3176,
+        "NNPP": 0.3274
+      },
+      "leader_among_four": "LP",
+      "status": "secondary_transcription_not_EC8D_verified"
+    },
+    {
+      "state": "Bauchi",
+      "votes": {
+        "APC": 316694,
+        "PDP": 426607,
+        "LP": 27373,
+        "NNPP": 72103
+      },
+      "four_party_total": 842777,
+      "four_party_shares_pct": {
+        "APC": 37.5774,
+        "PDP": 50.6192,
+        "LP": 3.248,
+        "NNPP": 8.5554
+      },
+      "leader_among_four": "PDP",
+      "status": "secondary_transcription_not_EC8D_verified"
+    },
+    {
+      "state": "Bayelsa",
+      "votes": {
+        "APC": 42572,
+        "PDP": 68818,
+        "LP": 49975,
+        "NNPP": 540
+      },
+      "four_party_total": 161905,
+      "four_party_shares_pct": {
+        "APC": 26.2944,
+        "PDP": 42.5052,
+        "LP": 30.8669,
+        "NNPP": 0.3335
+      },
+      "leader_among_four": "PDP",
+      "status": "secondary_transcription_not_EC8D_verified"
+    },
+    {
+      "state": "Benue",
+      "votes": {
+        "APC": 310468,
+        "PDP": 130081,
+        "LP": 308372,
+        "NNPP": 4740
+      },
+      "four_party_total": 753661,
+      "four_party_shares_pct": {
+        "APC": 41.1946,
+        "PDP": 17.2599,
+        "LP": 40.9165,
+        "NNPP": 0.6289
+      },
+      "leader_among_four": "APC",
+      "status": "secondary_transcription_not_EC8D_verified"
+    },
+    {
+      "state": "Borno",
+      "votes": {
+        "APC": 252282,
+        "PDP": 190921,
+        "LP": 7205,
+        "NNPP": 4626
+      },
+      "four_party_total": 455034,
+      "four_party_shares_pct": {
+        "APC": 55.4425,
+        "PDP": 41.9575,
+        "LP": 1.5834,
+        "NNPP": 1.0166
+      },
+      "leader_among_four": "APC",
+      "status": "secondary_transcription_not_EC8D_verified"
+    },
+    {
+      "state": "Cross River",
+      "votes": {
+        "APC": 130520,
+        "PDP": 95425,
+        "LP": 179917,
+        "NNPP": 1644
+      },
+      "four_party_total": 407506,
+      "four_party_shares_pct": {
+        "APC": 32.029,
+        "PDP": 23.4168,
+        "LP": 44.1508,
+        "NNPP": 0.4034
+      },
+      "leader_among_four": "LP",
+      "status": "secondary_transcription_not_EC8D_verified"
+    },
+    {
+      "state": "Delta",
+      "votes": {
+        "APC": 90183,
+        "PDP": 161600,
+        "LP": 341866,
+        "NNPP": 3122
+      },
+      "four_party_total": 596771,
+      "four_party_shares_pct": {
+        "APC": 15.1118,
+        "PDP": 27.0791,
+        "LP": 57.286,
+        "NNPP": 0.5231
+      },
+      "leader_among_four": "LP",
+      "status": "secondary_transcription_not_EC8D_verified"
+    },
+    {
+      "state": "Ebonyi",
+      "votes": {
+        "APC": 42402,
+        "PDP": 13503,
+        "LP": 259738,
+        "NNPP": 1661
+      },
+      "four_party_total": 317304,
+      "four_party_shares_pct": {
+        "APC": 13.3632,
+        "PDP": 4.2555,
+        "LP": 81.8578,
+        "NNPP": 0.5235
+      },
+      "leader_among_four": "LP",
+      "status": "secondary_transcription_not_EC8D_verified"
+    },
+    {
+      "state": "Edo",
+      "votes": {
+        "APC": 144471,
+        "PDP": 89585,
+        "LP": 331163,
+        "NNPP": 2743
+      },
+      "four_party_total": 567962,
+      "four_party_shares_pct": {
+        "APC": 25.4367,
+        "PDP": 15.7731,
+        "LP": 58.3072,
+        "NNPP": 0.483
+      },
+      "leader_among_four": "LP",
+      "status": "secondary_transcription_not_EC8D_verified"
+    },
+    {
+      "state": "Ekiti",
+      "votes": {
+        "APC": 201494,
+        "PDP": 89554,
+        "LP": 11397,
+        "NNPP": 264
+      },
+      "four_party_total": 302709,
+      "four_party_shares_pct": {
+        "APC": 66.5636,
+        "PDP": 29.5842,
+        "LP": 3.765,
+        "NNPP": 0.0872
+      },
+      "leader_among_four": "APC",
+      "status": "secondary_transcription_not_EC8D_verified"
+    },
+    {
+      "state": "Enugu",
+      "votes": {
+        "APC": 4772,
+        "PDP": 15749,
+        "LP": 428640,
+        "NNPP": 1808
+      },
+      "four_party_total": 450969,
+      "four_party_shares_pct": {
+        "APC": 1.0582,
+        "PDP": 3.4923,
+        "LP": 95.0487,
+        "NNPP": 0.4009
+      },
+      "leader_among_four": "LP",
+      "status": "secondary_transcription_not_EC8D_verified"
+    },
+    {
+      "state": "FCT",
+      "votes": {
+        "APC": 90902,
+        "PDP": 74194,
+        "LP": 281717,
+        "NNPP": 4517
+      },
+      "four_party_total": 451330,
+      "four_party_shares_pct": {
+        "APC": 20.1409,
+        "PDP": 16.439,
+        "LP": 62.4193,
+        "NNPP": 1.0008
+      },
+      "leader_among_four": "LP",
+      "status": "secondary_transcription_not_EC8D_verified"
+    },
+    {
+      "state": "Gombe",
+      "votes": {
+        "APC": 146977,
+        "PDP": 319123,
+        "LP": 26160,
+        "NNPP": 10520
+      },
+      "four_party_total": 502780,
+      "four_party_shares_pct": {
+        "APC": 29.2329,
+        "PDP": 63.4717,
+        "LP": 5.2031,
+        "NNPP": 2.0924
+      },
+      "leader_among_four": "PDP",
+      "status": "secondary_transcription_not_EC8D_verified"
+    },
+    {
+      "state": "Imo",
+      "votes": {
+        "APC": 66406,
+        "PDP": 30234,
+        "LP": 360495,
+        "NNPP": 1552
+      },
+      "four_party_total": 458687,
+      "four_party_shares_pct": {
+        "APC": 14.4774,
+        "PDP": 6.5914,
+        "LP": 78.5928,
+        "NNPP": 0.3384
+      },
+      "leader_among_four": "LP",
+      "status": "secondary_transcription_not_EC8D_verified"
+    },
+    {
+      "state": "Jigawa",
+      "votes": {
+        "APC": 421390,
+        "PDP": 386587,
+        "LP": 1889,
+        "NNPP": 98234
+      },
+      "four_party_total": 908100,
+      "four_party_shares_pct": {
+        "APC": 46.4035,
+        "PDP": 42.571,
+        "LP": 0.208,
+        "NNPP": 10.8175
+      },
+      "leader_among_four": "APC",
+      "status": "secondary_transcription_not_EC8D_verified"
+    },
+    {
+      "state": "Kaduna",
+      "votes": {
+        "APC": 399293,
+        "PDP": 554360,
+        "LP": 294494,
+        "NNPP": 92969
+      },
+      "four_party_total": 1341116,
+      "four_party_shares_pct": {
+        "APC": 29.7732,
+        "PDP": 41.3357,
+        "LP": 21.9589,
+        "NNPP": 6.9322
+      },
+      "leader_among_four": "PDP",
+      "status": "secondary_transcription_not_EC8D_verified"
+    },
+    {
+      "state": "Kano",
+      "votes": {
+        "APC": 517341,
+        "PDP": 131716,
+        "LP": 28513,
+        "NNPP": 997279
+      },
+      "four_party_total": 1674849,
+      "four_party_shares_pct": {
+        "APC": 30.8888,
+        "PDP": 7.8644,
+        "LP": 1.7024,
+        "NNPP": 59.5444
+      },
+      "leader_among_four": "NNPP",
+      "status": "secondary_transcription_not_EC8D_verified"
+    },
+    {
+      "state": "Katsina",
+      "votes": {
+        "APC": 482283,
+        "PDP": 489045,
+        "LP": 6376,
+        "NNPP": 69386
+      },
+      "four_party_total": 1047090,
+      "four_party_shares_pct": {
+        "APC": 46.0594,
+        "PDP": 46.7052,
+        "LP": 0.6089,
+        "NNPP": 6.6266
+      },
+      "leader_among_four": "PDP",
+      "status": "secondary_transcription_not_EC8D_verified"
+    },
+    {
+      "state": "Kebbi",
+      "votes": {
+        "APC": 248088,
+        "PDP": 285175,
+        "LP": 10682,
+        "NNPP": 5038
+      },
+      "four_party_total": 548983,
+      "four_party_shares_pct": {
+        "APC": 45.1905,
+        "PDP": 51.9461,
+        "LP": 1.9458,
+        "NNPP": 0.9177
+      },
+      "leader_among_four": "PDP",
+      "status": "secondary_transcription_not_EC8D_verified"
+    },
+    {
+      "state": "Kogi",
+      "votes": {
+        "APC": 240751,
+        "PDP": 145104,
+        "LP": 56217,
+        "NNPP": 4238
+      },
+      "four_party_total": 446310,
+      "four_party_shares_pct": {
+        "APC": 53.9426,
+        "PDP": 32.5119,
+        "LP": 12.596,
+        "NNPP": 0.9496
+      },
+      "leader_among_four": "APC",
+      "status": "secondary_transcription_not_EC8D_verified"
+    },
+    {
+      "state": "Kwara",
+      "votes": {
+        "APC": 263572,
+        "PDP": 136909,
+        "LP": 31166,
+        "NNPP": 3141
+      },
+      "four_party_total": 434788,
+      "four_party_shares_pct": {
+        "APC": 60.6208,
+        "PDP": 31.4887,
+        "LP": 7.1681,
+        "NNPP": 0.7224
+      },
+      "leader_among_four": "APC",
+      "status": "secondary_transcription_not_EC8D_verified"
+    },
+    {
+      "state": "Lagos",
+      "votes": {
+        "APC": 572606,
+        "PDP": 75750,
+        "LP": 582454,
+        "NNPP": 8442
+      },
+      "four_party_total": 1239252,
+      "four_party_shares_pct": {
+        "APC": 46.2058,
+        "PDP": 6.1126,
+        "LP": 47.0004,
+        "NNPP": 0.6812
+      },
+      "leader_among_four": "LP",
+      "status": "secondary_transcription_not_EC8D_verified"
+    },
+    {
+      "state": "Nasarawa",
+      "votes": {
+        "APC": 172922,
+        "PDP": 147083,
+        "LP": 191361,
+        "NNPP": 12715
+      },
+      "four_party_total": 524081,
+      "four_party_shares_pct": {
+        "APC": 32.9953,
+        "PDP": 28.0649,
+        "LP": 36.5136,
+        "NNPP": 2.4262
+      },
+      "leader_among_four": "LP",
+      "status": "secondary_transcription_not_EC8D_verified"
+    },
+    {
+      "state": "Niger",
+      "votes": {
+        "APC": 375183,
+        "PDP": 284898,
+        "LP": 80452,
+        "NNPP": 21836
+      },
+      "four_party_total": 762369,
+      "four_party_shares_pct": {
+        "APC": 49.2128,
+        "PDP": 37.3701,
+        "LP": 10.5529,
+        "NNPP": 2.8642
+      },
+      "leader_among_four": "APC",
+      "status": "secondary_transcription_not_EC8D_verified"
+    },
+    {
+      "state": "Ogun",
+      "votes": {
+        "APC": 341554,
+        "PDP": 123831,
+        "LP": 85829,
+        "NNPP": 2200
+      },
+      "four_party_total": 553414,
+      "four_party_shares_pct": {
+        "APC": 61.7176,
+        "PDP": 22.3758,
+        "LP": 15.509,
+        "NNPP": 0.3975
+      },
+      "leader_among_four": "APC",
+      "status": "secondary_transcription_not_EC8D_verified"
+    },
+    {
+      "state": "Ondo",
+      "votes": {
+        "APC": 369924,
+        "PDP": 115463,
+        "LP": 47350,
+        "NNPP": 930
+      },
+      "four_party_total": 533667,
+      "four_party_shares_pct": {
+        "APC": 69.3174,
+        "PDP": 21.6358,
+        "LP": 8.8726,
+        "NNPP": 0.1743
+      },
+      "leader_among_four": "APC",
+      "status": "secondary_transcription_not_EC8D_verified"
+    },
+    {
+      "state": "Osun",
+      "votes": {
+        "APC": 343945,
+        "PDP": 354366,
+        "LP": 23283,
+        "NNPP": 713
+      },
+      "four_party_total": 722307,
+      "four_party_shares_pct": {
+        "APC": 47.6176,
+        "PDP": 49.0603,
+        "LP": 3.2234,
+        "NNPP": 0.0987
+      },
+      "leader_among_four": "PDP",
+      "status": "secondary_transcription_not_EC8D_verified"
+    },
+    {
+      "state": "Oyo",
+      "votes": {
+        "APC": 449884,
+        "PDP": 182977,
+        "LP": 99110,
+        "NNPP": 4095
+      },
+      "four_party_total": 736066,
+      "four_party_shares_pct": {
+        "APC": 61.1201,
+        "PDP": 24.8588,
+        "LP": 13.4648,
+        "NNPP": 0.5563
+      },
+      "leader_among_four": "APC",
+      "status": "secondary_transcription_not_EC8D_verified"
+    },
+    {
+      "state": "Plateau",
+      "votes": {
+        "APC": 307195,
+        "PDP": 243808,
+        "LP": 466272,
+        "NNPP": 8869
+      },
+      "four_party_total": 1026144,
+      "four_party_shares_pct": {
+        "APC": 29.9368,
+        "PDP": 23.7596,
+        "LP": 45.4392,
+        "NNPP": 0.8643
+      },
+      "leader_among_four": "LP",
+      "status": "secondary_transcription_not_EC8D_verified"
+    },
+    {
+      "state": "Rivers",
+      "votes": {
+        "APC": 231591,
+        "PDP": 88468,
+        "LP": 175071,
+        "NNPP": 1322
+      },
+      "four_party_total": 496452,
+      "four_party_shares_pct": {
+        "APC": 46.6492,
+        "PDP": 17.8201,
+        "LP": 35.2644,
+        "NNPP": 0.2663
+      },
+      "leader_among_four": "APC",
+      "status": "secondary_transcription_not_EC8D_verified"
+    },
+    {
+      "state": "Sokoto",
+      "votes": {
+        "APC": 285444,
+        "PDP": 288679,
+        "LP": 6568,
+        "NNPP": 1300
+      },
+      "four_party_total": 581991,
+      "four_party_shares_pct": {
+        "APC": 49.0461,
+        "PDP": 49.602,
+        "LP": 1.1285,
+        "NNPP": 0.2234
+      },
+      "leader_among_four": "PDP",
+      "status": "secondary_transcription_not_EC8D_verified"
+    },
+    {
+      "state": "Taraba",
+      "votes": {
+        "APC": 135165,
+        "PDP": 189017,
+        "LP": 146315,
+        "NNPP": 12818
+      },
+      "four_party_total": 483315,
+      "four_party_shares_pct": {
+        "APC": 27.9662,
+        "PDP": 39.1084,
+        "LP": 30.2732,
+        "NNPP": 2.6521
+      },
+      "leader_among_four": "PDP",
+      "status": "secondary_transcription_not_EC8D_verified"
+    },
+    {
+      "state": "Yobe",
+      "votes": {
+        "APC": 151459,
+        "PDP": 198567,
+        "LP": 2406,
+        "NNPP": 18270
+      },
+      "four_party_total": 370702,
+      "four_party_shares_pct": {
+        "APC": 40.8573,
+        "PDP": 53.5651,
+        "LP": 0.649,
+        "NNPP": 4.9285
+      },
+      "leader_among_four": "PDP",
+      "status": "secondary_transcription_not_EC8D_verified"
+    },
+    {
+      "state": "Zamfara",
+      "votes": {
+        "APC": 298396,
+        "PDP": 193978,
+        "LP": 1660,
+        "NNPP": 4044
+      },
+      "four_party_total": 498078,
+      "four_party_shares_pct": {
+        "APC": 59.9095,
+        "PDP": 38.9453,
+        "LP": 0.3333,
+        "NNPP": 0.8119
+      },
+      "leader_among_four": "APC",
+      "status": "secondary_transcription_not_EC8D_verified"
+    }
+  ],
+  "aggregation_check": {
+    "APC": {
+      "state_sum": 8805655,
+      "declared_national": 8794726,
+      "difference": 10929
+    },
+    "PDP": {
+      "state_sum": 6984510,
+      "declared_national": 6984520,
+      "difference": -10
+    },
+    "LP": {
+      "state_sum": 6101533,
+      "declared_national": 6101533,
+      "difference": 0
+    },
+    "NNPP": {
+      "state_sum": 1496687,
+      "declared_national": 1496687,
+      "difference": 0
+    }
+  }
+}

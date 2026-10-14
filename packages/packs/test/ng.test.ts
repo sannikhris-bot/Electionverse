@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { allianceOptions, applyAction, debateRounds, newCampaign, nationalShares, previewDay, presidentialSpread, validatePack, type CampaignState, type CountryPack, type RegionVotes } from '@electionverse/engine';
 import { ngPack } from '../src';
+import { NG_NATIONAL_2023, NG_RESULTS_2023 } from '../src/ng/results2023';
 
 /** Reads the rival's tell the way a player would (tells are right about 75% of the time). */
 function readTell(tell: string) {
@@ -42,6 +43,24 @@ describe('Nigeria pack', () => {
     expect(byZone).toEqual({ 'North West': 7, 'North East': 6, 'North Central': 7, 'South West': 6, 'South East': 5, 'South South': 6 });
   });
 
+  it('starts from 2023 results that add up exactly to INEC national totals', () => {
+    expect(NG_RESULTS_2023).toHaveLength(37);
+    expect(new Set(NG_RESULTS_2023.map((r) => r.id))).toEqual(new Set(ngPack.regions.map((r) => r.id)));
+    const sum = (k: 'apc' | 'pdp' | 'lp' | 'nnpp') => NG_RESULTS_2023.reduce((a, r) => a + r[k], 0);
+    expect(sum('apc')).toBe(8_794_726);
+    expect(sum('pdp')).toBe(6_984_520);
+    expect(sum('lp')).toBe(6_101_533);
+    expect(sum('nnpp')).toBe(1_496_687);
+    expect(NG_NATIONAL_2023.valid).toBe(24_025_940);
+    const r = (id: string) => NG_RESULTS_2023.find((x) => x.id === id)!;
+    expect(r('kn').apc).toBe(506_412); // documented correction
+    expect(r('na').pdp).toBe(147_093); // documented correction
+    expect(r('za').pdp).toBe(193_978); // fixes the earlier placeholder's 93,978
+    // The game's starting shares are these votes over valid votes.
+    const kano = ngPack.baselines.find((b) => b.regionId === 'kn')!;
+    expect(kano.shares.nnpp! / kano.shares.apc!).toBeCloseTo(997_279 / 506_412, 6);
+  });
+
   it('uses INEC 2023 registration for every state', () => {
     expect(ngPack.regions.reduce((a, r) => a + r.registeredVoters, 0)).toBe(93_469_008);
     expect(ngPack.regions.find((r) => r.id === 'la')!.registeredVoters).toBe(7_060_195);
@@ -71,12 +90,15 @@ describe('Nigeria pack', () => {
     expect(rule.runoff).toBe(true);
   });
 
-  it('passes validation with no errors and flags its placeholder data', () => {
+  it('passes validation with no errors and states its provenance', () => {
     const issues = validatePack(ngPack);
     expect(issues.filter((i) => i.level === 'error')).toEqual([]);
     expect(issues.some((i) => i.message.includes('placeholder'))).toBe(true);
     expect(ngPack.placeholderData).toBe(true);
-    expect(ngPack.dataNotes?.[0]).toMatch(/PLACEHOLDER/);
+    // The lobby must say where the votes come from and what is still unverified or placeholder.
+    expect(ngPack.dataNotes?.[0]).toMatch(/declared by INEC/);
+    expect(ngPack.dataNotes?.[0]).toMatch(/EC8D/);
+    expect(ngPack.dataNotes?.join(' ')).toMatch(/placeholders/);
   });
 
   it('starting map matches the 2023 pattern of state wins', () => {
