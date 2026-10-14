@@ -20,7 +20,7 @@ export function newCampaign(pack: CountryPack, opts: NewCampaignOptions): Campai
   }
   const difficulty = opts.difficulty ?? 'normal';
   const rng = new Rng(opts.seed ^ hashString(pack.id));
-  const undecided = DIFFICULTY[difficulty].undecided;
+  const undecided = Math.min(0.4, DIFFICULTY[difficulty].undecided * (pack.volatility ?? 1));
 
   const regions: Record<string, RegionState> = {};
   for (const region of pack.regions) {

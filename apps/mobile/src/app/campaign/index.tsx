@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Modal, Pressable, ScrollView, Text, View, useWindowDimensions } from 'react-native';
 import { router } from 'expo-router';
 import {
+  allianceOptions,
   MAX_STOPS,
   previewDay,
   regionEstimate,
@@ -23,6 +24,19 @@ function leaderOf(shares: Record<string, number>): { leader?: string; margin: nu
   const ranked = Object.entries(shares).sort((a, b) => b[1] - a[1]);
   const [a, b] = ranked;
   return { leader: a?.[0], margin: a && b ? a[1] - b[1] : 0 };
+}
+
+/** Spread rule: units where the party's estimated vote share (undecided excluded) reaches the minimum. */
+function spreadEstimate(pack: CountryPack, state: CampaignState, partyId: string): number | null {
+  const rule = pack.winRule;
+  if (rule.type !== 'presidentialSpread') return null;
+  let n = 0;
+  for (const id of rule.unitRegionIds) {
+    const est = regionEstimate(state, id);
+    const total = Object.values(est).reduce((a, b) => a + b, 0) || 1;
+    if ((est[partyId] ?? 0) / total >= rule.minShare) n++;
+  }
+  return n;
 }
 
 function projection(pack: CountryPack, state: CampaignState) {
@@ -149,6 +163,32 @@ export default function CampaignHQ() {
         </Card>
       ) : null}
 
+      {/* Alliance talks */}
+      {state.phase === 'campaign' && allianceOptions(pack, state).length ? (
+        <Card accent>
+          <Text style={[type.label, { color: colors.gold }]}>Alliance talks · until day {pack.allianceTalks?.toDay}</Text>
+          <Text style={[type.title, { marginVertical: 4 }]}>Unite the opposition?</Text>
+          <Text style={[type.small, { marginBottom: space(1) }]}>
+            Ask one party to stand down and endorse you. If talks succeed, about {Math.round((pack.allianceTalks?.transfer ?? 0) * 100)}% of its supporters follow you and it stops campaigning. If they fail, your party's unity and momentum suffer. You only get one attempt.
+          </Text>
+          {allianceOptions(pack, state).map((o) => (
+            <Button
+              key={o.partyId}
+              kind="secondary"
+              label={`Talk to ${partyName(o.partyId)} (${(o.partnerShare * 100).toFixed(1)}%) · ${Math.round(o.chance * 100)}% chance`}
+              onPress={() => dispatch({ type: 'proposeAlliance', partnerId: o.partyId })}
+            />
+          ))}
+        </Card>
+      ) : null}
+      {state.alliance && state.alliance.day === state.day ? (
+        <Card style={{ borderColor: state.alliance.success ? colors.good : colors.bad }}>
+          <Text style={type.heading}>
+            {state.alliance.success ? `The ${partyName(state.alliance.partnerId)} has endorsed you` : `Talks with the ${partyName(state.alliance.partnerId)} collapsed`}
+          </Text>
+        </Card>
+      ) : null}
+
       {/* Polls */}
       {poll ? (
         <Card>
@@ -179,7 +219,7 @@ export default function CampaignHQ() {
       {/* Map */}
       <Card style={{ padding: space(1) }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 4, marginBottom: space(1) }}>
-          <Text style={type.label}>Internal projection</Text>
+          <Text style={type.label}>{pack.winRule.type === 'presidentialSpread' ? 'States led (internal)' : 'Internal projection'}</Text>
           <Text style={type.small}>
             {Object.entries(proj)
               .sort((a, b) => b[1] - a[1])
@@ -189,6 +229,16 @@ export default function CampaignHQ() {
           </Text>
         </View>
         <TileMap pack={pack} tiles={tiles} selected={selected} onSelect={state.phase === 'campaign' ? setSelected : undefined} width={mapWidth} />
+        {pack.winRule.type === 'presidentialSpread' ? (
+          <Text style={[type.small, { marginTop: space(1), paddingHorizontal: 4, color: colors.text }]}>
+            Your estimated {Math.round(pack.winRule.minShare * 100)}% states: {spreadEstimate(pack, state, state.playerPartyId)} of {pack.winRule.requiredUnits} needed
+            {' · '}
+            {state.rivals
+              .slice(0, 2)
+              .map((r) => `${partyName(r.partyId)} ${spreadEstimate(pack, state, r.partyId)}`)
+              .join(' · ')}
+          </Text>
+        ) : null}
         <Text style={[type.small, { marginTop: space(1), paddingHorizontal: 4 }]}>
           Bright tiles are safe leads; muted tiles are close races. You are in {pack.regions.find((r) => r.id === state.location)?.name}.
           {state.phase === 'campaign' ? ' Tap a region to plan a stop.' : ''}

@@ -1,13 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { applyAction, newCampaign, previewDay, validatePack, type CampaignState, type CountryPack } from '@electionverse/engine';
+import { applyAction, debateRounds, newCampaign, previewDay, validatePack, type CampaignState, type CountryPack } from '@electionverse/engine';
 import { PACKS, WORLD, usPack } from '../src';
+
+/** Reads the rival's tell the way a player would (tells are right about 75% of the time). */
+const readTell = (t: string) => (/smirk|personal|one-liner/.test(t) ? ('humour' as const) : /binder|figures|detail/.test(t) ? ('counter' as const) : ('pivot' as const));
 
 function play(pack: CountryPack, seed: number, partyId: string, smart: boolean): CampaignState {
   const home = smart ? 'pa' : 'ca';
   let s = newCampaign(pack, { seed, partyId, nominee: { name: 'Sam Rivera', background: 'teacher', traits: ['orator', 'organiser'], homeRegionId: home } });
   const swing = ['pa', 'mi', 'wi', 'ga', 'az', 'nv', 'nc'];
   for (let guard = 0; guard < 300 && s.phase !== 'finished'; guard++) {
-    if (s.phase === 'awaitingDebate') s = applyAction(pack, s, { type: 'debate', responses: ['message', 'message', 'message'] });
+    if (s.phase === 'awaitingDebate') s = applyAction(pack, s, { type: 'debate', responses: debateRounds(pack, s).map((r) => readTell(r.tell)) });
     else if (s.phase === 'awaitingEvent') s = applyAction(pack, s, { type: 'resolveEvent', choiceId: pack.events.find((e) => e.id === s.pending!.eventId)!.choices[0]!.id });
     else if (s.phase === 'pollingDay') s = applyAction(pack, s, { type: 'holdElection' });
     else if (s.phase === 'coalition') s = applyAction(pack, s, { type: 'coalition', choice: 'concede' });

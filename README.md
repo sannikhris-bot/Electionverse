@@ -22,7 +22,7 @@ npx expo start              # scan the QR code with Expo Go, or press w for web
 | Path | What it is |
 | --- | --- |
 | `packages/engine` | Pure TypeScript campaign engine. No UI, no country code. Seeded, deterministic, replayable. |
-| `packages/packs` | Country packs (data only) and the world list. US is playable; UK, South Africa, Canada and Nigeria are listed as in development. |
+| `packages/packs` | Country packs (data only) and the world list. US and Nigeria are playable; UK, South Africa and Canada are listed as in development. |
 | `apps/mobile` | Expo Router app (iOS, Android, web). |
 
 ## What works
@@ -46,9 +46,9 @@ npx expo start              # scan the QR code with Expo Go, or press w for web
 
 ## Tests
 
-31 tests: every win rule against hand-checked counts, determinism and exact replay, delayed events, debate scoring, full campaigns under all four rules, pack validation, and a balance check over 20 simulated US campaigns per side. A browser play-through (create nominee, 15 days, events, two debates, Election Night, passport) runs with no errors.
+38 tests: every win rule against hand-checked counts, determinism and exact replay, delayed events, debate scoring, full campaigns under all four rules, pack validation, and a balance check over 20 simulated US campaigns per side. A browser play-through (create nominee, 15 days, events, two debates, Election Night, passport) runs with no errors.
 
-Balance on the real 2024 map (scripted strong player, Normal): from the Democratic position 16 in 20, from the Republican position 19 in 20; camping in one safe state 7 in 20.
+Balance figures are in the table below.
 
 ## US data
 
@@ -68,6 +68,29 @@ python3 -I etl/export_game_baseline.py # output/ -> packages/packs/src/us/baseli
 
 All nominees, rivals, anchors, outlets and pollsters are fictional.
 
+## Nigeria pack
+
+Playable, with **placeholder starting data** (shown in the app).
+
+- **Real**: the 36 states and FCT, the six geopolitical zones, the win rule (most votes and at least 25% in 24 of 37 units, with the FCT counted as a unit as the Supreme Court held in 2023; otherwise a runoff), campaigning ending 24 hours before polling day.
+- **Placeholder (TODO-VERIFY)**: starting vote shares come from a press transcription of INEC's 2023 state declarations that does not add up to INEC's national totals; turnout and minor-party share use national averages. Details and the evidence are in `data/ng2023/README.md`. Needed to verify: INEC Form EC8D for each state (or the EC8E summary) and INEC registered voters by state.
+- **Signature mechanics**: the 25% spread tracker (Campaign HQ and Election Night), zone-by-zone results, zone spillover from big events, and **alliance talks** (days 2 to 8: ask another party to stand down and endorse you; smaller parties are likelier to agree; one attempt).
+- **Gap**: the real runoff is between the leader and the candidate who won the most states; the engine uses the top two by votes.
+- Nigeria's next presidential election is on 16 January 2027 and its campaign is under way. Keep this pack in playtesting until after that vote.
+
+## Balance (scripted player that reads debate tells, Normal, 20 runs each)
+
+| Scenario | Wins |
+| --- | --- |
+| US, Democratic, swing-state campaign | 15 |
+| US, Republican, swing-state campaign | 18 |
+| US, Democratic, camping in California | 5 |
+| Nigeria, APC (front-runner) | 19 |
+| Nigeria, PDP with alliance talks | 9 |
+| Nigeria, PDP without an alliance | 0 |
+
+Debates are contested: the rival also performs, and only the difference moves the race. Rivals have their own good and bad news days.
+
 ## Known gaps and deviations from the blueprint
 
 - Map is a tile-grid cartogram (react-native-svg and views), not Skia. It works in Expo Go and on web; Skia can come later for animation.
@@ -80,6 +103,6 @@ All nominees, rivals, anchors, outlets and pollsters are fictional.
 
 1. Add sourced party platforms and regional issue data; split Maine and Nebraska by district.
 2. UK pack (FPTP clusters, exit poll at 10 p.m., hung parliament).
-3. South Africa, Canada and Nigeria packs (the Nigeria pack ships after its 16 January 2027 election).
+3. Verify Nigeria with INEC files; then South Africa, Canada and UK packs.
 4. Illustrated street scenes, sound, Election Night animation.
 5. Supabase sync, Daily Crisis, accessibility pass, performance on midrange Android.

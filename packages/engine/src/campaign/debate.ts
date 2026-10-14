@@ -50,22 +50,37 @@ export function scoreDebate(state: CampaignState, rounds: DebateRound[], respons
     return { style: r.style, response, score: round(s, 2) };
   });
   const score = round(scored.reduce((a, b) => a + b.score, 0), 2);
-  return { rounds: scored, score, verdict: score >= 3 ? 'won' : score <= 0.5 ? 'lost' : 'draw' };
+  const rivalScore = round(rivalScoreFor(state), 2);
+  const net = round(score - rivalScore, 2);
+  return { rounds: scored, score, rivalScore, net, verdict: net >= 1 ? 'won' : net <= -1 ? 'lost' : 'draw' };
 }
+
+/** The main rival's performance on the night: seeded, so the same debate always plays out the same way. */
+const RIVAL_DEBATE_MEAN = { guided: 2.4, normal: 3.2, hard: 3.9 } as const;
+const ARCHETYPE_DEBATE_BONUS: Record<string, number> = { firebrand: 0.3, technocrat: 0.3, insider: 0, machine: -0.2 };
+export function rivalScoreFor(state: CampaignState): number {
+  const rng = new Rng(state.seed ^ hashString(`debate-rival:${state.day}`));
+  const archetype = state.rivals[0]?.archetypeId ?? '';
+  const mean = RIVAL_DEBATE_MEAN[state.difficulty] + (ARCHETYPE_DEBATE_BONUS[archetype] ?? 0);
+  return Math.max(0, Math.min(6, rng.normal(mean, 0.9)));
+}
+
+/** Effect per point of net debate score (player minus rival). Tuned so debates matter but do not outweigh the street campaign. */
+export const DEBATE_EFFECT = { nationalPerPoint: 0.003, momentumPerPoint: 1.2, rivalMomentumPerPoint: 0.6 };
 
 export function runDebate(pack: CountryPack, prev: CampaignState, responses: DebateResponse[]): CampaignState {
   if (prev.phase !== 'awaitingDebate') throw new Error('No debate is scheduled now.');
   if (responses.length !== DEBATE_ROUNDS) throw new Error(`A debate needs ${DEBATE_ROUNDS} responses.`);
   const state = clone(prev);
   const result = scoreDebate(state, debateRounds(pack, state), responses);
-  const nationalDelta = (result.score - 1.5) * 0.004;
+  const nationalDelta = result.net * DEBATE_EFFECT.nationalPerPoint;
   applyEffects(pack, state, [
-    { type: 'meter', meter: 'momentum', delta: (result.score - 1.5) * 1.6 },
+    { type: 'meter', meter: 'momentum', delta: result.net * DEBATE_EFFECT.momentumPerPoint },
     { type: 'support', scope: 'national', delta: Math.max(0, nationalDelta) },
     { type: 'recognition', scope: 'national', delta: 0.05 },
   ], state.location);
   if (nationalDelta < 0) applyEffects(pack, state, [{ type: 'rivalSupport', scope: 'national', delta: -nationalDelta * 0.6 }], state.location);
-  for (const r of state.rivals) r.momentum = clamp(r.momentum - (result.score - 1.5) * 0.8, -20, 20);
+  for (const r of state.rivals) r.momentum = clamp(r.momentum - result.net * DEBATE_EFFECT.rivalMomentumPerPoint, -20, 20);
   state.meters.credibility = clamp(state.meters.credibility + (result.verdict === 'won' ? 4 : result.verdict === 'lost' ? -4 : 0), 0, 100);
   const rival = state.rivals[0];
   const outlet = pack.mediaOutlets[0]?.id ?? 'news';

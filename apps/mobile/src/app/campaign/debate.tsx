@@ -26,6 +26,9 @@ export default function DebateScreen() {
           {report?.verdict === 'won' ? 'You won the night' : report?.verdict === 'lost' ? 'You lost the night' : 'No knockout blow'}
         </Text>
         <Card>
+          <Text style={[type.heading, { marginBottom: 6 }]}>
+            You scored {report?.score.toFixed(1)} · {rival?.nominee.name ?? 'Your rival'} scored {report?.rivalScore.toFixed(1)}
+          </Text>
           {report?.rounds.map((r, i) => (
             <Text key={i} style={[type.body, { marginVertical: 4 }]}>
               Round {i + 1}: they went with {STYLE_WORDS[r.style]}; you chose {RESPONSE_LABELS[r.response].name}.{' '}

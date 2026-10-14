@@ -10,12 +10,14 @@ import { colors, space, type } from '@/theme';
 const REVEAL_MS = 160;
 
 function revealOrder(pack: CountryPack, regionIds: string[]): string[] {
+  const reg = (id: string) => pack.regions.find((r) => r.id === id)!;
+  if (pack.electionNight.revealOrder === 'byGroup') {
+    // Zone by zone, as returns arrive at the national collation centre.
+    const groups = [...new Set(pack.regions.map((r) => r.group ?? ''))];
+    return [...regionIds].sort((a, b) => groups.indexOf(reg(a).group ?? '') - groups.indexOf(reg(b).group ?? '') || reg(a).name.localeCompare(reg(b).name));
+  }
   // Smallest regions first, the biggest prizes last: suspense builds toward the end.
-  return [...regionIds].sort((a, b) => {
-    const ra = pack.regions.find((r) => r.id === a)!;
-    const rb = pack.regions.find((r) => r.id === b)!;
-    return ra.stake - rb.stake || a.localeCompare(b);
-  });
+  return [...regionIds].sort((a, b) => reg(a).stake - reg(b).stake || a.localeCompare(b));
 }
 
 export default function ElectionNight() {
@@ -109,6 +111,47 @@ export default function ElectionNight() {
                 </View>
               </View>
             ))}
+        </Card>
+      ) : null}
+
+      {pack.winRule.type === 'presidentialSpread' ? (
+        <Card>
+          <Text style={type.label}>{pack.electionNight.targetLabel}</Text>
+          {(() => {
+            const rule = pack.winRule;
+            const seen = result.outcome.regionResults.filter((r) => shown.has(r.regionId));
+            const votes: Record<string, number> = {};
+            const reached: Record<string, number> = {};
+            for (const r of seen) {
+              for (const [p, v] of Object.entries(r.votes)) votes[p] = (votes[p] ?? 0) + v;
+              for (const p of r.reachedMinShare ?? []) if (rule.unitRegionIds.includes(r.regionId)) reached[p] = (reached[p] ?? 0) + 1;
+            }
+            const total = Object.values(votes).reduce((a, b) => a + b, 0) || 1;
+            return Object.entries(votes)
+              .filter(([p]) => p !== 'other')
+              .sort((a, b) => b[1] - a[1])
+              .slice(0, 4)
+              .map(([p, v]) => (
+                <View key={p} style={{ marginVertical: 5 }}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                    <Text style={[type.body, { fontWeight: p === me ? '800' : '500' }]}>
+                      {name(p)}
+                      {p === me ? ' (you)' : ''} · {((v / total) * 100).toFixed(1)}%
+                    </Text>
+                    <Text style={[type.small, { color: (reached[p] ?? 0) >= rule.requiredUnits ? colors.good : colors.textMuted }]}>
+                      {Math.round(rule.minShare * 100)}% in {reached[p] ?? 0} states · {rule.requiredUnits} needed
+                    </Text>
+                  </View>
+                  <View style={{ height: 10, backgroundColor: colors.surfaceRaised, borderRadius: 5, overflow: 'hidden' }}>
+                    <View style={{ width: `${Math.min(1, (reached[p] ?? 0) / rule.unitRegionIds.length) * 100}%`, height: 10, backgroundColor: colour(p) }} />
+                    <View style={{ position: 'absolute', left: `${(rule.requiredUnits / rule.unitRegionIds.length) * 100}%`, top: 0, bottom: 0, width: 2, backgroundColor: colors.gold }} />
+                  </View>
+                </View>
+              ));
+          })()}
+          <Text style={[type.small, { marginTop: 4 }]}>
+            {revealed}/{total} states collated
+          </Text>
         </Card>
       ) : null}
 

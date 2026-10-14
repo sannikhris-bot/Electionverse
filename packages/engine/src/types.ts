@@ -27,6 +27,22 @@ export interface CountryPack {
   placeholderData: boolean;
   /** Plain-language notes on what in the pack is real and what is placeholder, shown in the lobby. */
   dataNotes?: string[];
+  /**
+   * How far a campaign can move this electorate from the last result (default 1).
+   * Scales the undecided pool and every activity's effect, equally for all parties.
+   * Higher for party systems with heavy realignment between elections.
+   */
+  volatility?: number;
+  /**
+   * Share of a local activity's effect that also reaches the other regions in the
+   * same group (zone), as coverage of big events spreads (default 0).
+   */
+  zoneSpillover?: number;
+  /**
+   * Pre-election alliance talks (a party stands down and endorses the player).
+   * Absent for countries where this is not part of campaign politics.
+   */
+  allianceTalks?: { fromDay: number; toDay: number; /** Share of the partner's support that follows the endorsement. */ transfer: number };
   names: Localized<string>;
   status: 'playable' | 'preview';
   continent: string;
@@ -407,7 +423,12 @@ export interface DebateRound {
 
 export interface DebateResult {
   rounds: { style: DebateStyle; response: DebateResponse; score: number }[];
+  /** Player's total score. */
   score: number;
+  /** Rival's performance on the night (seeded, shaped by difficulty and archetype). */
+  rivalScore: number;
+  /** score - rivalScore: what actually moves the race. */
+  net: number;
   verdict: 'won' | 'draw' | 'lost';
 }
 
@@ -438,6 +459,8 @@ export interface CampaignState {
   pendingDayReport?: DayReport;
   /** Debate held at the start of today, attached to today's report. */
   pendingDebate?: DebateResult;
+  /** Alliance talks, once per campaign. */
+  alliance?: { partnerId: string; day: number; chance: number; success: boolean };
   delayed: { day: number; eventId: string }[];
   eventCooldowns: Record<string, number>;
   news: NewsItem[];

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   type WinRuleConfig,
+  allianceOptions,
   applyAction,
   debateRounds,
   nationalShares,
@@ -124,6 +125,12 @@ describe('debate', () => {
     const ideal = applyAction(pack, s, { type: 'debate', responses: rounds.map((r) => best[r.style]) });
     expect(ideal.pendingDebate?.verdict).toBe('won');
     expect(ideal.meters.momentum).toBeGreaterThan(s.meters.momentum);
+    // Debates are contested: answering badly against the same rival performance loses ground.
+    const worst = { attack: 'pivot', policy: 'humour', record: 'humour' } as const;
+    const bad = applyAction(pack, s, { type: 'debate', responses: rounds.map((r) => worst[r.style]) });
+    expect(bad.pendingDebate!.rivalScore).toBe(ideal.pendingDebate!.rivalScore);
+    expect(bad.pendingDebate?.verdict).toBe('lost');
+    expect(bad.meters.momentum).toBeLessThan(s.meters.momentum);
   });
 });
 
@@ -195,6 +202,54 @@ describe('full campaign', () => {
     }
     const nat = nationalShares(pack, state.regions);
     expect(nat.shares.a! + nat.shares.b! + nat.shares.other! + nat.undecided).toBeCloseTo(1, 6);
+  });
+});
+
+describe('alliance talks', () => {
+  const threeParty = () => {
+    const pack = testPack({ type: 'presidentialSpread', minShare: 0.25, requiredUnits: 4, unitRegionIds: ['r1', 'r2', 'r3', 'r4', 'r5', 'r6'], alsoRequired: [], runoff: true });
+    pack.parties.splice(2, 0, { id: 'c', name: { en: 'Gamma Party' }, shortName: 'Gamma', colour: '#33aa33', platform: [], manifestoSource: null, resources: { funds: 300, volunteers: 300 }, difficulty: 4, playable: true });
+    pack.baselines = pack.baselines.map((b) => ({ ...b, shares: { a: 0.3, b: 0.42, c: 0.2, other: 0.08 } }));
+    pack.allianceTalks = { fromDay: 1, toDay: 3, transfer: 0.4 };
+    return pack;
+  };
+
+  it('offers talks only in the window, never with the front-runner, once per campaign', () => {
+    const pack = threeParty();
+    const s = newCampaign(pack, opts);
+    const options = allianceOptions(pack, s);
+    expect(options.map((o) => o.partyId)).toEqual(['c']); // b leads nationally, so it is not offered
+    expect(allianceOptions({ ...pack, allianceTalks: undefined }, s)).toEqual([]);
+    const after = applyAction(pack, s, { type: 'proposeAlliance', partnerId: 'c' });
+    expect(after.alliance?.partnerId).toBe('c');
+    expect(allianceOptions(pack, after)).toEqual([]);
+    expect(() => applyAction(pack, after, { type: 'proposeAlliance', partnerId: 'c' })).toThrow();
+  });
+
+  it('a successful alliance moves support and stands the partner down; a failure costs unity', () => {
+    const pack = threeParty();
+    let success: CampaignState | undefined;
+    let failure: CampaignState | undefined;
+    for (let seed = 1; seed < 60 && (!success || !failure); seed++) {
+      const s = newCampaign(pack, { ...opts, seed });
+      const next = applyAction(pack, s, { type: 'proposeAlliance', partnerId: 'c' });
+      if (next.alliance!.success && !success) {
+        success = next;
+        expect(next.regions.r1!.shares.a!).toBeGreaterThan(s.regions.r1!.shares.a!);
+        expect(next.regions.r1!.shares.c!).toBeLessThan(s.regions.r1!.shares.c!);
+        expect(next.rivals.map((r) => r.partyId)).toEqual(['b']);
+      }
+      if (!next.alliance!.success && !failure) {
+        failure = next;
+        expect(next.meters.unity).toBeLessThan(s.meters.unity);
+        expect(next.rivals.map((r) => r.partyId)).toEqual(['b', 'c']);
+      }
+      for (const r of Object.values(next.regions)) {
+        expect(Object.values(r.shares).reduce((x, y) => x + y, 0) + r.undecided).toBeCloseTo(1, 6);
+      }
+    }
+    expect(success).toBeDefined();
+    expect(failure).toBeDefined();
   });
 });
 

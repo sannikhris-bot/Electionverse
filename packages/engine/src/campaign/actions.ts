@@ -1,4 +1,5 @@
 import type { CampaignState, CountryPack, DebateResponse, NewCampaignOptions, Stop } from '../types';
+import { proposeAlliance } from './alliance';
 import { planDay, resolveEvent } from './day';
 import { runDebate } from './debate';
 import { formCoalition, holdElection } from './election';
@@ -9,7 +10,8 @@ export type CampaignAction =
   | { type: 'resolveEvent'; choiceId: string }
   | { type: 'debate'; responses: DebateResponse[] }
   | { type: 'holdElection' }
-  | { type: 'coalition'; choice: string[] | 'minority' | 'concede' };
+  | { type: 'coalition'; choice: string[] | 'minority' | 'concede' }
+  | { type: 'proposeAlliance'; partnerId: string };
 
 /** Pure reducer: (pack, state, action) -> next state. Throws on invalid actions. */
 export function applyAction(pack: CountryPack, state: CampaignState, action: CampaignAction): CampaignState {
@@ -24,6 +26,8 @@ export function applyAction(pack: CountryPack, state: CampaignState, action: Cam
       return holdElection(pack, state);
     case 'coalition':
       return formCoalition(pack, state, action.choice);
+    case 'proposeAlliance':
+      return proposeAlliance(pack, state, action.partnerId);
   }
 }
 

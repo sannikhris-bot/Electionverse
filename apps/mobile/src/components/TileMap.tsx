@@ -43,6 +43,7 @@ function TileMapImpl({
   const gap = 3;
   const size = Math.floor((width - gap * (cols - 1)) / cols);
   const height = rows * size + (rows - 1) * gap;
+  const showStake = useMemo(() => pack.regions.some((r) => r.stake !== 1), [pack]);
   const colourOf = (id?: string) => pack.parties.find((p) => p.id === id)?.colour ?? colors.surfaceRaised;
   const nameOf = (id?: string) => pack.parties.find((p) => p.id === id)?.shortName ?? 'no leader yet';
 
@@ -53,7 +54,7 @@ function TileMapImpl({
         const strength = t.hidden ? 1 : Math.max(0, 0.72 - Math.min(1, (t.margin ?? 0) * 6) * 0.72);
         const bg = t.hidden ? colors.surface : t.leader ? fade(colourOf(t.leader), strength) : colors.surfaceRaised;
         const isSel = selected === r.id;
-        const label = `${r.name}. ${t.hidden ? 'Not yet called' : t.leader ? `${nameOf(t.leader)} ahead` : 'No leader yet'}. ${r.stake} ${pack.electionNight.unitLabel}.`;
+        const label = `${r.name}. ${t.hidden ? 'Not yet called' : t.leader ? `${nameOf(t.leader)} ahead` : 'No leader yet'}.${showStake ? ` ${r.stake} ${pack.electionNight.unitLabel}.` : ''}`;
         return (
           <Pressable
             key={r.id}
@@ -79,7 +80,7 @@ function TileMapImpl({
             <Text style={{ color: colors.text, fontWeight: '800', fontSize: Math.max(8, size * 0.3) }} numberOfLines={1}>
               {r.id.toUpperCase()}
             </Text>
-            <Text style={{ color: t.hidden ? colors.textFaint : 'rgba(238,242,250,0.75)', fontSize: Math.max(7, size * 0.22) }}>{r.stake}</Text>
+            {showStake ? <Text style={{ color: t.hidden ? colors.textFaint : 'rgba(238,242,250,0.75)', fontSize: Math.max(7, size * 0.22) }}>{r.stake}</Text> : null}
             {t.badge ? (
               <View
                 style={{

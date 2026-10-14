@@ -17,6 +17,9 @@ import { DIFFICULTY, energyMultiplier, issueMultiplier, traitMultiplier } from '
 
 export const MAX_STOPS = 3;
 
+/** Daily momentum shock for each rival (its own news cycle). */
+export const RIVAL_NEWS = { mean: 1.2, sd: 1.5 };
+
 // ---------------------------------------------------------------------------
 // Day preview (used by the planner UI before committing)
 // ---------------------------------------------------------------------------
@@ -115,7 +118,7 @@ function resolveStop(
   const act = pack.activities.find((a) => a.id === stop.activityId)!;
   const tier = act.kind === 'rest' || act.kind === 'fundraiser' ? 'normal' : rollTier(rng, act, energy, momentum);
   const region = regionById(pack, stop.regionId);
-  let mult = TIER_MULT[tier] * energyMultiplier(energy);
+  let mult = TIER_MULT[tier] * energyMultiplier(energy) * (pack.volatility ?? 1);
   if (isPlayer) {
     mult *= traitMultiplier(pack, state.nominee, act.kind, stop.regionId);
     mult *= issueMultiplier(pack, stop.regionId, stop.focusIssueId, state.nominee.traits.includes('policy'));
@@ -129,6 +132,12 @@ function resolveStop(
   if (act.base > 0) {
     if (act.reach === 'local') {
       supportDelta = applyRegionDelta(state.regions, stop.regionId, partyId, act.base * mult, act.persuasion, true);
+      const spill = pack.zoneSpillover ?? 0;
+      if (spill > 0 && region.group) {
+        for (const r of pack.regions) {
+          if (r.id !== stop.regionId && r.group === region.group) applyRegionDelta(state.regions, r.id, partyId, act.base * mult * spill, act.persuasion, false);
+        }
+      }
     } else {
       // Media reach: full effect where the interview happens, a fraction everywhere.
       supportDelta = applyRegionDelta(state.regions, stop.regionId, partyId, act.base * mult, act.persuasion, true);
@@ -326,16 +335,23 @@ function rivalTurn(pack: CountryPack, state: CampaignState, rng: Rng): DayReport
     const today = state.pendingDayReport;
     const threat = (id: string) => (today?.stops.filter((s) => s.regionId === id).reduce((a, s) => a + Math.max(0, s.supportDelta), 0) ?? 0) + Math.max(0, lastReport?.regionDeltas[id] ?? 0);
     // Score regions by value: stake x closeness x room to grow, discounted by travel and repeat visits.
+    const spread = pack.winRule.type === 'presidentialSpread' ? pack.winRule : null;
+    const meanReg = pack.regions.reduce((a, r) => a + r.registeredVoters, 0) / pack.regions.length;
     const scored = pack.regions.map((r) => {
       const rs = state.regions[r.id]!;
       const mine = rs.shares[rival.partyId] ?? 0;
       const top = Math.max(...Object.entries(rs.shares).filter(([p]) => p !== rival.partyId).map(([, v]) => v), 0);
-      const closeness = 1 - Math.min(1, Math.abs(mine - top) * 4);
+      // Under a spread rule, being near the minimum share in a unit matters as much as leading it,
+      // and big states matter for the national vote.
+      const closeness = spread
+        ? Math.max(1 - Math.min(1, Math.abs(mine - spread.minShare) * 5), 0.5 * (1 - Math.min(1, Math.abs(mine - top) * 4)))
+        : 1 - Math.min(1, Math.abs(mine - top) * 4);
+      const weight = spread ? Math.sqrt(r.registeredVoters / meanReg) : Math.sqrt(r.stake);
       const defend = mine > top ? 0.4 : 0.2;
       const travel = 1 / (1 + 0.15 * Math.hypot(r.x - regionById(pack, rival.location).x, r.y - regionById(pack, rival.location).y));
       const fresh = 1 / (1 + (rs.visits[rival.partyId] ?? 0));
       const react = 1 + 40 * threat(r.id) * skill;
-      const value = Math.sqrt(r.stake) * (archetype.aggression * closeness + (1 - archetype.aggression) * defend + 0.05) * travel * fresh * react;
+      const value = weight * (archetype.aggression * closeness + (1 - archetype.aggression) * defend + 0.05) * travel * fresh * react;
       // Lower skill = noisier judgement.
       return { r, value: value * (1 + rng.normal(0, 0.6 * (1 - skill))) };
     });
@@ -367,6 +383,8 @@ function rivalTurn(pack: CountryPack, state: CampaignState, rng: Rng): DayReport
     }
     rival.energy = clamp(rival.energy + 25, 0, 100);
     rival.funds += 40; // Small daily donations.
+    // Rivals have their own good and bad news days, standing in for the events the player faces.
+    rival.momentum = clamp(rival.momentum + rng.normal(RIVAL_NEWS.mean * skill, RIVAL_NEWS.sd), -20, 20);
   }
   return out;
 }
@@ -420,7 +438,8 @@ function makeNews(pack: CountryPack, state: CampaignState, report: DayReport, rn
   const incident = report.stops.find((s) => s.tier === 'incident');
   if (incident) {
     const r = regionById(pack, incident.regionId);
-    items.push({ day: report.day, outletId: outlet(), headline: `Trouble for ${me} in ${r.name}: ${incident.note}`, tone: 'bad' });
+    const act = pack.activities.find((a) => a.id === incident.activityId);
+    items.push({ day: report.day, outletId: outlet(), headline: `Trouble for ${me} in ${r.name} as a ${(act?.name ?? 'campaign event').toLowerCase()} goes wrong`, tone: 'bad' });
   }
   if (best && best.tier === 'great') {
     const r = regionById(pack, best.regionId);
