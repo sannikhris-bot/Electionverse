@@ -1,0 +1,10 @@
+{
+  "name": "electionverse",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": ["packages/*", "apps/*"],
+  "scripts": {
+    "test": "npm run test -w @electionverse/engine && npm run test -w @electionverse/packs",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  }
+}
