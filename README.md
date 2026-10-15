@@ -79,7 +79,7 @@ Playable. Starting position from INEC-declared 2023 results and INEC registratio
 - **Look**: Nigeria screens use the flag's green (#008751) and white, with a green-white-green band; other countries keep the navy and gold.
 - **Signature mechanics**: the 25% spread tracker (Campaign HQ and Election Night), zone-by-zone results, zone spillover from big events, and **alliance talks** (days 2 to 8: ask another party to stand down and endorse you; smaller parties are likelier to agree; one attempt).
 - **Runoff**: as in section 134(3) of the Constitution, the leader meets the remaining candidate who won the most states (ties broken by votes), not simply the runner-up by votes.
-- Nigeria's next presidential election is on 16 January 2027 and its campaign is under way. Keep this pack in playtesting until after that vote.
+- **Launch game.** Decision (15 October 2026): Nigeria is the game Politikat launches with. Launch is planned close to Nigeria's 16 January 2027 presidential vote, so the blueprint's safeguards apply: fictional nominees only, "Simulated result, not a prediction" on every result, no promotion of game results during the legal campaign blackout, and counsel review under Nigeria's electoral law before launch.
 
 ## United Kingdom pack
 
@@ -114,10 +114,12 @@ Debates are contested: the rival also performs, and only the difference moves th
 - Colour-blind patterns on the map are not done; tile labels and screen-reader text carry the leader so colour is not the only signal.
 - `npx expo install` could not reach Expo's servers from the build machine, so dependency versions were pinned from Expo SDK 57's bundled module list. Run `npx expo install --check` once on your machine.
 
-## Next steps (blueprint build order)
+## Next steps
 
-1. Add sourced party platforms and regional issue data; split Maine and Nebraska by district.
-2. Import the House of Commons Library 2024 constituency results into the UK pack (replacing the placeholder).
-3. Verify Nigeria with INEC files; then South Africa and Canada packs.
-4. Illustrated street scenes, sound, Election Night animation.
-5. Supabase sync, Daily Crisis, accessibility pass, performance on midrange Android.
+The product is now **Politikat**, a politics-only social app (polls on seven topics, video polls, live debate responses) with ElectionVerse as its game. The full plan is the [Politikat blueprint](https://claude.ai/code/artifact/07b2a6e3-422b-413f-a3c8-fda76c5abdb6) (Claude Docs).
+
+1. Build the social app on this codebase: phone-verified accounts, the seven topic channels, Today's Five and the poll formats (Supabase backend).
+2. Video polls, replies, duels and debate responses, with moderation and screening.
+3. ElectionVerse's Nigeria campaign as the Play tab (`LAUNCH_GAME` in `packages/packs`), weekly challenge seeded by topic polls.
+4. Closed beta with founding members, then public launch (about 13 weeks from the start of the build).
+5. After launch: live debate rooms, US/UK/Canada games, verify Nigeria with INEC EC8D forms, import the UK 2024 results.

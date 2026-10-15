@@ -7,6 +7,9 @@ export { WORLD } from './world';
 export type { WorldCountry } from './world';
 export { ngPack, ukPack, usPack };
 
+/** The game Politikat launches with (decision of 15 October 2026). */
+export const LAUNCH_GAME = 'ng';
+
 /** Playable packs by country id. */
 export const PACKS: Record<string, CountryPack> = {
   us: usPack,
