@@ -53,8 +53,7 @@ body[data-phase="red"]{--phase:var(--red)}
 .door{font-size:11px;font-weight:600;color:var(--muted);border:1px solid var(--line);background:rgba(10,13,20,.6);padding:4px 7px;border-radius:4px;max-width:30%}
 .ground{position:absolute;left:0;right:0;bottom:0;border-top:3px solid var(--brass);background:linear-gradient(to bottom,var(--brass-soft),transparent 70%)}
 .ground .floor-label{color:var(--brass)}
-.crowd{position:absolute;left:10px;right:10px;bottom:10px;display:flex;flex-wrap:wrap;gap:4px;justify-content:center}
-.crowd span{font-size:10px;color:var(--ink);background:var(--hall-2);border:1px solid var(--line);border-radius:999px;padding:3px 7px}
+.crowd{position:absolute;left:8px;right:8px;bottom:8px;display:flex;flex-wrap:wrap;gap:2px 2px;justify-content:center;align-items:flex-end}
 .ladder{position:absolute;left:50%;width:84px;margin-left:-42px;bottom:0;top:0;transform-origin:50% 100%;animation:sway var(--sway-dur,6s) ease-in-out infinite alternate}
 @keyframes sway{from{transform:rotate(calc(var(--sway,.15deg) * -1))}to{transform:rotate(var(--sway,.15deg))}}
 body[data-phase="amber"] .ladder{--sway:.35deg;--sway-dur:4.5s}
@@ -140,6 +139,50 @@ input,select{width:100%;min-width:0;padding:10px;border-radius:8px;border:1px so
 .statgrid b{display:block;font-family:var(--mono);font-size:20px}
 .statgrid span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
 
+/* Characters */
+.ch{overflow:visible;display:block}
+.ch.crop{overflow:hidden}
+.ch *{transform-box:view-box}
+.ch .body{transform-origin:50px 70px;animation:chBob 3.2s ease-in-out infinite;animation-delay:var(--d,0s)}
+.ch .eyes{animation:chBlink 4.6s infinite;animation-delay:var(--d,0s)}
+.ch .head{animation:chTilt 7s ease-in-out infinite;animation-delay:var(--d,0s)}
+.ch.talking .mouth{animation:chTalk .15s ease-in-out infinite alternate}
+.ch.wave .armR{animation:chWave 1.5s ease-in-out infinite;animation-delay:var(--d,0s)}
+.ch.gesture .armR{animation:chGesture 6s ease-in-out infinite;animation-delay:var(--d,0s)}
+.ch.cheer .armL{transform:rotate(140deg)}.ch.cheer .armR{transform:rotate(-140deg)}.ch.cheer .body{animation:chHop .45s ease-in-out infinite}
+.ch.sad .head{animation:none;transform:translateY(3px) rotate(-6deg)}.ch.sad .armL{transform:rotate(-22deg)}.ch.sad .armR{transform:rotate(22deg)}.ch.sad .body{animation:none}
+.ch.climbing .armL{animation:chClimbL .24s ease-in-out infinite alternate}.ch.climbing .armR{animation:chClimbR .24s ease-in-out infinite alternate}
+.ch.falling .body{animation:chFlail .16s linear infinite alternate}.ch.falling .armL{transform:rotate(-40deg)}.ch.falling .armR{transform:rotate(40deg)}
+@keyframes chBob{0%,100%{transform:translateY(0)}50%{transform:translateY(1.6px)}}
+@keyframes chBlink{0%,93%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+@keyframes chTilt{0%,100%{transform:rotate(0)}30%{transform:rotate(-5deg)}62%{transform:rotate(4deg)}}
+@keyframes chTalk{from{transform:scaleY(.5)}to{transform:scaleY(2.4)}}
+@keyframes chWave{0%,100%{transform:rotate(-125deg)}50%{transform:rotate(-160deg)}}
+@keyframes chGesture{0%,55%,100%{transform:rotate(0)}66%,84%{transform:rotate(-75deg)}}
+@keyframes chHop{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes chClimbL{from{transform:rotate(-16deg)}to{transform:rotate(16deg)}}
+@keyframes chClimbR{from{transform:rotate(16deg)}to{transform:rotate(-16deg)}}
+@keyframes chFlail{from{transform:rotate(-14deg)}to{transform:rotate(14deg)}}
+.hud-face{width:42px;height:42px;border-radius:50%;background:var(--hall-2);border:2px solid var(--pc,var(--brass));overflow:hidden;flex-shrink:0}
+.hud-face .ch{width:100%;height:100%}
+.climber{width:40px;height:66px;margin-left:-20px;margin-bottom:-16px;border:0;background:none;box-shadow:none;border-radius:0;display:block}
+.climber .ch{width:40px;height:56px;filter:drop-shadow(0 3px 4px rgba(0,0,0,.6))}
+.climber .pill{display:block;margin:-2px auto 0;width:max-content;font-size:9px;font-weight:700;color:#fff;background:var(--pc);border-radius:999px;padding:1px 5px;border:1px solid rgba(255,255,255,.7)}
+.token.climber.active{box-shadow:none}
+.token.climber.active .pill{outline:2px solid var(--brass);outline-offset:1px}
+.speaker{display:flex;gap:12px;align-items:flex-end}
+.spk{width:72px;height:86px;flex-shrink:0;border-radius:12px;background:radial-gradient(circle at 50% 30%,color-mix(in srgb,var(--phase) 28%,transparent),transparent 70%),var(--hall-2);border:1px solid var(--line);overflow:hidden}
+.spk .ch{width:72px;height:86px}
+.speaker h2{margin-bottom:0}
+.crowd-ch{display:block;width:40px}
+.crowd-ch .ch{width:40px;height:56px}
+.door{display:flex;align-items:center;gap:5px}
+.door .ch{width:24px;height:29px;flex-shrink:0;border-radius:4px;background:var(--hall-2)}
+.looks{display:flex;gap:5px}
+.look{display:grid;justify-items:center;gap:2px;padding:4px 2px 5px;border-radius:9px;border:1px solid var(--line);background:var(--hall-2);font-size:10px;line-height:1.15;color:var(--muted);flex:1 1 0;min-width:0}
+.look .ch{width:40px;height:48px}
+.look[aria-pressed="true"]{border-color:var(--brass);background:var(--brass-soft);color:var(--ink)}
+@media (prefers-reduced-motion:reduce){.ch *{animation:none!important}}
 @media (max-width:420px){.stats{grid-template-columns:auto 1fr auto;gap:10px}.stat.allies-stat{display:none}.card h2{font-size:24px}}
 @media (prefers-reduced-motion:reduce){.ladder,.rung.next,body[data-phase="red"] .vignette{animation:none}.tower,.token{transition:none}}
 </style>
@@ -147,7 +190,7 @@ input,select{width:100%;min-width:0;padding:10px;border-radius:8px;border:1px so
 <div class="app">
   <header class="hud" id="hud">
     <div class="hud-row">
-      <div class="who"><span class="token" id="hudTok" style="position:static;margin:0;transition:none"></span><div style="min-width:0"><div class="who-name" id="hudName">Ready to climb</div><div class="who-party" id="hudParty">Nigeria edition</div></div></div>
+      <div class="who"><span class="hud-face" id="hudTok"></span><div style="min-width:0"><div class="who-name" id="hudName">Ready to climb</div><div class="who-party" id="hudParty">Nigeria edition</div></div></div>
       <div class="hud-right"><span class="phase-pill" id="hudPhase">Ground floor</span><button class="icon-btn" id="muteBtn" aria-pressed="true" aria-label="Sound">&#9835;</button></div>
     </div>
     <div class="stats">
@@ -432,7 +475,7 @@ red:[
 // ---------- State ----------
 const $ = id => document.getElementById(id);
 let mode = 'solo';
-let setupRows = [{name:'',party:'lp'}];
+let setupRows = [{name:'',party:'lp',look:'agbada'}];
 let game = null;
 let soundOn = true;
 
@@ -488,10 +531,207 @@ const A = {
 };
 const buzz = ms => { try { navigator.vibrate && navigator.vibrate(ms); } catch(e){} };
 
+// ---------- Characters: code-drawn, animated, all fictional ----------
+// One rig (viewBox 0 0 100 140, facing the viewer) dressed per role. Arms, head, eyes and mouth are separate
+// groups so CSS can animate them: idle bob, blinks, head turns, talking, waving, climbing, cheering, slumping.
+const SKINS = ['#4A2E21','#5B3A29','#6E4530','#7C5036','#8A5A3C','#9C6644'];
+const HAIRS = ['#16110E','#22170F','#2B2724','#55504C'];
+const ROLES = {
+  traders:{top:'iro',c1:'#F2C14E',c2:'#B23A48',head:'headtie',hc:'#B23A48',acc:['basket'],sex:'f'},
+  farmers:{top:'tee',c1:'#7A8B3A',pants:'#5A4632',head:'straw',acc:['hoe'],sex:'m'},
+  students:{top:'tee',c1:'#2E7DD7',pants:'#2B3A55',acc:['backpack','glasses'],sex:'any'},
+  riders:{top:'hivis',c1:'#F28C28',pants:'#2B2B2B',head:'helmet',hc:'#C62828',sex:'m'},
+  faith:{top:'robe',c1:'#F1EADB',head:'kufi',hc:'#FFFFFF',acc:['beads'],sex:'m',beard:1},
+  rulers:{top:'agbada',c1:'#6A1B9A',c2:'#E0B84A',head:'crown',hc:'#E0B84A',acc:['beads','staff'],sex:'m',beard:1},
+  teachers:{top:'shirt',c1:'#8FB3D9',pants:'#3B3B4F',acc:['glasses','book'],sex:'any'},
+  women:{top:'iro',c1:'#FFFFFF',c2:'#00897B',head:'gele',hc:'#00897B',sex:'f'},
+  creators:{top:'tee',c1:'#151515',pants:'#3A5A8C',head:'capback',hc:'#E53935',acc:['phone'],sex:'any'},
+  delegates:{top:'kaftan',c1:'#2E5E8C',head:'fila',hc:'#2E5E8C',acc:['flag'],sex:'m'},
+  artisans:{top:'overalls',c1:'#E8E0D0',c2:'#3D5A80',head:'goggles',sex:'m'},
+  tenants:{top:'shirt',c1:'#C2185B',pants:'#2B3A55',acc:['keys'],sex:'any'},
+  herders:{top:'kaftan',c1:'#D8CDB8',head:'turban',hc:'#6D4C41',acc:['staff'],sex:'m'},
+  agents:{top:'vest',c1:'#FFFFFF',vest:'#1F6B45',label:'AGENT',pants:'#2B3A55',acc:['clipboard'],sex:'any'},
+  weather:{top:'coat',c1:'#2F4858',pants:'#2B2B2B',acc:['umbrella'],sex:'any'},
+  press:{top:'vest',c1:'#DDDDDD',vest:'#1565C0',label:'PRESS',pants:'#2B2B2B',acc:['mic'],sex:'any'},
+  unions:{top:'tee',c1:'#C62828',pants:'#2B2B2B',head:'hardhat',hc:'#F2C14E',acc:['megaphone'],sex:'m'},
+  doctors:{top:'labcoat',c1:'#5C7FA3',pants:'#2B3A55',acc:['stetho'],sex:'any'},
+  nurses:{top:'scrubs',c1:'#4FA3C7',head:'nursecap',sex:'f'},
+  lobby:{top:'suit',c1:'#2A2A2E',tie:'#B8860B',acc:['shades','briefcase'],sex:'m'},
+  diaspora:{top:'coat',c1:'#8C6D46',pants:'#2B2B2B',head:'beanie',hc:'#2E7D32',acc:['suitcase'],sex:'any'},
+  police:{top:'uniform',c1:'#1E2A3A',head:'policecap',sex:'any'},
+  business:{top:'suit',c1:'#3B4A63',tie:'#8E1B24',acc:['tablet'],sex:'any'},
+  rivals:{top:'agbada',c1:'#E8E0CC',c2:'#C9A24A',head:'fila',hc:'#5A3D2B',acc:['beads'],sex:'m'},
+  civil:{top:'tee',c1:'#F2A93B',pants:'#2B3A55',acc:['placard'],sex:'any'},
+  health:{top:'scrubs',c1:'#2E8B57',head:'mask',sex:'any'},
+  importers:{top:'hivis',c1:'#FFB300',pants:'#2B3A55',head:'hardhat',hc:'#FFFFFF',acc:['clipboard'],sex:'m'},
+  debate:{top:'suit',c1:'#1C2333',tie:'#C9A24A',acc:['cards'],sex:'any'},
+  military:{top:'camo',c1:'#4B5320',head:'beret',hc:'#7A1F2B',sex:'m'},
+  electoral:{top:'vest',c1:'#F4F1EA',vest:'#6A1B9A',label:'INEC',pants:'#2B3A55',acc:['ballot'],sex:'any'},
+  judiciary:{top:'robe',c1:'#141414',head:'wig',acc:['gavel'],sex:'any'},
+  security:{top:'suit',c1:'#151515',tie:'#151515',acc:['shades','earpiece'],sex:'m'},
+  observers:{top:'vest',c1:'#E8E8E8',vest:'#0277BD',label:'OBSERVER',pants:'#2B3A55',acc:['lanyard','clipboard'],sex:'any'},
+  godfathers:{top:'agbada',c1:'#F1EADB',c2:'#B8860B',head:'fila',hc:'#7A1F2B',acc:['beads','cane','shades'],sex:'m'},
+  world:{top:'suit',c1:'#2B3A55',tie:'#455A64',acc:['pin'],sex:'any'},
+  voters:{top:'tee',c1:'#43A047',pants:'#2B3A55',acc:['votercard'],sex:'any'}
+};
+// Candidate looks (setup picker). Party colour drives the outfit.
+const LOOKS = {
+  agbada: c => ({top:'agbada',c1:c,c2:'#F3DC8E',head:'fila',hc:c,sex:'m',sash:c}),
+  suit:   c => ({top:'suit',c1:'#1C2333',tie:c,sex:'m',sash:c}),
+  kaftan: c => ({top:'kaftan',c1:c,head:'fila',hc:'#1C1C1C',sex:'m'}),
+  iro:    c => ({top:'iro',c1:'#FFFFFF',c2:c,head:'gele',hc:c,sex:'f',sash:c}),
+  skirtsuit: c => ({top:'suit',c1:c,tie:'#FFFFFF',sex:'f',skirt:1})
+};
+const LOOK_NAMES = {agbada:'Agbada',suit:'Suit',kaftan:'Kaftan',iro:'Iro and gele',skirtsuit:'Skirt suit'};
+const PRESIDENT_LOOKS = ['agbada','suit','kaftan','iro','agbada','suit','skirtsuit','kaftan'];
+const PRES_COLS = ['#F1EADB','#2E5E8C','#1F6B45','#7A2E3A','#C9B27C','#3D3A6B','#E8E0CC','#5A3D2B'];
+
+function seeded(seed){ let h = hashN(String(seed)) || 1; return () => { h ^= h << 13; h >>>= 0; h ^= h >>> 17; h ^= h << 5; h >>>= 0; return h / 4294967296; }; }
+function specFor(kind, seed){
+  const r = seeded(seed);
+  let spec;
+  if (ROLES[kind]) spec = {...ROLES[kind]};
+  else if (kind === 'president') { const look = PRESIDENT_LOOKS[Math.floor(r() * PRESIDENT_LOOKS.length)]; spec = LOOKS[look](PRES_COLS[Math.floor(r() * PRES_COLS.length)]); delete spec.sash; spec.beard = r() < .35; }
+  else spec = LOOKS[kind] ? LOOKS[kind]('#2E9E4F') : {...ROLES.voters};
+  spec.skin = SKINS[Math.floor(r() * SKINS.length)];
+  spec.hair = HAIRS[Math.floor(r() * HAIRS.length)];
+  if (spec.sex === 'any') spec.sex = r() < .5 ? 'f' : 'm';
+  spec.grey = spec.beard && r() < .6;
+  return spec;
+}
+
+const LONG = {agbada:1, iro:1, robe:1, kaftan:1, labcoat:1, coat:1};
+function charParts(s, pose){
+  const out = [], push = x => out.push(x);
+  const shade = 'rgba(0,0,0,.22)', skin = s.skin;
+  const sleeve = {agbada:s.c1, iro:s.c1, robe:s.c1, kaftan:s.c1, labcoat:'#F7F7F2', coat:s.c1, suit:s.c1, uniform:s.c1, camo:s.c1, scrubs:s.c1, overalls:s.c1, vest:s.c1, hivis:s.c1 === '#F28C28' || s.c1 === '#FFB300' ? '#2B3A55' : s.c1, shirt:s.c1, tee:s.c1}[s.top] || s.c1;
+  const pants = s.pants || (s.top === 'suit' || s.top === 'uniform' ? s.c1 : s.top === 'camo' ? '#3E4520' : s.top === 'scrubs' ? s.c1 : '#2B2B2B');
+  const acc = new Set(s.acc || []);
+  // behind the body
+  if (acc.has('backpack')) push(`<rect x="31" y="54" width="38" height="34" rx="8" fill="#1E3A5F"/>`);
+  if (acc.has('staff')) push(`<line x1="78" y1="22" x2="74" y2="132" stroke="#6D4C41" stroke-width="3.5" stroke-linecap="round"/>${s.top === 'agbada' ? '<path d="M78 22 q6 -10 0 -16 q-6 6 0 16" fill="#F1EADB"/>' : ''}`);
+  if (acc.has('umbrella')) push(`<line x1="70" y1="10" x2="70" y2="88" stroke="#333" stroke-width="2"/><path d="M38 14 Q70 -14 102 14 Q94 8 86 14 Q78 8 70 14 Q62 8 54 14 Q46 8 38 14Z" fill="#1565C0"/>`);
+  if (acc.has('flag')) push(`<line x1="74" y1="20" x2="70" y2="92" stroke="#8D6E63" stroke-width="2"/><path d="M74 20 l20 4 -20 6Z" fill="${s.c1}"/>`);
+  if (acc.has('suitcase')) push(`<rect x="76" y="96" width="18" height="26" rx="3" fill="#455A64"/><line x1="85" y1="96" x2="85" y2="86" stroke="#333" stroke-width="2"/><circle cx="79" cy="124" r="2" fill="#222"/><circle cx="91" cy="124" r="2" fill="#222"/>`);
+  if (acc.has('placard')) push(`<line x1="72" y1="20" x2="70" y2="88" stroke="#8D6E63" stroke-width="2.5"/><rect x="58" y="2" width="30" height="20" rx="2" fill="#FFF8E1" stroke="#E65100" stroke-width="1.5"/><path d="M63 9 h20 M63 14 h14" stroke="#E65100" stroke-width="2"/>`);
+  // legs and shoes
+  if (pose !== 'seat') {
+    if (!LONG[s.top] && !s.skirt) push(`<rect x="38" y="90" width="11" height="38" rx="4" fill="${pants}"/><rect x="51" y="90" width="11" height="38" rx="4" fill="${pants}"/>`);
+    if (s.skirt) push(`<path d="M34 90 L66 90 L68 116 L32 116Z" fill="${s.c1}"/><rect x="40" y="114" width="7" height="14" fill="${skin}"/><rect x="53" y="114" width="7" height="14" fill="${skin}"/>`);
+    push(`<ellipse cx="43" cy="130" rx="8" ry="4" fill="#1B1B1B"/><ellipse cx="57" cy="130" rx="8" ry="4" fill="#1B1B1B"/>`);
+  }
+  // long garments
+  if (s.top === 'agbada') push(`<path d="M16 56 Q50 44 84 56 L90 ${pose === 'seat' ? 100 : 127} L10 ${pose === 'seat' ? 100 : 127}Z" fill="${s.c1}"/><path d="M16 56 L10 127 M84 56 L90 127" stroke="${shade}" stroke-width="2"/><path d="M40 50 Q50 72 60 50" fill="none" stroke="${s.c2 || '#C9A24A'}" stroke-width="2.5"/><path d="M44 60 Q50 76 56 60" fill="none" stroke="${s.c2 || '#C9A24A'}" stroke-width="1.5"/>`);
+  if (s.top === 'iro') push(`<path d="M30 86 L70 86 L74 127 L26 127Z" fill="${s.c2}"/><path d="M28 98 H72 M27 110 H73 M26 121 H74" stroke="rgba(255,255,255,.35)" stroke-width="2"/>`);
+  if (s.top === 'robe') push(`<path d="M28 52 Q50 46 72 52 L80 127 L20 127Z" fill="${s.c1}"/><path d="M50 54 V127" stroke="${shade}" stroke-width="1.5"/>`);
+  if (s.top === 'kaftan') push(`<rect x="38" y="110" width="11" height="18" rx="3" fill="${s.c1}"/><rect x="51" y="110" width="11" height="18" rx="3" fill="${s.c1}"/><path d="M29 52 Q50 46 71 52 L74 114 L26 114Z" fill="${s.c1}"/><path d="M45 48 L50 64 L55 48" fill="none" stroke="#E8D9A8" stroke-width="2"/>`);
+  if (s.top === 'labcoat' || s.top === 'coat') {
+    push(`<rect x="38" y="104" width="11" height="24" rx="4" fill="${pants}"/><rect x="51" y="104" width="11" height="24" rx="4" fill="${pants}"/>`);
+    push(`<path d="M29 52 Q50 46 71 52 L74 110 L26 110Z" fill="${s.top === 'labcoat' ? '#F7F7F2' : s.c1}"/>`);
+    push(`<path d="M44 52 L50 74 L56 52Z" fill="${s.top === 'labcoat' ? s.c1 : '#E8E0D0'}"/><path d="M50 74 V110" stroke="${shade}" stroke-width="1.5"/>`);
+  }
+  // torso
+  const torso = c => `<path d="M30 52 Q50 46 70 52 L72 94 Q50 98 28 94Z" fill="${c}"/>`;
+  if (['suit','uniform','camo','scrubs','overalls','vest','hivis','shirt','tee'].includes(s.top)) push(torso(s.top === 'vest' ? s.c1 : s.top === 'overalls' ? '#E8E0D0' : s.top === 'hivis' ? '#2B3A55' : s.c1));
+  if (s.top === 'iro') push(torso(s.c1) + `<path d="M34 60 Q50 66 66 60" stroke="${s.c2}" stroke-width="2" fill="none"/>`);
+  if (s.top === 'suit') push(`<path d="M43 50 L50 72 L57 50Z" fill="#F4F1EA"/><path d="M48.4 56 L51.6 56 L51.2 74 L48.8 74Z" fill="${s.tie}"/><path d="M43 50 L48 76 L30 92 M57 50 L52 76 L70 92" stroke="${shade}" stroke-width="1.5" fill="none"/>`);
+  if (s.top === 'uniform') push(`<path d="M44 50 L50 60 L56 50" fill="#2E4057"/><rect x="28" y="86" width="44" height="5" fill="#111"/><rect x="47" y="85" width="6" height="7" fill="#C9A24A"/><circle cx="60" cy="62" r="3" fill="#C9A24A"/>`);
+  if (s.top === 'camo') push(`<circle cx="38" cy="62" r="5" fill="#3E4520"/><circle cx="58" cy="70" r="6" fill="#6B6B3A"/><circle cx="45" cy="84" r="5" fill="#2F3418"/><circle cx="64" cy="58" r="3" fill="#2F3418"/>`);
+  if (s.top === 'scrubs') push(`<path d="M44 50 L50 60 L56 50" fill="${skin}"/><rect x="56" y="64" width="9" height="7" rx="1" fill="rgba(255,255,255,.25)"/>`);
+  if (s.top === 'overalls') push(`<path d="M36 66 H64 V94 Q50 98 36 94Z" fill="${s.c2}"/><path d="M38 66 L36 52 M62 66 L64 52" stroke="${s.c2}" stroke-width="4"/>`);
+  if (s.top === 'vest') push(`<path d="M30 54 L42 52 L46 94 L28 94Z M70 54 L58 52 L54 94 L72 94Z" fill="${s.vest}"/><rect x="35" y="62" width="30" height="9" rx="1.5" fill="#FFFFFF"/><text x="50" y="69" text-anchor="middle" font-family="Arial, sans-serif" font-weight="700" font-size="${s.label.length > 6 ? 5.2 : 6.6}" fill="${s.vest}">${s.label}</text>`);
+  if (s.top === 'hivis') push(`<path d="M30 54 L44 52 L46 94 L28 94Z M70 54 L56 52 L54 94 L72 94Z" fill="${s.c1}"/><path d="M28 74 H72 M28 82 H72" stroke="#ECEFF1" stroke-width="3"/>`);
+  if (s.top === 'shirt') push(`<path d="M44 50 L50 58 L56 50" fill="#F4F1EA"/><path d="M50 58 V94" stroke="${shade}"/>`);
+  if (s.top === 'tee') push(`<path d="M43 51 Q50 56 57 51" fill="none" stroke="${shade}" stroke-width="2"/>`);
+  // overlays
+  if (s.sash) push(`<path d="M34 54 L66 92" stroke="${s.sash}" stroke-width="6" stroke-linecap="round" opacity=".95"/><path d="M34 54 L66 92" stroke="rgba(255,255,255,.35)" stroke-width="1.2"/>`);
+  if (acc.has('beads')) push(`<path d="M40 50 Q50 64 60 50" fill="none" stroke="#E2572B" stroke-width="3.5" stroke-dasharray="3 1.5"/>`);
+  if (acc.has('stetho')) push(`<path d="M42 50 Q38 68 48 72 M58 50 Q62 66 54 70" fill="none" stroke="#263238" stroke-width="2"/><circle cx="51" cy="74" r="3" fill="#90A4AE" stroke="#263238"/>`);
+  if (acc.has('lanyard')) push(`<path d="M44 50 L50 70 L56 50" fill="none" stroke="#C62828" stroke-width="1.5"/><rect x="46" y="70" width="8" height="10" rx="1" fill="#fff" stroke="#999"/>`);
+  if (acc.has('pin')) push(`<rect x="36" y="58" width="6" height="4" fill="#008751"/><rect x="38" y="58" width="2" height="4" fill="#fff"/>`);
+  if (acc.has('backpack')) push(`<path d="M36 52 L38 86 M64 52 L62 86" stroke="#1E3A5F" stroke-width="4"/>`);
+  // arms (each in two groups: the pose rotation, then an animatable inner group)
+  const hold = side => {
+    const x = side === 'L' ? 33 : 67;
+    const items = [];
+    if (side === 'R' && acc.has('mic')) items.push(`<rect x="${x - 2}" y="86" width="4" height="14" rx="1" fill="#222"/><circle cx="${x}" cy="84" r="4" fill="#555"/>`);
+    if (side === 'R' && acc.has('hoe')) items.push(`<line x1="${x}" y1="60" x2="${x + 2}" y2="128" stroke="#8D6E63" stroke-width="3"/><path d="M${x - 1} 58 l12 -2 l-1 8Z" fill="#9E9E9E"/>`);
+    if (side === 'L' && acc.has('book')) items.push(`<rect x="${x - 8}" y="86" width="14" height="18" rx="1" fill="#8E1B24"/><rect x="${x - 6}" y="88" width="10" height="14" fill="#F4F1EA" opacity=".25"/>`);
+    if (side === 'L' && acc.has('clipboard')) items.push(`<rect x="${x - 9}" y="84" width="14" height="19" rx="1.5" fill="#8D6E63"/><rect x="${x - 7}" y="88" width="10" height="13" fill="#FAFAFA"/>`);
+    if (side === 'R' && acc.has('megaphone')) items.push(`<path d="M${x - 2} 84 l14 -6 v16 l-14 -6Z" fill="#E53935"/>`);
+    if (side === 'R' && acc.has('briefcase')) items.push(`<rect x="${x - 8}" y="94" width="18" height="13" rx="2" fill="#4E342E"/><path d="M${x - 2} 94 v-3 h6 v3" stroke="#4E342E" stroke-width="1.5" fill="none"/>`);
+    if (side === 'R' && acc.has('phone')) items.push(`<rect x="${x - 3}" y="80" width="7" height="12" rx="1.5" fill="#111" stroke="#666"/>`);
+    if (side === 'L' && acc.has('tablet')) items.push(`<rect x="${x - 9}" y="84" width="14" height="18" rx="2" fill="#263238"/>`);
+    if (side === 'L' && acc.has('ballot')) items.push(`<rect x="${x - 12}" y="90" width="20" height="16" rx="1" fill="#ECEFF1" stroke="#90A4AE"/><rect x="${x - 6}" y="90" width="8" height="2" fill="#37474F"/>`);
+    if (side === 'R' && acc.has('gavel')) items.push(`<rect x="${x - 1}" y="78" width="3" height="16" fill="#6D4C41"/><rect x="${x - 6}" y="74" width="13" height="7" rx="2" fill="#5D4037"/>`);
+    if (side === 'R' && acc.has('cards')) items.push(`<rect x="${x - 6}" y="84" width="12" height="9" rx="1" fill="#FFFFFF" stroke="#BBB"/>`);
+    if (side === 'R' && acc.has('keys')) items.push(`<circle cx="${x + 3}" cy="96" r="3" fill="none" stroke="#C9A24A" stroke-width="1.5"/>`);
+    if (side === 'R' && acc.has('votercard')) items.push(`<rect x="${x - 5}" y="84" width="11" height="8" rx="1" fill="#E8F5E9" stroke="#2E7D32"/>`);
+    if (side === 'R' && acc.has('cane')) items.push(`<line x1="${x}" y1="86" x2="${x + 4}" y2="130" stroke="#3E2723" stroke-width="3"/><circle cx="${x}" cy="85" r="3" fill="#C9A24A"/>`);
+    if (side === 'L' && acc.has('basket')) items.push(`<path d="M${x - 10} 90 h18 l-2 12 h-14Z" fill="#C8A165"/><path d="M${x - 8} 94 h14" stroke="#8D6E63"/>`);
+    return items.join('');
+  };
+  const arm = side => {
+    const x = side === 'L' ? 33 : 67;
+    const base = pose === 'climb' ? (side === 'L' ? 150 : -150) : (side === 'L' ? 7 : -7);
+    const wide = s.top === 'agbada' ? 9 : 6;
+    return `<g transform="rotate(${base} ${x} 56)"><g class="arm${side}" style="transform-origin:${x}px 56px"><rect x="${x - wide}" y="53" width="${wide * 2}" height="35" rx="${wide}" fill="${sleeve}"/><circle cx="${x}" cy="91" r="5.5" fill="${skin}"/>${hold(side)}</g></g>`;
+  };
+  push(arm('L') + arm('R'));
+  // head
+  const hair = s.sex === 'f'
+    ? `<path d="M34 30 Q32 10 50 11 Q68 10 66 30 Q64 20 50 20 Q36 20 34 30Z" fill="${s.hair}"/>`
+    : `<path d="M35 25 Q37 12 50 13 Q63 12 65 25 Q58 19 50 20 Q42 19 35 25Z" fill="${s.grey ? '#9E9E9E' : s.hair}"/>`;
+  let hat = '';
+  switch (s.head) {
+    case 'fila': hat = `<path d="M33 24 Q34 7 52 9 Q68 11 67 23 Q50 18 33 24Z" fill="${s.hc}"/><path d="M52 9 Q64 6 68 16" fill="none" stroke="rgba(0,0,0,.25)" stroke-width="2"/>`; break;
+    case 'gele': hat = `<path d="M28 25 Q22 2 42 7 Q50 -4 58 6 Q80 2 72 25 Q50 15 28 25Z" fill="${s.hc}"/><path d="M36 14 Q50 8 64 14" stroke="rgba(255,255,255,.35)" stroke-width="2" fill="none"/>`; break;
+    case 'headtie': hat = `<path d="M33 24 Q35 9 50 10 Q65 9 67 24 Q50 17 33 24Z" fill="${s.hc}"/><circle cx="62" cy="11" r="5" fill="${s.hc}"/>`; break;
+    case 'straw': hat = `<ellipse cx="50" cy="20" rx="25" ry="5" fill="#D9B65A"/><path d="M38 20 Q40 6 50 6 Q60 6 62 20Z" fill="#E6C66E"/><path d="M38 17 H62" stroke="#8D6E63" stroke-width="2"/>`; break;
+    case 'helmet': hat = `<path d="M32 30 Q32 9 50 9 Q68 9 68 30Z" fill="${s.hc}"/><rect x="35" y="24" width="30" height="6" rx="2" fill="#263238" opacity=".85"/>`; break;
+    case 'hardhat': hat = `<path d="M34 22 Q35 8 50 8 Q65 8 66 22Z" fill="${s.hc}"/><rect x="30" y="20" width="40" height="4" rx="2" fill="${s.hc}"/>`; break;
+    case 'nursecap': hat = `<path d="M38 16 L40 7 H60 L62 16Z" fill="#FFFFFF"/><path d="M48 9 h4 v2 h2 v3 h-2 v2 h-4 v-2 h-2 v-3 h2Z" fill="#E53935"/>`; break;
+    case 'policecap': hat = `<path d="M34 20 Q36 8 50 8 Q64 8 66 20Z" fill="#1E2A3A"/><rect x="32" y="18" width="36" height="5" rx="2" fill="#111"/><circle cx="50" cy="14" r="3" fill="#C9A24A"/>`; break;
+    case 'beret': hat = `<path d="M33 22 Q34 8 54 9 Q70 11 66 20 Q50 16 33 22Z" fill="${s.hc}"/><circle cx="40" cy="18" r="2.5" fill="#C9A24A"/>`; break;
+    case 'wig': hat = `<path d="M32 34 Q30 8 50 8 Q70 8 68 34 Q66 44 70 52 L60 48 Q66 30 50 18 Q34 30 40 48 L30 52 Q34 44 32 34Z" fill="#ECEFF1"/>${[16, 24, 32, 40].map(y => `<circle cx="34" cy="${y}" r="3" fill="#FFFFFF"/><circle cx="66" cy="${y}" r="3" fill="#FFFFFF"/>`).join('')}`; break;
+    case 'kufi': hat = `<path d="M37 21 Q37 11 50 11 Q63 11 63 21Z" fill="${s.hc}"/><path d="M38 17 H62" stroke="#C9A24A" stroke-width="1" stroke-dasharray="2 2"/>`; break;
+    case 'crown': hat = `<path d="M36 22 L38 2 L62 2 L64 22Z" fill="${s.hc}"/>${[8, 14, 20].map(y => `<path d="M38 ${y} H62" stroke="#E2572B" stroke-width="2" stroke-dasharray="2 1.5"/>`).join('')}`; break;
+    case 'capback': hat = `<path d="M34 22 Q35 9 50 9 Q65 9 66 22Z" fill="${s.hc}"/><path d="M60 20 l14 4 -2 3 -14 -3Z" fill="${s.hc}"/>`; break;
+    case 'beanie': hat = `<path d="M34 23 Q34 7 50 7 Q66 7 66 23Z" fill="${s.hc}"/><rect x="33" y="20" width="34" height="5" rx="2" fill="${s.hc}"/><circle cx="50" cy="6" r="3" fill="${s.hc}"/>`; break;
+    case 'turban': hat = `<path d="M33 25 Q33 7 50 7 Q67 7 67 25 Q60 18 50 19 Q40 18 33 25Z" fill="${s.hc}"/><path d="M36 14 Q50 22 64 12" stroke="rgba(0,0,0,.2)" stroke-width="2" fill="none"/>`; break;
+    case 'goggles': hat = `<rect x="35" y="16" width="30" height="4" fill="#424242"/><circle cx="43" cy="18" r="4" fill="#80CBC4" stroke="#424242" stroke-width="1.5"/><circle cx="57" cy="18" r="4" fill="#80CBC4" stroke="#424242" stroke-width="1.5"/>`; break;
+  }
+  let face = '';
+  if (acc.has('glasses')) face += `<circle cx="44" cy="31" r="4.2" fill="none" stroke="#212121" stroke-width="1.2"/><circle cx="56" cy="31" r="4.2" fill="none" stroke="#212121" stroke-width="1.2"/><path d="M48.2 31 H51.8" stroke="#212121" stroke-width="1.2"/>`;
+  if (acc.has('shades')) face += `<rect x="38" y="28" width="11" height="6" rx="2" fill="#111"/><rect x="51" y="28" width="11" height="6" rx="2" fill="#111"/><path d="M49 30 H51" stroke="#111" stroke-width="1.5"/>`;
+  if (s.head === 'mask') face += `<path d="M38 34 Q50 46 62 34 L62 40 Q50 50 38 40Z" fill="#B3E5FC"/><path d="M38 35 L34 31 M62 35 L66 31" stroke="#B3E5FC" stroke-width="1.2"/>`;
+  if (acc.has('earpiece')) face += `<path d="M65 32 Q70 40 66 50" fill="none" stroke="#B0BEC5" stroke-width="1.2"/>`;
+  if (s.beard) face += `<path d="M38 34 Q40 48 50 48 Q60 48 62 34 Q58 42 50 42 Q42 42 38 34Z" fill="${s.grey ? '#BDBDBD' : s.hair}"/>`;
+  push(`<g class="head" style="transform-origin:50px 46px">
+    <rect x="45" y="40" width="10" height="11" fill="${skin}"/>
+    <circle cx="35" cy="31" r="3.5" fill="${skin}"/><circle cx="65" cy="31" r="3.5" fill="${skin}"/>
+    <circle cx="50" cy="30" r="15.5" fill="${skin}"/>
+    ${hair}
+    <g class="eyes" style="transform-origin:50px 31px"><ellipse cx="44" cy="31" rx="1.9" ry="2.3" fill="#140D0A"/><ellipse cx="56" cy="31" rx="1.9" ry="2.3" fill="#140D0A"/></g>
+    <path d="M41 26.5 Q44 25 47 26.5 M53 26.5 Q56 25 59 26.5" stroke="#140D0A" stroke-width="1.1" fill="none"/>
+    <ellipse class="mouth" style="transform-origin:50px 39px" cx="50" cy="39" rx="3.4" ry="1.4" fill="#3A1D14"/>
+    ${face}${hat}
+  </g>`);
+  return out.join('');
+}
+// pose: 'stand' | 'seat' | 'climb'; crop: 'full' | 'bust' | 'head'
+function charSVG(spec, {pose = 'stand', crop = 'full', cls = '', w, delay} = {}){
+  const vb = crop === 'head' ? '25 2 50 50' : crop === 'bust' ? '8 0 84 100' : pose === 'seat' ? '0 0 100 104' : '0 0 100 140';
+  const d = delay != null ? delay : -(hashN(JSON.stringify(spec)) % 4000) / 1000;
+  return `<svg class="ch ${crop !== 'full' ? 'crop' : ''} ${cls}" viewBox="${vb}" ${w ? `width="${w}"` : ''} style="--d:${d}s" aria-hidden="true"><g class="body">${charParts(spec, pose)}</g></svg>`;
+}
+
 // ---------- Tower ----------
 let towerH = BASE + TOP * R + TOPH;
 const yOf = pos => BASE + pos * R;
-function groupsIn(key){ return [...new Set(C[key].map(c => c[0]))].map(g => G[g]); }
+function groupsIn(key){ return [...new Set(C[key].map(c => c[0]))]; }
+const CROWD = ['traders','farmers','students','riders','nurses','doctors','police','military','press','unions','teachers','women','rulers','faith','creators','judiciary'];
+const door = g => `<span class="door">${charSVG(specFor(g, 'door' + g), {crop:'bust'})}<span>${G[g]}</span></span>`;
 function buildTower(){
   // The state room keeps its 6:5 proportions at any stage width.
   const sw = $('stage').clientWidth || 360;
@@ -500,13 +740,12 @@ function buildTower(){
   const tw = $('tower'); tw.style.height = towerH + 'px'; tw.innerHTML = '';
   const add = (html) => { tw.insertAdjacentHTML('beforeend', html); };
   // ground floor: the people
-  const everyone = [...new Set([...C.green, ...C.amber, ...C.red].map(c => G[c[0]]))];
-  add(`<div class="ground" style="height:${BASE - R/2}px"><div class="floor-label">Ground floor<small>The people at the foot of the ladder</small></div><div class="crowd">${everyone.map(n => `<span>${n}</span>`).join('')}</div></div>`);
+  add(`<div class="ground" style="height:${BASE - R/2}px"><div class="floor-label">Ground floor<small>The people at the foot of the ladder</small></div><div class="crowd">${CROWD.map((g, i) => `<span class="crowd-ch" title="${G[g]}">${charSVG(specFor(g, 'crowd' + i), {cls: i % 5 === 1 ? 'wave' : i % 3 === 0 ? 'gesture' : ''})}</span>`).join('')}</div></div>`);
   // floors
   for (const ph of [PH.green, PH.amber, PH.red]) {
     const b = yOf(ph.from - .5), h = (ph.to - ph.from + 1) * R;
     const gs = groupsIn(ph.key), rows = [];
-    for (let i = 0; i < gs.length; i += 2) rows.push(`<div class="door-row"><span class="door">${gs[i]}</span>${gs[i+1] ? `<span class="door">${gs[i+1]}</span>` : '<span></span>'}</div>`);
+    for (let i = 0; i < gs.length; i += 2) rows.push(`<div class="door-row">${door(gs[i])}${gs[i+1] ? door(gs[i+1]) : '<span></span>'}</div>`);
     add(`<div class="floor" style="--fc:var(--${ph.key});bottom:${b}px;height:${h}px"><div class="floor-label">Floor ${ph.floor} &middot; ${ph.name}<small>${ph.level} &middot; rungs ${ph.from}&ndash;${ph.to}</small></div><div class="doors">${rows.reverse().join('')}</div></div>`);
   }
   // ballroom
@@ -532,24 +771,12 @@ const ATTIRE = [['agbada','#F1EADB'],['suit','#1C2333'],['agbada','#2E5E8C'],['k
 const HATS = ['fila','none','gele','fila','none','gele','fila'];
 const GELE = ['#C2185B','#E0A100','#00897B','#8E24AA'];
 function hashN(t){ let h = 2166136261; for (const c of t) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
-function personSVG(x, person, lean, sash){
-  const h = hashN(person.name), skin = SKIN[h % SKIN.length], [kind, col] = ATTIRE[(h >>> 4) % ATTIRE.length], hat = HATS[(h >>> 9) % HATS.length];
-  const dark = 'rgba(0,0,0,.25)';
-  let body = '';
-  if (kind === 'suit') body = `<path d="M-18 0 L-16 -38 Q0 -47 16 -38 L18 0Z" fill="${col}"/><path d="M-6 -43 L0 -29 L6 -43Z" fill="#F4F1EA"/><path d="M-1.6 -37 L1.6 -37 L1.2 -22 L-1.2 -22Z" fill="#8E1B24"/>`;
-  else if (kind === 'agbada') body = `<path d="M-26 0 L-21 -39 Q0 -50 21 -39 L26 0Z" fill="${col}"/><path d="M-7 -45 Q0 -30 7 -45" fill="none" stroke="#C9A24A" stroke-width="1.6"/><path d="M-26 0 L-21 -39" stroke="${dark}" stroke-width="2"/><path d="M26 0 L21 -39" stroke="${dark}" stroke-width="2"/>`;
-  else body = `<path d="M-20 0 L-17 -39 Q0 -48 17 -39 L20 0Z" fill="${col}"/><path d="M-4 -45 L0 -36 L4 -45" fill="none" stroke="#E8D9A8" stroke-width="1.4"/>`;
-  let cap = '';
-  if (hat === 'fila') cap = `<path d="M-10 -62 Q-4 -75 11 -67 L10 -62 Q0 -65 -10 -62Z" fill="${kind === 'agbada' && col === '#F1EADB' ? '#7A5C2E' : col}" stroke="${dark}" stroke-width=".8"/>`;
-  if (hat === 'gele') cap = `<path d="M-16 -61 Q-14 -80 -2 -73 Q8 -84 17 -62 Q0 -69 -16 -61Z" fill="${GELE[h % GELE.length]}"/>`;
-  return `<g transform="translate(${x} 300) rotate(${lean})">
-    ${body}
-    ${sash ? `<path d="M-13 -40 L13 -6" stroke="${sash}" stroke-width="5" stroke-linecap="round"/>` : ''}
-    <rect x="-3" y="-50" width="6" height="6" fill="${skin}"/>
-    <circle cx="0" cy="-58" r="9.5" fill="${skin}"/>
-    ${cap}
-    <ellipse cx="-11" cy="1" rx="4.5" ry="2.6" fill="${skin}"/><ellipse cx="11" cy="1" rx="4.5" ry="2.6" fill="${skin}"/>
-  </g>`;
+function personSVG(x, person, lean, sash, cls){
+  const spec = {...(person.spec || specFor('president', person.name))};
+  if (sash) spec.sash = sash;
+  // Seated rig: the hips sit at the table edge.
+  const inner = charSVG(spec, {pose:'seat', cls}).replace(/^<svg[^>]*>/, `<g class="ch ${cls || ''}" style="--d:${-(hashN(person.name) % 5000) / 1000}s">`).replace(/<\/svg>$/, '</g>');
+  return `<g transform="rotate(${lean} ${x} 300)"><svg x="${x - 29}" y="247" width="58" height="60" viewBox="0 0 100 104" overflow="visible">${inner}</svg></g>`;
 }
 function chairSVG(x){ return `<rect x="${x - 19}" y="212" width="38" height="88" rx="10" fill="url(#wood)" stroke="#B58A2E" stroke-width=".8"/>`; }
 function archPath(cx, top, w, hgt){ const r = w / 2; return `M${cx - r} ${top + hgt} L${cx - r} ${top + r} A${r} ${r} 0 0 1 ${cx + r} ${top + r} L${cx + r} ${top + hgt}Z`; }
@@ -612,8 +839,8 @@ function tableSVG(incoming, others){
   <path d="M274 162 Q300 140 326 162" fill="url(#gold)"/><circle cx="300" cy="147" r="4" fill="#F3DC8E"/>
   <rect x="270" y="176" width="60" height="17" rx="3" fill="url(#gold)"/>
   <text x="300" y="190" text-anchor="middle" font-family="Anton, Impact, sans-serif" font-size="10" letter-spacing="1.2" fill="#241A08">INCOMING</text>
-  ${people.map(({x, p}) => personSVG(x, p, leanOf(x), p.color)).join('')}
-  ${incoming ? personSVG(300, incoming, 0, incoming.color) : ''}
+  ${people.map(({x, p}, i) => personSVG(x, p, leanOf(x), p.color, i % 3 === 1 ? 'gesture' : '')).join('')}
+  ${incoming ? personSVG(300, incoming, 0, incoming.color, 'cheer') : ''}
   <rect x="46" y="294" width="508" height="10" rx="3" fill="url(#wood)" stroke="#B58A2E" stroke-width="1"/>
   <path d="M48 304 H552 V346 Q526 356 500 346 Q474 356 448 346 Q422 356 396 346 Q370 356 344 346 Q322 356 300 346 Q278 356 256 346 Q230 356 204 346 Q178 356 152 346 Q126 356 100 346 Q74 356 48 346Z" fill="url(#cloth)"/>
   <path d="M48 338 H552" stroke="#C9A24A" stroke-width="3"/>
@@ -641,7 +868,7 @@ function placeTokens(){
   game.players.forEach(p => (byPos[p.pos] = byPos[p.pos] || []).push(p));
   host.innerHTML = game.players.map((p, i) => {
     const same = byPos[p.pos], k = same.indexOf(p), off = (k - (same.length - 1) / 2) * 30;
-    return `<div class="token${i === game.cur ? ' active' : ''}" id="tok${i}" style="--pc:${p.color};bottom:${yOf(p.pos)}px;left:calc(50% + ${off}px)" title="${esc(p.name)}">${p.short}</div>`;
+    return `<div class="token climber${i === game.cur ? ' active' : ''}" id="tok${i}" style="--pc:${p.color};bottom:${yOf(p.pos)}px;left:calc(50% + ${off * 1.3}px)" title="${esc(p.name)}">${charSVG(p.spec, {pose:'climb'})}<span class="pill">${p.short}</span></div>`;
   }).join('');
   document.querySelectorAll('.rung,.rnum').forEach(el => el.classList.remove('next'));
   const me = viewer();
@@ -676,7 +903,7 @@ function ambience(){
 function hud(){
   const me = viewer(); if (!me) return;
   const ph = phaseOf(Math.min(TOP, me.pos + 1));
-  $('hudTok').style.setProperty('--pc', me.color); $('hudTok').style.background = me.color; $('hudTok').textContent = me.short;
+  $('hudTok').style.setProperty('--pc', me.color); $('hudTok').innerHTML = charSVG(me.spec, {crop:'head'});
   $('hudName').textContent = me.name;
   $('hudParty').textContent = me.partyName;
   $('hudPhase').textContent = me.pos === 0 ? 'Ground floor' : `Floor ${ph.floor} · ${ph.level}`;
@@ -699,32 +926,40 @@ function renderSetup(){
       <input id="pname${i}" placeholder="${mode === 'solo' ? 'Your candidate’s name' : 'Player ' + (i + 1) + ' candidate'}" value="${esc(r.name)}" maxlength="28" aria-label="Candidate name ${i + 1}">
       <select id="pparty${i}" aria-label="Party ${i + 1}">${PARTIES.map(p => `<option value="${p.id}" ${p.id === r.party ? 'selected' : ''}>${p.short} · ${p.name}</option>`).join('')}</select>
       ${mode === 'pass' && setupRows.length > 2 ? `<button class="x" data-rm="${i}" aria-label="Remove player ${i + 1}">&times;</button>` : '<span></span>'}
-    </div>`).join('');
+    </div>
+    <div class="looks" role="group" aria-label="Candidate look ${i + 1}">${Object.keys(LOOKS).map(k => `<button class="look" data-row="${i}" data-look="${k}" aria-pressed="${(r.look || 'agbada') === k}">${charSVG(candidateSpec(k, PARTIES.find(x => x.id === r.party).color, 'preview' + i), {crop:'bust'})}${LOOK_NAMES[k]}</button>`).join('')}</div>`).join('');
   setupRows.forEach((r, i) => {
     $('pname' + i).oninput = e => r.name = e.target.value;
-    $('pparty' + i).onchange = e => r.party = e.target.value;
+    $('pparty' + i).onchange = e => { r.party = e.target.value; renderSetup(); };
   });
+  document.querySelectorAll('.look').forEach(b => b.onclick = () => { setupRows[+b.dataset.row].look = b.dataset.look; renderSetup(); });
   document.querySelectorAll('[data-rm]').forEach(b => b.onclick = () => { setupRows.splice(+b.dataset.rm, 1); renderSetup(); });
   $('soloExtra').hidden = mode !== 'solo';
   $('addPlayer').hidden = mode !== 'pass' || setupRows.length >= 4;
   $('modeSolo').setAttribute('aria-pressed', mode === 'solo'); $('modePass').setAttribute('aria-pressed', mode === 'pass');
 }
 $('modeSolo').onclick = () => { mode = 'solo'; setupRows = setupRows.slice(0, 1); renderSetup(); };
-$('modePass').onclick = () => { mode = 'pass'; const used = setupRows.map(r => r.party); while (setupRows.length < 2) setupRows.push({name:'', party: PARTIES.find(p => !used.includes(p.id)).id}); renderSetup(); };
-$('addPlayer').onclick = () => { const used = setupRows.map(r => r.party); setupRows.push({name:'', party:(PARTIES.find(p => !used.includes(p.id)) || PARTIES[0]).id}); renderSetup(); };
+$('modePass').onclick = () => { mode = 'pass'; const used = setupRows.map(r => r.party); while (setupRows.length < 2) setupRows.push({name:'', party: PARTIES.find(p => !used.includes(p.id)).id, look:'suit'}); renderSetup(); };
+$('addPlayer').onclick = () => { const used = setupRows.map(r => r.party); setupRows.push({name:'', party:(PARTIES.find(p => !used.includes(p.id)) || PARTIES[0]).id, look:'iro'}); renderSetup(); };
 $('muteBtn').onclick = () => { soundOn = !soundOn; $('muteBtn').setAttribute('aria-pressed', soundOn); A.setMute(soundOn); };
 
-function makePlayer(name, partyId, human){
+function candidateSpec(look, color, seed){
+  const s = LOOKS[look](color), r = seeded(seed);
+  s.skin = SKINS[Math.floor(r() * SKINS.length)]; s.hair = HAIRS[Math.floor(r() * HAIRS.length)];
+  return s;
+}
+const RIVAL_LOOKS = ['agbada','iro','suit','skirtsuit','kaftan'];
+function makePlayer(name, partyId, human, look){
   const p = PARTIES.find(x => x.id === partyId);
-  return {name, party:p.id, partyName:p.name, short:p.short, color:p.color, human, pos:0, trust:50, funds:100, allies:[], decks:{}, turns:0, climbed:0, fell:0};
+  return {name, party:p.id, partyName:p.name, short:p.short, color:p.color, human, look, spec:candidateSpec(look, p.color, name + p.id), pos:0, trust:50, funds:100, allies:[], decks:{}, turns:0, climbed:0, fell:0};
 }
 $('startBtn').onclick = () => {
   A.init(); if (A.ctx && A.ctx.state === 'suspended') A.ctx.resume();
-  const players = setupRows.map((r, i) => makePlayer(r.name.trim() || (mode === 'solo' ? 'Your candidate' : 'Player ' + (i + 1)), r.party, true));
+  const players = setupRows.map((r, i) => makePlayer(r.name.trim() || (mode === 'solo' ? 'Your candidate' : 'Player ' + (i + 1)), r.party, true, r.look || 'agbada'));
   if (mode === 'solo') {
     const n = +$('rivalCount').value, used = [players[0].party];
     const pool = PARTIES.filter(p => !used.includes(p.id));
-    for (let i = 0; i < n; i++) players.push(makePlayer(RIVALS[i], pool[i].id, false));
+    for (let i = 0; i < n; i++) players.push(makePlayer(RIVALS[i], pool[i].id, false, RIVAL_LOOKS[i]));
   }
   game = {players, cur:0, over:false, round:1, humans:players.filter(p => p.human).length};
   $('setup').hidden = true;
@@ -766,9 +1001,10 @@ function showChallenge(p){
   const ph = phaseOf(p.pos + 1), ch = draw(p, ph.key);
   const [g, title, scen, opts] = ch;
   const order = opts.map((_, i) => i).sort(() => Math.random() - .5);
+  p.speaker = specFor(g, g + p.turns);
   $('card').innerHTML = `
-    <div class="eyebrow">Rung ${p.pos + 1} &middot; ${G[g]}</div>
-    <h2>${esc(title)}</h2>
+    <div class="speaker"><div class="spk">${charSVG(p.speaker, {crop:'bust', cls:'talking'})}</div><div style="min-width:0"><div class="eyebrow">Rung ${p.pos + 1} &middot; ${G[g]}</div>
+    <h2>${esc(title)}</h2></div></div>
     <p>${esc(scen)}</p>
     <div class="timer-row"><span>Decide</span><span id="secs">${ph.time}s</span></div>
     <div class="timer"><i id="tbar"></i></div>
@@ -777,6 +1013,7 @@ function showChallenge(p){
       return `<button class="opt" data-i="${i}" ${cost > p.funds ? 'disabled' : ''}><span>${esc(o[0])}</span><span class="chips">${bold ? '<span class="chip bold">Bold</span>' : ''}${cost ? `<span class="chip">₦${cost}M</span>` : ''}</span></button>`;
     }).join('')}</div>`;
   $('sheet').hidden = false;
+  setTimeout(() => { const t = document.querySelector('.spk .ch'); if (t) t.classList.remove('talking'); }, 2600);
   requestAnimationFrame(() => camera(p.pos));
   let left = ph.time;
   const bar = $('tbar');
@@ -815,8 +1052,8 @@ function showResult(p, move, text, dT, dF, gained, bold){
   const softened = () => -1;
   const render = (m, shieldUsed) => {
     $('card').innerHTML = `
-      <div class="eyebrow">${m > 0 ? 'Right move' : m < 0 ? 'Wrong move' : 'Steady'}${bold ? ' · bold call' : ''}</div>
-      <div class="move ${m > 0 ? 'up' : m < 0 ? 'down' : 'still'}">${moveWord(m)}</div>
+      <div class="speaker">${p.speaker ? `<div class="spk">${charSVG(p.speaker, {crop:'bust', cls: m > 0 ? 'cheer' : m < 0 ? 'sad' : ''})}</div>` : ''}<div><div class="eyebrow">${m > 0 ? 'Right move' : m < 0 ? 'Wrong move' : 'Steady'}${bold ? ' · bold call' : ''}</div>
+      <div class="move ${m > 0 ? 'up' : m < 0 ? 'down' : 'still'}">${moveWord(m)}</div></div></div>
       <p>${esc(text)}${shieldUsed ? ` ${esc(shieldUsed)} stood by you and broke the fall.` : ''}</p>
       <div class="deltas">${dT ? `<span>Trust ${dT > 0 ? '+' : '\u2212'}${Math.abs(dT)}</span>` : ''}${dF ? `<span>Funds ${dF > 0 ? '+' : '−'}₦${Math.abs(dF)}M</span>` : ''}${gained ? `<span style="color:var(--brass)">New ally: ${esc(gained)}</span>` : ''}</div>
       ${m <= -3 && !shieldUsed && p.allies.length ? `<div class="eyebrow" style="color:var(--brass)">Call on an ally to cut the fall to one rung</div><div class="allies">${p.allies.map(a => `<button class="ally" data-a="${a}">${esc(G[a])}</button>`).join('')}</div>` : ''}
@@ -838,6 +1075,8 @@ function doMove(p, m, quiet){
     if (!steps) { placeTokens(); finish(); return; }
     let k = 0;
     const el = $('tok' + game.players.indexOf(p));
+    const chEl = el && el.querySelector('.ch');
+    if (chEl) chEl.classList.add(dir > 0 ? 'climbing' : 'falling');
     if (dir < 0 && el) el.classList.add('fall');
     const go = () => {
       const next = Math.max(0, Math.min(TOP, p.pos + dir));
@@ -848,6 +1087,7 @@ function doMove(p, m, quiet){
     };
     function finish(){
       if (el) el.classList.remove('fall');
+      if (chEl) chEl.classList.remove('climbing', 'falling');
       placeTokens(); hud(); ambience();
       if (p.pos >= TOP) { win(p); res(); return; }
       if (p.human && !quiet) {
@@ -874,7 +1114,7 @@ function win(p){
   placeTokens(); camera(TOP);
   const human = p.human;
   let seat = null;
-  if (human) { seat = {id: Date.now(), name:p.name, party:p.short + ' · ' + new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}), color:p.color}; store.add(seat); renderTable(seat); A.fanfare(); }
+  if (human) { seat = {id: Date.now(), name:p.name, party:p.short + ' · ' + new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}), color:p.color, spec:p.spec}; store.add(seat); renderTable(seat); A.fanfare(); }
   else { A.thud(); }
   A.tension(0);
   setTimeout(() => {
@@ -898,7 +1138,7 @@ function win(p){
 }
 
 // ---------- Boot ----------
-if (location.hash === '#test') window.__ladder = {C};
+if (location.hash === '#test') window.__ladder = {C, charSVG, specFor, ROLES, LOOKS, candidateSpec, G};
 renderSetup();
 buildTower();
 camera(0, true);
