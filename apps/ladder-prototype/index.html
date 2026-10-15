@@ -71,17 +71,13 @@ body[data-phase="red"] .ladder{--sway:.7deg;--sway-dur:3s}
 @keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
 
 /* Ballroom */
-.ballroom{position:absolute;left:0;right:0;border-top:3px solid var(--brass);background:radial-gradient(ellipse 60% 70% at 50% 25%,rgba(214,178,94,.22),transparent 70%),linear-gradient(to bottom,#1A1520,#120F18)}
-.chandelier{position:absolute;left:50%;top:0;transform:translateX(-50%);width:2px;height:46px;background:var(--brass)}
-.chandelier::after{content:"";position:absolute;top:40px;left:50%;transform:translateX(-50%);width:120px;height:44px;border-radius:0 0 60px 60px;background:radial-gradient(circle at 50% 10%,#FFF3C8,var(--brass) 45%,rgba(214,178,94,0) 72%);filter:blur(.3px);box-shadow:0 10px 60px 20px rgba(255,220,140,.18)}
-.ballroom-title{position:absolute;top:98px;left:0;right:0;text-align:center;font-family:var(--display);font-size:30px;letter-spacing:.06em;color:var(--brass);text-transform:uppercase}
-.ballroom-title small{display:block;font-family:var(--body);font-size:12px;letter-spacing:0;text-transform:none;color:var(--muted);margin-top:2px}
-.table{position:absolute;left:8%;right:8%;top:170px;height:40px;border-radius:22px;background:linear-gradient(#3A2A1A,#22180F);border:2px solid var(--brass)}
-.seats{position:absolute;left:6%;right:6%;top:146px;display:flex;justify-content:space-around;flex-wrap:wrap;gap:4px 0}
-.seat{width:58px;text-align:center;font-size:9.5px;line-height:1.15;color:var(--muted)}
-.seat b{display:grid;place-items:center;width:30px;height:30px;margin:0 auto 52px;border-radius:50%;background:var(--sc,#444);border:2px solid var(--brass);font-size:10px;color:#fff}
-.seat.empty b{background:transparent;border-style:dashed;color:var(--faint)}
-.seat .plate{display:block;color:var(--ink);font-weight:600}
+.ballroom{position:absolute;left:0;right:0;border-top:3px solid var(--brass);background:#0F1E17;display:flex;flex-direction:column;overflow:hidden}
+.ballroom-head{text-align:center;padding:10px 12px 6px;font-family:var(--display);font-size:26px;letter-spacing:.06em;color:var(--brass);text-transform:uppercase;line-height:1}
+.ballroom-head small{display:block;font-family:var(--body);font-size:12px;letter-spacing:0;text-transform:none;color:var(--muted);margin-top:4px}
+.scene{display:block;width:100%;height:auto}
+.legend{padding:8px 12px 12px;font-size:11.5px;line-height:1.45;color:var(--muted);text-align:center}
+.legend b{color:var(--ink);font-weight:600}
+.end-scene{border-radius:12px;overflow:hidden;border:1px solid var(--brass)}
 
 .vignette{position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 70px 10px color-mix(in srgb,var(--phase) 18%,transparent);transition:box-shadow 1s}
 body[data-phase="red"] .vignette{animation:pulse var(--beat,.8s) ease-out infinite}
@@ -215,7 +211,8 @@ input,select{width:100%;min-width:0;padding:10px;border-radius:8px;border:1px so
 (() => {
 'use strict';
 // ---------- Rules ----------
-const TOP = 30, R = 58, BASE = 270, TOPH = 300;
+const TOP = 30, R = 58, BASE = 270;
+let TOPH = 560;
 const PH = {
   green:{key:'green',floor:1,name:'The Streets',level:'Easy',time:25,timeout:-1,from:1,to:10,ai:{win:.82,big:.3,bigFall:.1}},
   amber:{key:'amber',floor:2,name:'The Corridors',level:'Hard',time:18,timeout:-1,from:11,to:20,ai:{win:.74,big:.3,bigFall:.3}},
@@ -230,11 +227,9 @@ const PARTIES = [
   {id:'adc',short:'ADC',name:'African Democratic Congress',color:'#8E44AD'}
 ];
 const RIVALS = ['Haruna Tanko Gidado','Adaeze Okonkwo-Bassey','Tunde Adewale-Coker','Zainab Lawal-Ndako','Emeka Nwachukwu Ibe'];
-const FOUNDERS = [
-  {name:'Ifeoma Danjuma',party:'Founding leader',color:'#6B5A2E'},
-  {name:'Olumide Bakare',party:'Founding leader',color:'#5A4A28'},
-  {name:'Haruna Okpara',party:'Founding leader',color:'#4D4026'}
-];
+// Fictional former leaders. No real president is depicted.
+const FOUNDERS = ['Ifeoma Danjuma','Olumide Bakare','Haruna Okpara','Bisola Adeyemi-Garba','Chinedu Abubakar','Aminu Ekanem',
+  'Folake Nwosu-Bello','Ibrahim Oyelaran','Ngozi Etim-Lawal','Tamuno Iheanacho','Zara Mohammed-Okon','Kunle Ishaku'].map(n => ({name:n, party:'Former president (fictional)'}));
 const G = {
   traders:'Market traders',farmers:'Farmers',students:'Students',riders:'Okada riders',faith:'Faith leaders',rulers:'Traditional rulers',
   teachers:'Teachers',women:"Women's groups",creators:'Youth and creators',delegates:'Party delegates',artisans:'Artisans',tenants:'Tenants and landlords',
@@ -494,10 +489,14 @@ const A = {
 const buzz = ms => { try { navigator.vibrate && navigator.vibrate(ms); } catch(e){} };
 
 // ---------- Tower ----------
-const towerH = BASE + TOP * R + TOPH;
+let towerH = BASE + TOP * R + TOPH;
 const yOf = pos => BASE + pos * R;
 function groupsIn(key){ return [...new Set(C[key].map(c => c[0]))].map(g => G[g]); }
 function buildTower(){
+  // The state room keeps its 6:5 proportions at any stage width.
+  const sw = $('stage').clientWidth || 360;
+  TOPH = Math.round(sw * 500 / 600) + 190;
+  towerH = BASE + TOP * R + TOPH;
   const tw = $('tower'); tw.style.height = towerH + 'px'; tw.innerHTML = '';
   const add = (html) => { tw.insertAdjacentHTML('beforeend', html); };
   // ground floor: the people
@@ -511,7 +510,7 @@ function buildTower(){
     add(`<div class="floor" style="--fc:var(--${ph.key});bottom:${b}px;height:${h}px"><div class="floor-label">Floor ${ph.floor} &middot; ${ph.name}<small>${ph.level} &middot; rungs ${ph.from}&ndash;${ph.to}</small></div><div class="doors">${rows.reverse().join('')}</div></div>`);
   }
   // ballroom
-  add(`<div class="ballroom" style="bottom:${yOf(30.5)}px;height:${TOPH - R/2}px"><div class="chandelier"></div><div class="ballroom-title">The High Table<small>Where the winners sit</small></div><div class="table"></div><div class="seats" id="seats"></div></div>`);
+  add(`<div class="ballroom" style="bottom:${yOf(30.5)}px;height:${TOPH - R/2}px"><div class="ballroom-head">The High Table<small>The presidential state room</small></div><div id="sceneHost"></div><div class="legend" id="legend"></div></div>`);
   // ladder
   let lad = `<div class="ladder" id="ladder">`;
   for (const ph of [PH.green, PH.amber, PH.red]) {
@@ -524,15 +523,114 @@ function buildTower(){
   }
   lad += `<div id="tokens"></div></div>`;
   add(lad);
-  renderSeats();
+  renderTable(null);
 }
-function renderSeats(newWinner){
-  const winners = store.get();
-  const seats = [...FOUNDERS, ...winners].slice(0, 8);
-  while (seats.length < 8) seats.push(null);
-  $('seats').innerHTML = seats.map(s => s
-    ? `<div class="seat" style="--sc:${s.color}"><b>${initials(s.name)}</b><span class="plate">${esc(s.name)}</span>${esc(s.party)}</div>`
-    : `<div class="seat empty"><b>?</b><span class="plate">Empty seat</span>Climb to claim it</div>`).join('');
+// ---------- The High Table (a state room laid out like the Last Supper) ----------
+const SEAT_X = [255,345,222,378,189,411,148,452,115,485,82,518]; // nearest the empty centre chair first
+const SKIN = ['#5B3A29','#6E4530','#7C5036','#4A2E21','#8A5A3C','#5F3B26'];
+const ATTIRE = [['agbada','#F1EADB'],['suit','#1C2333'],['agbada','#2E5E8C'],['kaftan','#7A2E3A'],['agbada','#1F6B45'],['suit','#2A2A2E'],['agbada','#C9B27C'],['kaftan','#3D3A6B']];
+const HATS = ['fila','none','gele','fila','none','gele','fila'];
+const GELE = ['#C2185B','#E0A100','#00897B','#8E24AA'];
+function hashN(t){ let h = 2166136261; for (const c of t) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
+function personSVG(x, person, lean, sash){
+  const h = hashN(person.name), skin = SKIN[h % SKIN.length], [kind, col] = ATTIRE[(h >>> 4) % ATTIRE.length], hat = HATS[(h >>> 9) % HATS.length];
+  const dark = 'rgba(0,0,0,.25)';
+  let body = '';
+  if (kind === 'suit') body = `<path d="M-18 0 L-16 -38 Q0 -47 16 -38 L18 0Z" fill="${col}"/><path d="M-6 -43 L0 -29 L6 -43Z" fill="#F4F1EA"/><path d="M-1.6 -37 L1.6 -37 L1.2 -22 L-1.2 -22Z" fill="#8E1B24"/>`;
+  else if (kind === 'agbada') body = `<path d="M-26 0 L-21 -39 Q0 -50 21 -39 L26 0Z" fill="${col}"/><path d="M-7 -45 Q0 -30 7 -45" fill="none" stroke="#C9A24A" stroke-width="1.6"/><path d="M-26 0 L-21 -39" stroke="${dark}" stroke-width="2"/><path d="M26 0 L21 -39" stroke="${dark}" stroke-width="2"/>`;
+  else body = `<path d="M-20 0 L-17 -39 Q0 -48 17 -39 L20 0Z" fill="${col}"/><path d="M-4 -45 L0 -36 L4 -45" fill="none" stroke="#E8D9A8" stroke-width="1.4"/>`;
+  let cap = '';
+  if (hat === 'fila') cap = `<path d="M-10 -62 Q-4 -75 11 -67 L10 -62 Q0 -65 -10 -62Z" fill="${kind === 'agbada' && col === '#F1EADB' ? '#7A5C2E' : col}" stroke="${dark}" stroke-width=".8"/>`;
+  if (hat === 'gele') cap = `<path d="M-16 -61 Q-14 -80 -2 -73 Q8 -84 17 -62 Q0 -69 -16 -61Z" fill="${GELE[h % GELE.length]}"/>`;
+  return `<g transform="translate(${x} 300) rotate(${lean})">
+    ${body}
+    ${sash ? `<path d="M-13 -40 L13 -6" stroke="${sash}" stroke-width="5" stroke-linecap="round"/>` : ''}
+    <rect x="-3" y="-50" width="6" height="6" fill="${skin}"/>
+    <circle cx="0" cy="-58" r="9.5" fill="${skin}"/>
+    ${cap}
+    <ellipse cx="-11" cy="1" rx="4.5" ry="2.6" fill="${skin}"/><ellipse cx="11" cy="1" rx="4.5" ry="2.6" fill="${skin}"/>
+  </g>`;
+}
+function chairSVG(x){ return `<rect x="${x - 19}" y="212" width="38" height="88" rx="10" fill="url(#wood)" stroke="#B58A2E" stroke-width=".8"/>`; }
+function archPath(cx, top, w, hgt){ const r = w / 2; return `M${cx - r} ${top + hgt} L${cx - r} ${top + r} A${r} ${r} 0 0 1 ${cx + r} ${top + r} L${cx + r} ${top + hgt}Z`; }
+function windowSVG(cx, top, w, hgt){
+  const r = w / 2, panes = [];
+  for (let i = 1; i < 3; i++) panes.push(`<line x1="${cx - r + i * w / 3}" y1="${top + 6}" x2="${cx - r + i * w / 3}" y2="${top + hgt}" stroke="#B58A2E" stroke-width="1.2"/>`);
+  for (let j = 1; j < 4; j++) panes.push(`<line x1="${cx - r}" y1="${top + r + j * (hgt - r) / 4}" x2="${cx + r}" y2="${top + r + j * (hgt - r) / 4}" stroke="#B58A2E" stroke-width="1.2"/>`);
+  return `<path d="${archPath(cx, top, w, hgt)}" fill="url(#sky)" stroke="url(#gold)" stroke-width="4"/>${panes.join('')}`;
+}
+function flagSVG(px, dir){
+  const fx = dir > 0 ? px + 2 : px - 50;
+  return `<line x1="${px}" y1="108" x2="${px}" y2="336" stroke="url(#gold)" stroke-width="3.5"/><circle cx="${px}" cy="105" r="4" fill="#E8C870"/>
+    <path d="M${fx} 114 q12 -4 24 0 t24 0 v30 q-12 4 -24 0 t-24 0Z" fill="#FFFFFF"/>
+    <path d="M${fx} 114 q8 -2.7 16 0 v30 q-8 2.7 -16 0Z" fill="#008751"/><path d="M${fx + 32} 114 q8 2.7 16 0 v30 q-8 -2.7 -16 0Z" fill="#008751"/>`;
+}
+function tableSVG(incoming, others){
+  const seated = others.slice(0, 12);
+  const people = SEAT_X.map((x, i) => ({x, p: seated[i] || FOUNDERS[(i - seated.length + FOUNDERS.length) % FOUNDERS.length], i}));
+  // Last Supper groups of three lean together; the groups nearest the centre lean in.
+  const leanOf = x => { const d = x - 300; const g = Math.floor((Math.abs(d) - 30) / 33); return (d < 0 ? 1 : -1) * [4, -3, 5, -4, 3, -5][g % 6]; };
+  const dentils = Array.from({length: 40}, (_, i) => `<rect x="${i * 15 + 3}" y="14" width="8" height="5" fill="#8A6A28"/>`).join('');
+  const floorLines = Array.from({length: 13}, (_, i) => `<line x1="300" y1="250" x2="${-300 + i * 100}" y2="500" stroke="rgba(255,255,255,.06)"/>`).join('')
+    + [380, 410, 450, 500].map(y => `<line x1="0" y1="${y}" x2="600" y2="${y}" stroke="rgba(255,255,255,.05)"/>`).join('');
+  const name = incoming ? esc(incoming.name.length > 18 ? incoming.name.slice(0, 17) + '…' : incoming.name).toUpperCase() : '';
+  return `<svg class="scene" viewBox="0 0 600 500" role="img" aria-label="The High Table: former presidents seated either side of an empty chair marked Incoming">
+  <defs>
+    <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1D3A2B"/><stop offset="1" stop-color="#0E1D15"/></linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F3DC8E"/><stop offset="1" stop-color="#A87C26"/></linearGradient>
+    <linearGradient id="wood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6A4426"/><stop offset="1" stop-color="#2E1D10"/></linearGradient>
+    <linearGradient id="drape" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#0B3A23"/><stop offset=".5" stop-color="#1F7A4C"/><stop offset="1" stop-color="#0B3A23"/></linearGradient>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22355C"/><stop offset="1" stop-color="#0B1426"/></linearGradient>
+    <linearGradient id="cloth" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FBF8F0"/><stop offset="1" stop-color="#DCD3BE"/></linearGradient>
+    <linearGradient id="spot" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFF6D8" stop-opacity=".02"/><stop offset="1" stop-color="#FFF6D8" stop-opacity=".22"/></linearGradient>
+    <radialGradient id="halo"><stop offset="0" stop-color="#FFE7A3" stop-opacity=".55"/><stop offset="1" stop-color="#FFE7A3" stop-opacity="0"/></radialGradient>
+    <linearGradient id="floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2B2420"/><stop offset="1" stop-color="#14100E"/></linearGradient>
+  </defs>
+  <rect width="600" height="360" fill="url(#wall)"/>
+  <rect y="248" width="600" height="112" fill="url(#wood)"/>
+  ${[90, 210, 330, 450].map(x => `<rect x="${x + 6}" y="262" width="96" height="84" fill="none" stroke="#B58A2E" stroke-opacity=".55"/>`).join('')}
+  ${[118, 222, 378, 482].map(x => `<rect x="${x - 5}" y="24" width="10" height="224" fill="url(#gold)" opacity=".55"/>`).join('')}
+  ${windowSVG(170, 92, 70, 138)}${windowSVG(430, 92, 70, 138)}${windowSVG(300, 56, 124, 188)}
+  <circle cx="276" cy="96" r="7" fill="#F4EBD0" opacity=".85"/>
+  ${[[262,140],[330,120],[160,130],[445,150],[310,200]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.2" fill="#fff" opacity=".7"/>`).join('')}
+  <circle cx="300" cy="208" r="86" fill="url(#halo)"/>
+  <rect width="600" height="14" fill="url(#gold)"/>${dentils}
+  ${flagSVG(108, 1)}${flagSVG(492, -1)}
+  <path d="M0 0 H74 Q58 110 44 196 Q34 262 54 360 H0Z" fill="url(#drape)"/><path d="M20 0 Q24 180 16 360 M44 0 Q40 140 30 360" stroke="rgba(0,0,0,.25)" stroke-width="2" fill="none"/>
+  <path d="M600 0 H526 Q542 110 556 196 Q566 262 546 360 H600Z" fill="url(#drape)"/><path d="M580 0 Q576 180 584 360 M556 0 Q560 140 570 360" stroke="rgba(0,0,0,.25)" stroke-width="2" fill="none"/>
+  <ellipse cx="44" cy="198" rx="9" ry="5" fill="url(#gold)"/><ellipse cx="556" cy="198" rx="9" ry="5" fill="url(#gold)"/>
+  <path d="M0 0 H600 V22 Q450 40 300 30 Q150 40 0 22Z" fill="#14402A"/><path d="M0 22 Q150 40 300 30 Q450 40 600 22" stroke="url(#gold)" stroke-width="2.5" fill="none"/>
+  <line x1="300" y1="14" x2="300" y2="44" stroke="#C9A24A" stroke-width="1.5"/>
+  <path d="M262 52 Q300 72 338 52" stroke="#E8C870" stroke-width="3" fill="none"/><ellipse cx="300" cy="52" rx="10" ry="6" fill="url(#gold)"/>
+  ${[262, 281, 300, 319, 338].map(x => `<rect x="${x - 1.5}" y="${x === 300 ? 38 : 42}" width="3" height="9" fill="#FFF3C8"/><circle cx="${x}" cy="${x === 300 ? 36 : 40}" r="3" fill="#FFE08A" opacity=".9"/>`).join('')}
+  <circle cx="300" cy="52" r="34" fill="url(#halo)" opacity=".7"/>
+  <rect y="360" width="600" height="140" fill="url(#floor)"/>${floorLines}
+  <path d="M268 360 H332 L388 500 H212Z" fill="#7A1420"/><path d="M268 360 L212 500 M332 360 L388 500" stroke="url(#gold)" stroke-width="2.5"/>
+  <path d="M282 0 H318 L372 300 H228Z" fill="url(#spot)"/>
+  ${people.map(({x}) => chairSVG(x)).join('')}
+  <rect x="266" y="160" width="68" height="140" rx="16" fill="url(#wood)" stroke="url(#gold)" stroke-width="2.5"/>
+  <path d="M274 162 Q300 140 326 162" fill="url(#gold)"/><circle cx="300" cy="147" r="4" fill="#F3DC8E"/>
+  <rect x="270" y="176" width="60" height="17" rx="3" fill="url(#gold)"/>
+  <text x="300" y="190" text-anchor="middle" font-family="Anton, Impact, sans-serif" font-size="10" letter-spacing="1.2" fill="#241A08">INCOMING</text>
+  ${people.map(({x, p}) => personSVG(x, p, leanOf(x), p.color)).join('')}
+  ${incoming ? personSVG(300, incoming, 0, incoming.color) : ''}
+  <rect x="46" y="294" width="508" height="10" rx="3" fill="url(#wood)" stroke="#B58A2E" stroke-width="1"/>
+  <path d="M48 304 H552 V346 Q526 356 500 346 Q474 356 448 346 Q422 356 396 346 Q370 356 344 346 Q322 356 300 346 Q278 356 256 346 Q230 356 204 346 Q178 356 152 346 Q126 356 100 346 Q74 356 48 346Z" fill="url(#cloth)"/>
+  <path d="M48 338 H552" stroke="#C9A24A" stroke-width="3"/>
+  ${Array.from({length: 12}, (_, i) => `<line x1="${70 + i * 42}" y1="306" x2="${70 + i * 42}" y2="344" stroke="rgba(0,0,0,.06)" stroke-width="3"/>`).join('')}
+  ${people.map(({x}) => `<path d="M${x + 14} 294 h6 l-1 -8 h-4Z" fill="#E8C870"/>`).join('')}
+  <circle cx="300" cy="322" r="15" fill="url(#gold)"/><circle cx="300" cy="322" r="11" fill="#0F5C38"/>
+  <path d="M300 313 l2.6 6 6.4 .5 -4.9 4.2 1.5 6.3 -5.6 -3.4 -5.6 3.4 1.5 -6.3 -4.9 -4.2 6.4 -.5Z" fill="#FFFFFF"/>
+  ${incoming ? `<text x="300" y="376" text-anchor="middle" font-family="Anton, Impact, sans-serif" font-size="15" letter-spacing="1.5" fill="#F3DC8E">${name}</text><text x="300" y="392" text-anchor="middle" font-family="Figtree, sans-serif" font-size="10" fill="#E8DFC8">takes the incoming seat</text>` : ''}
+</svg>`;
+}
+function tableGuests(exceptId){ return store.get().filter(w => w.id !== exceptId); }
+function renderTable(incoming){
+  const others = tableGuests(incoming && incoming.id);
+  $('sceneHost').innerHTML = tableSVG(incoming, others);
+  const names = SEAT_X.map((_, i) => others[i] || FOUNDERS[(i - Math.min(others.length, 12) + FOUNDERS.length) % FOUNDERS.length]);
+  $('legend').innerHTML = (incoming ? `<b>${esc(incoming.name)}</b> takes the incoming seat.` : `The centre chair is marked <b>INCOMING</b>. Climb all ${TOP} rungs to take it.`)
+    + ` Nearest the centre: ${names.slice(0, 2).map(n => esc(n.name)).join(' and ')}. Former presidents shown are fictional.`;
 }
 const initials = n => n.split(/\s+/).filter(Boolean).slice(0,2).map(w => w[0].toUpperCase()).join('') || '?';
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -775,20 +873,22 @@ function win(p){
   game.over = true; clearInterval(timerT); $('sheet').hidden = true;
   placeTokens(); camera(TOP);
   const human = p.human;
-  if (human) { store.add({name:p.name, party:p.short + ' · ' + new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}), color:p.color}); renderSeats(); A.fanfare(); }
+  let seat = null;
+  if (human) { seat = {id: Date.now(), name:p.name, party:p.short + ' · ' + new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}), color:p.color}; store.add(seat); renderTable(seat); A.fanfare(); }
   else { A.thud(); }
   A.tension(0);
   setTimeout(() => {
     const me = viewer();
     $('endPanel').innerHTML = `
       <div class="mast"><div class="kicker">${human ? 'Sworn in' : 'The race is over'}</div></div>
+      ${human ? `<div class="end-scene">${tableSVG(seat, tableGuests(seat.id))}</div>` : ''}
       <h2 class="end-title" style="color:${human ? 'var(--brass)' : 'var(--ink)'}">${human ? esc(p.name) : esc(p.name) + ' takes the seat'}</h2>
       <p class="note" style="font-size:14px;color:var(--muted)">${human ? `${esc(p.partyName)} climbs all ${TOP} rungs and takes a seat at the High Table as the new president.` : `${esc(p.partyName)} reached the High Table first. You finished on rung ${me.pos} of ${TOP}.`}</p>
       <div class="statgrid"><div><b>${p.turns}</b><span>Turns</span></div><div><b>${p.fell}</b><span>Rungs lost</span></div><div><b>${p.trust}</b><span>Trust</span></div></div>
       <div class="row"><button class="btn" id="againBtn">Play again</button>${human ? '<button class="btn ghost" id="copyBtn">Copy result</button>' : ''}</div>
       <p class="note">Simulated result, not a prediction. Fictional candidates.</p>`;
     $('endScreen').hidden = false;
-    $('againBtn').onclick = () => { $('endScreen').hidden = true; $('setup').hidden = false; game = null; document.body.dataset.phase = 'green'; renderSetup(); };
+    $('againBtn').onclick = () => { $('endScreen').hidden = true; $('setup').hidden = false; game = null; document.body.dataset.phase = 'green'; renderTable(null); renderSetup(); };
     const cb = $('copyBtn');
     if (cb) cb.onclick = async () => {
       const txt = `I climbed all ${TOP} rungs to the High Table in Politikat Ladder as ${p.name} (${p.short}) in ${p.turns} turns.`;
