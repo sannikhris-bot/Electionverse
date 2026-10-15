@@ -1,0 +1,807 @@
+<title>Politikat Ladder</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: a one-screen game. A tall building in cross-section (ground floor = the people, three floors = green/amber/red phases,
+   a ballroom with the High Table at the top) scrolls behind a fixed HUD; challenges rise from the bottom as a sheet.
+   A deliberate single dark look: a ballroom at night, lit by brass. */
+:root{
+  --night:#0A0D14; --hall:#111726; --hall-2:#182037; --line:#28314A;
+  --ink:#EEF0F6; --muted:#9AA1B6; --faint:#5D6580;
+  --brass:#D6B25E; --brass-soft:rgba(214,178,94,.16);
+  --green:#22B573; --amber:#F2A93B; --red:#E5484D;
+  --display:'Anton',Impact,'Arial Narrow Bold',sans-serif;
+  --body:'Figtree',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
+  --phase:var(--green);
+  color-scheme:dark;
+}
+html,body{height:100%}
+body{background:var(--night);color:var(--ink);font-family:var(--body);font-size:15px;overflow:hidden;-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+.app{height:100%;display:flex;flex-direction:column;max-width:780px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+body[data-phase="amber"]{--phase:var(--amber)}
+body[data-phase="red"]{--phase:var(--red)}
+
+/* HUD */
+.hud{padding-block:10px 8px;display:grid;gap:8px;position:relative;z-index:5}
+.hud-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.who{display:flex;align-items:center;gap:10px;min-width:0}
+.who-name{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.who-party{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hud-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.phase-pill{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:5px 9px;border-radius:999px;border:1px solid var(--phase);color:var(--phase);background:color-mix(in srgb,var(--phase) 12%,transparent);white-space:nowrap}
+.icon-btn{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--hall);display:grid;place-items:center;font-size:15px}
+.icon-btn[aria-pressed="false"]{color:var(--faint)}
+.stats{display:grid;grid-template-columns:auto 1fr auto auto;gap:14px;align-items:center}
+.stat{display:flex;align-items:baseline;gap:6px;min-width:0}
+.stat .lbl{font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.stat .val{font-family:var(--mono);font-weight:700;font-variant-numeric:tabular-nums}
+.bar{flex:1;height:6px;border-radius:3px;background:var(--hall-2);overflow:hidden;align-self:center;min-width:50px}
+.bar i{display:block;height:100%;background:var(--brass);transition:width .4s}
+
+/* Stage and tower */
+.stage{position:relative;flex:1;overflow:hidden;border-radius:14px 14px 0 0;background:linear-gradient(to top,#0E1220,#0B0E18 55%,#120C10);border:1px solid var(--line);border-bottom:0}
+.tower{position:absolute;left:0;right:0;bottom:0;transition:transform .7s cubic-bezier(.3,.7,.2,1);will-change:transform}
+.floor{position:absolute;left:0;right:0;border-top:3px solid var(--fc);background:linear-gradient(to bottom,color-mix(in srgb,var(--fc) 10%,transparent),transparent 40%)}
+.floor-label{position:absolute;top:8px;left:12px;font-family:var(--display);font-size:22px;letter-spacing:.02em;line-height:1;color:var(--fc);text-transform:uppercase}
+.floor-label small{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--muted);margin-top:4px}
+.doors{position:absolute;inset:48px 8px 8px;display:flex;flex-direction:column;justify-content:space-around}
+.door-row{display:flex;justify-content:space-between}
+.door{font-size:11px;font-weight:600;color:var(--muted);border:1px solid var(--line);background:rgba(10,13,20,.6);padding:4px 7px;border-radius:4px;max-width:30%}
+.ground{position:absolute;left:0;right:0;bottom:0;border-top:3px solid var(--brass);background:linear-gradient(to bottom,var(--brass-soft),transparent 70%)}
+.ground .floor-label{color:var(--brass)}
+.crowd{position:absolute;left:10px;right:10px;bottom:10px;display:flex;flex-wrap:wrap;gap:4px;justify-content:center}
+.crowd span{font-size:10px;color:var(--ink);background:var(--hall-2);border:1px solid var(--line);border-radius:999px;padding:3px 7px}
+.ladder{position:absolute;left:50%;width:84px;margin-left:-42px;bottom:0;top:0;transform-origin:50% 100%;animation:sway var(--sway-dur,6s) ease-in-out infinite alternate}
+@keyframes sway{from{transform:rotate(calc(var(--sway,.15deg) * -1))}to{transform:rotate(var(--sway,.15deg))}}
+body[data-phase="amber"] .ladder{--sway:.35deg;--sway-dur:4.5s}
+body[data-phase="red"] .ladder{--sway:.7deg;--sway-dur:3s}
+.rail{position:absolute;width:6px;border-radius:3px;background:var(--rc);box-shadow:0 0 12px color-mix(in srgb,var(--rc) 45%,transparent)}
+.rung{position:absolute;left:0;right:0;height:5px;margin-bottom:-2px;border-radius:3px;background:var(--rc);opacity:.85}
+.rung.next{opacity:1;box-shadow:0 0 0 2px var(--night),0 0 18px var(--rc);animation:glow 1.2s ease-in-out infinite alternate}
+@keyframes glow{to{box-shadow:0 0 0 2px var(--night),0 0 30px var(--rc)}}
+.rnum{position:absolute;left:-34px;width:26px;text-align:right;font-family:var(--mono);font-size:10px;color:var(--faint);margin-bottom:-6px}
+.rnum.next{color:var(--ink);font-weight:700}
+.token{position:absolute;width:30px;height:30px;margin-left:-15px;margin-bottom:-15px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:700;color:#fff;background:var(--pc);border:2px solid #fff;box-shadow:0 4px 12px rgba(0,0,0,.6);transition:bottom .18s linear,left .3s;z-index:2}
+.token.active{z-index:3;box-shadow:0 0 0 3px var(--night),0 0 0 5px var(--brass),0 6px 16px rgba(0,0,0,.7)}
+.token.fall{animation:shake .25s linear 2}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+
+/* Ballroom */
+.ballroom{position:absolute;left:0;right:0;border-top:3px solid var(--brass);background:radial-gradient(ellipse 60% 70% at 50% 25%,rgba(214,178,94,.22),transparent 70%),linear-gradient(to bottom,#1A1520,#120F18)}
+.chandelier{position:absolute;left:50%;top:0;transform:translateX(-50%);width:2px;height:46px;background:var(--brass)}
+.chandelier::after{content:"";position:absolute;top:40px;left:50%;transform:translateX(-50%);width:120px;height:44px;border-radius:0 0 60px 60px;background:radial-gradient(circle at 50% 10%,#FFF3C8,var(--brass) 45%,rgba(214,178,94,0) 72%);filter:blur(.3px);box-shadow:0 10px 60px 20px rgba(255,220,140,.18)}
+.ballroom-title{position:absolute;top:98px;left:0;right:0;text-align:center;font-family:var(--display);font-size:30px;letter-spacing:.06em;color:var(--brass);text-transform:uppercase}
+.ballroom-title small{display:block;font-family:var(--body);font-size:12px;letter-spacing:0;text-transform:none;color:var(--muted);margin-top:2px}
+.table{position:absolute;left:8%;right:8%;top:170px;height:40px;border-radius:22px;background:linear-gradient(#3A2A1A,#22180F);border:2px solid var(--brass)}
+.seats{position:absolute;left:6%;right:6%;top:146px;display:flex;justify-content:space-around;flex-wrap:wrap;gap:4px 0}
+.seat{width:58px;text-align:center;font-size:9.5px;line-height:1.15;color:var(--muted)}
+.seat b{display:grid;place-items:center;width:30px;height:30px;margin:0 auto 52px;border-radius:50%;background:var(--sc,#444);border:2px solid var(--brass);font-size:10px;color:#fff}
+.seat.empty b{background:transparent;border-style:dashed;color:var(--faint)}
+.seat .plate{display:block;color:var(--ink);font-weight:600}
+
+.vignette{position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 70px 10px color-mix(in srgb,var(--phase) 18%,transparent);transition:box-shadow 1s}
+body[data-phase="red"] .vignette{animation:pulse var(--beat,.8s) ease-out infinite}
+@keyframes pulse{0%{box-shadow:inset 0 0 90px 24px rgba(229,72,77,.38)}60%{box-shadow:inset 0 0 70px 10px rgba(229,72,77,.14)}100%{box-shadow:inset 0 0 70px 10px rgba(229,72,77,.14)}}
+.toasts{position:absolute;top:10px;left:10px;right:10px;display:grid;gap:6px;pointer-events:none;z-index:4}
+.toast{background:rgba(17,23,38,.94);border:1px solid var(--line);border-left:3px solid var(--tc,var(--muted));padding:6px 9px;border-radius:8px;font-size:12px;animation:tin .25s ease-out}
+@keyframes tin{from{opacity:0;transform:translateY(-6px)}}
+
+/* Sheets and overlays */
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;justify-content:center;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-bottom:calc(14px + env(safe-area-inset-bottom,0px));pointer-events:none}
+.card{pointer-events:auto;width:100%;max-width:748px;background:var(--hall);border:1px solid var(--line);border-top:3px solid var(--phase);border-radius:16px;padding:16px;box-shadow:0 -12px 40px rgba(0,0,0,.55);animation:rise .3s cubic-bezier(.2,.8,.2,1);max-height:72vh;overflow:auto}
+@keyframes rise{from{transform:translateY(24px);opacity:0}}
+.eyebrow{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--phase)}
+.card h2{font-family:var(--display);font-weight:400;font-size:28px;line-height:1.05;letter-spacing:.01em;margin:4px 0 6px;text-wrap:balance;text-transform:uppercase}
+.card p{margin:0 0 10px;line-height:1.45;color:#D7DAE4;max-width:62ch}
+.timer{height:6px;border-radius:3px;background:var(--hall-2);overflow:hidden;margin:4px 0 12px}
+.timer i{display:block;height:100%;width:100%;background:var(--phase);transform-origin:left;transition:transform 1s linear}
+.timer-row{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--muted)}
+.opts{display:grid;gap:8px}
+.opt{display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left;padding:12px 14px;border-radius:10px;border:1px solid var(--line);background:var(--hall-2);font-weight:600;line-height:1.3;transition:border-color .15s,transform .1s}
+.opt:hover:not(:disabled){border-color:var(--phase)}
+.opt:active:not(:disabled){transform:scale(.99)}
+.opt:disabled{opacity:.45;cursor:not-allowed}
+.chips{display:flex;gap:4px;flex-shrink:0}
+.chip{font-family:var(--mono);font-size:10px;font-weight:700;padding:3px 6px;border-radius:5px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.chip.bold{color:var(--amber);border-color:color-mix(in srgb,var(--amber) 50%,transparent)}
+.move{font-family:var(--display);font-size:56px;line-height:1;letter-spacing:.02em}
+.move.up{color:var(--green)}.move.down{color:var(--red)}.move.still{color:var(--muted)}
+.deltas{display:flex;gap:12px;font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:12px}
+.allies{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 12px}
+.ally{padding:7px 10px;border-radius:999px;border:1px solid var(--brass);background:var(--brass-soft);font-size:12.5px;font-weight:600}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 18px;border-radius:10px;border:0;background:var(--brass);color:#1A1408;font-weight:700;font-size:15px;width:100%}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--ink)}
+.row{display:flex;gap:8px}
+.row>*{flex:1}
+
+/* Setup / end screens */
+.overlay{position:fixed;inset:0;z-index:30;background:rgba(6,8,13,.86);backdrop-filter:blur(4px);display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:calc(20px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.panel{width:100%;max-width:520px;margin:auto 0;display:grid;gap:16px}
+.mast{text-align:center;display:grid;gap:6px}
+.mast .kicker{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--brass)}
+.mast h1{font-family:var(--display);font-weight:400;font-size:clamp(54px,16vw,92px);line-height:.9;margin:0;letter-spacing:.01em;text-transform:uppercase}
+.mast h1 span{display:block;font-size:.36em;letter-spacing:.08em;color:var(--brass)}
+.mast p{margin:0 auto;max-width:44ch;color:var(--muted);line-height:1.45}
+.phases{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.phases div{border-radius:8px;padding:8px;border:1px solid var(--line);border-top:4px solid var(--c);font-size:12px;color:var(--muted)}
+.phases b{display:block;color:var(--ink);font-size:13px}
+fieldset{border:1px solid var(--line);border-radius:12px;padding:12px;margin:0;display:grid;gap:10px;background:var(--hall)}
+legend{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:0 6px}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.seg button{padding:10px;border-radius:9px;border:1px solid var(--line);background:var(--hall-2);font-weight:600}
+.seg button[aria-pressed="true"]{border-color:var(--brass);background:var(--brass-soft)}
+.prow{display:grid;grid-template-columns:1fr 1fr auto;gap:6px;align-items:center}
+input,select{width:100%;min-width:0;padding:10px;border-radius:8px;border:1px solid var(--line);background:var(--hall-2);color:var(--ink);font:inherit;font-size:14px}
+.x{width:36px;height:40px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--muted)}
+.note{font-size:12px;color:var(--faint);text-align:center;line-height:1.4}
+.end-title{font-family:var(--display);font-weight:400;font-size:clamp(44px,13vw,72px);line-height:.95;text-transform:uppercase;margin:0;text-align:center}
+.statgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}
+.statgrid div{background:var(--hall);border:1px solid var(--line);border-radius:10px;padding:10px}
+.statgrid b{display:block;font-family:var(--mono);font-size:20px}
+.statgrid span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+
+@media (max-width:420px){.stats{grid-template-columns:auto 1fr auto;gap:10px}.stat.allies-stat{display:none}.card h2{font-size:24px}}
+@media (prefers-reduced-motion:reduce){.ladder,.rung.next,body[data-phase="red"] .vignette{animation:none}.tower,.token{transition:none}}
+</style>
+
+<div class="app">
+  <header class="hud" id="hud">
+    <div class="hud-row">
+      <div class="who"><span class="token" id="hudTok" style="position:static;margin:0;transition:none"></span><div style="min-width:0"><div class="who-name" id="hudName">Ready to climb</div><div class="who-party" id="hudParty">Nigeria edition</div></div></div>
+      <div class="hud-right"><span class="phase-pill" id="hudPhase">Ground floor</span><button class="icon-btn" id="muteBtn" aria-pressed="true" aria-label="Sound">&#9835;</button></div>
+    </div>
+    <div class="stats">
+      <div class="stat"><span class="lbl">Rung</span><span class="val" id="hudRung">0/30</span></div>
+      <div class="stat"><span class="lbl">Trust</span><div class="bar" aria-label="Public trust"><i id="hudTrust" style="width:50%"></i></div></div>
+      <div class="stat"><span class="lbl">Funds</span><span class="val" id="hudFunds">&#8358;100M</span></div>
+      <div class="stat allies-stat"><span class="lbl">Allies</span><span class="val" id="hudAllies">0</span></div>
+    </div>
+  </header>
+  <main class="stage" id="stage">
+    <div class="tower" id="tower"></div>
+    <div class="vignette"></div>
+    <div class="toasts" id="toasts" aria-live="polite"></div>
+  </main>
+</div>
+
+<div class="sheet" id="sheet" hidden><div class="card" id="card"></div></div>
+
+<div class="overlay" id="setup">
+  <div class="panel">
+    <div class="mast">
+      <div class="kicker">Politikat &middot; Nigeria edition</div>
+      <h1><span>Climb to the High Table</span>The Ladder</h1>
+      <p>Every rung is a test from the people: traders, nurses, journalists, the military, the courts. Get it right and climb one or three rungs. Get it wrong and fall one or three. Win a group over and they become an ally who can break a big fall. The higher you go, the harder and faster it gets.</p>
+    </div>
+    <div class="phases">
+      <div style="--c:var(--green)"><b>Floor 1 &middot; Green</b>The Streets. Rungs 1&ndash;10. Easy.</div>
+      <div style="--c:var(--amber)"><b>Floor 2 &middot; Amber</b>The Corridors. Rungs 11&ndash;20. Hard.</div>
+      <div style="--c:var(--red)"><b>Floor 3 &middot; Red</b>The Summit. Rungs 21&ndash;30. Hardest.</div>
+    </div>
+    <fieldset>
+      <legend>How you play</legend>
+      <div class="seg" role="group" aria-label="Game mode">
+        <button id="modeSolo" aria-pressed="true">Solo vs rivals</button>
+        <button id="modePass" aria-pressed="false">Pass and play</button>
+      </div>
+      <div id="playerRows" style="display:grid;gap:6px"></div>
+      <div id="soloExtra" class="prow" style="grid-template-columns:1fr 1fr">
+        <label for="rivalCount" style="font-size:13px;color:var(--muted)">Rival candidates</label>
+        <select id="rivalCount"><option value="1">1 rival</option><option value="2" selected>2 rivals</option><option value="3">3 rivals</option></select>
+      </div>
+      <button class="btn ghost" id="addPlayer" hidden>Add a player</button>
+    </fieldset>
+    <button class="btn" id="startBtn">Begin the climb</button>
+    <p class="note">Real parties, fictional candidates. Every result is simulated, not a prediction. Sound adds to the tension; use the &#9835; button to mute.</p>
+  </div>
+</div>
+
+<div class="overlay" id="handoff" hidden>
+  <div class="panel" style="text-align:center">
+    <div class="mast"><div class="kicker">Next up</div><h1 id="handoffName" style="font-size:clamp(40px,12vw,64px)"></h1><p id="handoffSub"></p></div>
+    <button class="btn" id="handoffBtn">Show my challenge</button>
+  </div>
+</div>
+
+<div class="overlay" id="endScreen" hidden>
+  <div class="panel" id="endPanel"></div>
+</div>
+
+<script>
+(() => {
+'use strict';
+// ---------- Rules ----------
+const TOP = 30, R = 58, BASE = 270, TOPH = 300;
+const PH = {
+  green:{key:'green',floor:1,name:'The Streets',level:'Easy',time:25,timeout:-1,from:1,to:10,ai:{win:.82,big:.3,bigFall:.1}},
+  amber:{key:'amber',floor:2,name:'The Corridors',level:'Hard',time:18,timeout:-1,from:11,to:20,ai:{win:.74,big:.3,bigFall:.3}},
+  red:{key:'red',floor:3,name:'The Summit',level:'Hardest',time:12,timeout:-3,from:21,to:30,ai:{win:.68,big:.35,bigFall:.4}}
+};
+const phaseOf = r => r <= 10 ? PH.green : r <= 20 ? PH.amber : PH.red;
+const PARTIES = [
+  {id:'apc',short:'APC',name:'All Progressives Congress',color:'#1E88E5'},
+  {id:'pdp',short:'PDP',name:'Peoples Democratic Party',color:'#E53935'},
+  {id:'lp',short:'LP',name:'Labour Party',color:'#2E9E4F'},
+  {id:'nnpp',short:'NNPP',name:'New Nigeria Peoples Party',color:'#D9822B'},
+  {id:'adc',short:'ADC',name:'African Democratic Congress',color:'#8E44AD'}
+];
+const RIVALS = ['Haruna Tanko Gidado','Adaeze Okonkwo-Bassey','Tunde Adewale-Coker','Zainab Lawal-Ndako','Emeka Nwachukwu Ibe'];
+const FOUNDERS = [
+  {name:'Ifeoma Danjuma',party:'Founding leader',color:'#6B5A2E'},
+  {name:'Olumide Bakare',party:'Founding leader',color:'#5A4A28'},
+  {name:'Haruna Okpara',party:'Founding leader',color:'#4D4026'}
+];
+const G = {
+  traders:'Market traders',farmers:'Farmers',students:'Students',riders:'Okada riders',faith:'Faith leaders',rulers:'Traditional rulers',
+  teachers:'Teachers',women:"Women's groups",creators:'Youth and creators',delegates:'Party delegates',artisans:'Artisans',tenants:'Tenants and landlords',
+  herders:'Farmers and herders',agents:'Polling agents',weather:'The weather',
+  press:'Journalists',unions:'Labour unions',doctors:'Doctors',nurses:'Nurses',lobby:'Lobbyists',diaspora:'The diaspora',police:'Police',
+  business:'Business leaders',rivals:'Rival politicians',civil:'Civil society',health:'Health officials',importers:'Importers and ports',
+  debate:'Debate moderators',military:'The military',electoral:'Electoral officials',judiciary:'The courts',security:'Security services',
+  observers:'Election observers',godfathers:'Power brokers',world:'Foreign governments',voters:'First-time voters'
+};
+
+// Challenge: [group, title, scenario, options]; option: [answer, move | [chance, win, lose], trust, funds, result | [win, lose]]
+const C = {
+green:[
+ ['traders','The market levy','Traders at the main market say a new council levy is killing their business. They have blocked your convoy.',[
+   ['Get out and sit with the market women',1,6,0,'They share kola nuts and complaints. Word spreads that you listen.'],
+   ['Promise to scrap the levy on the spot',[.55,3,-1],-2,0,['The market roars. Your name is on every stall by evening.','A trader asks how the council will pay its workers. You have no answer.']],
+   ['Tell your driver to go around',-1,-6,0,'A video of your convoy reversing goes round every WhatsApp group.']]],
+ ['farmers','Empty storehouses','Farmers show you empty storehouses. Fertiliser prices have doubled since planting season.',[
+   ['Lay out a costed plan for farm cooperatives',1,4,-10,'Farmers nod at the numbers. The cooperative chairman shakes your hand.'],
+   ['Hand out cash envelopes',-3,-10,-20,'Vote buying is a crime. A reporter films the envelopes and the story runs nationwide.'],
+   ['Blame the last government',-1,-3,0,'They have heard it before. Nobody claps.']]],
+ ['students','Campus town hall','Students ask why lecturers keep striking and degrees take six years to finish.',[
+   ['Invite a student leader to co-write your education plan',3,6,0,'The student union shares the invitation. Campuses start talking about you.'],
+   ['Present a funding plan with a timeline',1,4,0,'Solid and serious. A few students take notes.'],
+   ['Make a joke about strikes',-1,-5,0,'Nobody laughs. The clip trends for the wrong reasons.']]],
+ ['riders','The okada ban','Commercial motorcycle riders fear a ban in the city. Hundreds have gathered at the junction.',[
+   ['Propose safety training and licences, not a ban',1,4,0,'Riders honk their horns in approval as you leave.'],
+   ['Promise to fight any ban',[.5,3,-1],0,0,['The junction erupts. Riders escort you to your next stop.','Commuters hit by okada accidents call you reckless.']],
+   ['Climb on a bike for a photo, no helmet',-1,-3,0,'The photo becomes a meme: the candidate who ignores safety.']]],
+ ['faith','Interfaith prayer','Christian and Muslim leaders invite you to an interfaith prayer for peace.',[
+   ['Attend and speak briefly about unity',1,5,0,'Both communities welcome you. The photo of the gathering travels well.'],
+   ['Ask them to endorse you from the pulpit',-1,-5,0,'They decline politely. Places of worship stay neutral.'],
+   ['Send a deputy instead',-1,-2,0,'Your empty chair is noticed.']]],
+ ['rulers','The palace audience','A respected traditional ruler grants you an audience and expects palace custom to be respected.',[
+   ['Follow protocol and listen to his concerns',1,3,0,'He blesses your journey and wishes you well.'],
+   ['Ask for his public endorsement',[.35,3,-1],0,0,['To everyone\'s surprise, he speaks warmly of you to the press.','He reminds you that the palace does not take sides.']],
+   ['Arrive two hours late',-3,-6,0,'The palace doors stay shut. The story travels across the state.']]],
+ ['teachers','Four months unpaid','Primary school teachers in the state have not been paid for four months.',[
+   ['Commit to clearing arrears first, with a date',1,5,0,'The teachers\' union calls it the first concrete promise of the race.'],
+   ['Fund one school\'s salaries for a month',1,3,-30,'Generous, but critics ask about the other schools.'],
+   ['Say it is a state matter',-1,-4,0,'The teachers turn their backs.']]],
+ ['women','The cabinet question',"The market women's association asks how many women will serve in your cabinet.",[
+   ['Give a specific number and how you will meet it',1,5,0,'They write the number down and promise to hold you to it.'],
+   ['Promise half the cabinet with no plan',[.5,3,-1],0,0,['The hall cheers. The promise trends.','A journalist asks for names. You have none.']],
+   ['Change the subject',-1,-4,0,'They hear a polite no.']]],
+ ['creators','The live dare','Young creators dare you to go live and answer unscripted questions for an hour.',[
+   ['Go live and answer everything',[.6,3,-1],2,0,['Two million views. Young people say you sound real.','One stumble on a question becomes a meme.']],
+   ['Go live with prepared answers only',1,2,0,'Safe. The comments call it scripted, but views are steady.'],
+   ['Ignore the dare',-1,-3,0,'"Scared of the youth?" trends for a day.']]],
+ ['delegates','Transport money','Delegates at your ward congress hint that they expect "transport money" for their votes.',[
+   ['Refuse and ask for their votes on merit',1,4,0,'Some grumble. The honest ones respect it, and you scrape through.'],
+   ['Pay them',-3,-10,-30,'The payment leaks. Vote buying is a crime and your rivals pounce.'],
+   ['Promise them jobs later',-1,-4,0,'They take the promise and the rumour of it spreads.']]],
+ ['artisans','Generator economics','Tailors and welders say generator fuel now costs more than their profits.',[
+   ['Show a costed plan for local power',1,3,0,'An artisans\' association invites you back to explain it to more members.'],
+   ['Promise 24-hour power in six months',[.3,3,-1],-2,0,['They want to believe you, and many do.','An engineer in the crowd explains why that is impossible.']],
+   ['Say everyone is suffering the same',-1,-4,0,'"Not you," shouts a welder.']]],
+ ['tenants','Rent doubled','Tenants say rents have doubled. Landlords say their costs have doubled too.',[
+   ['Bring both sides into one room',1,4,0,'A tense meeting ends with both sides agreeing to a follow-up.'],
+   ['Side loudly with the tenants',[.5,3,-1],0,0,['Renters across the city share your speech.','Landlords and their families turn against you.']],
+   ['Skip the meeting',-1,-3,0,'Both sides notice.']]],
+ ['herders','Land dispute','Farmers and herders in a district are close to clashing over grazing land.',[
+   ['Bring both sides and local leaders together to talk',1,6,0,'Tempers cool. Both sides credit you with keeping the peace.'],
+   ['Promise the land to one side',-3,-8,0,'Tension rises and you are accused of stoking conflict.'],
+   ['Post a call for calm online',-1,-1,0,'Nobody in the district has data to see it.']]],
+ ['agents','Thousands of polling units','You need trained agents for thousands of polling units across the state.',[
+   ['Recruit and train volunteers early',1,2,-10,'By the end of the month you have a trained agent list.'],
+   ['Copy last election\'s list without checking',-1,-2,0,'Half the numbers are switched off.'],
+   ['Leave it until later',-3,-3,0,'Your rivals sign up the best organisers first.']]],
+ ['weather','Storm over the rally','A storm hits just as your first big rally begins.',[
+   ['Speak in the rain',[.6,3,-1],2,0,['Soaked and defiant. The pictures lead the evening news.','Half the crowd leaves and the speech is drowned out.']],
+   ['Move indoors with a smaller crowd',1,1,-10,'A warm, packed hall. No harm done.'],
+   ['Cancel',-1,-3,0,'Rivals mock the no-show.']]]
+],
+amber:[
+ ['press','The live grilling','A top presenter asks for your plan\'s exact cost, live on air.',[
+   ['Give the figures and where they come from',1,5,0,'Calm and precise. The clip is shared as a model answer.'],
+   ['Attack the presenter\'s bias',-3,-8,0,'You look rattled. Every channel replays it.'],
+   ['Promise the numbers next week',-1,-4,0,'"Next week" becomes a running joke.']]],
+ ['unions','Strike threat','The labour congress threatens a nationwide strike over the minimum wage.',[
+   ['Meet the union leaders and agree how to negotiate',1,5,0,'They call you the only candidate who picked up the phone.'],
+   ['Pledge a big wage rise today',[.45,3,-3],0,0,['Workers cheer across the country.','Economists tear the numbers apart and the clip trends.']],
+   ['Call the strike unpatriotic',-3,-8,0,'The unions mobilise against you.']]],
+ ['doctors','Doctors leaving','Resident doctors say half their colleagues have left the country. They want a plan.',[
+   ['Draw up a retention plan with them',1,5,-10,'The doctors\' association calls it serious.'],
+   ['Promise hazard pay with no detail',[.5,3,-1],0,0,['Hospital staff share the promise widely.','Doctors ask where the money comes from.']],
+   ['Tell them to be patriotic and stay',-3,-8,0,'The phrase haunts you for weeks.']]],
+ ['nurses','The night shift','On a night visit, a nurse shows you a ward lit only by phone torches.',[
+   ['Stay the whole shift and listen',3,6,0,'At dawn the nurses walk you out. The story moves the country.'],
+   ['Take photos and leave',-1,-4,0,'"Photo op," say the nurses.'],
+   ['Promise a new hospital in every town',-1,-3,0,'Nobody believes it, least of all the nurses.']]],
+ ['lobby','The envelope','A lobbyist offers ₦200 million for your campaign if you promise his firm a contract.',[
+   ['Refuse and report the offer',1,6,0,'Anti-corruption groups praise you.'],
+   ['Take it quietly',-3,-12,80,'Money now, scandal later: the deal leaks within days.'],
+   ['Ask for time to think',-1,-2,0,'He tells others you are open to offers.']]],
+ ['diaspora','Voting from abroad','Nigerians abroad ask why they still cannot vote from where they live.',[
+   ['Commit to a diaspora voting bill with a timeline',1,4,0,'Diaspora groups organise watch parties for your next speech.'],
+   ['Tell them to come home to vote',-1,-4,0,'The clip is shared from Toronto to London, mockingly.'],
+   ['Ask them to fund your campaign instead',-1,-3,0,'Your lawyer reminds you that foreign donations are restricted.']]],
+ ['police','Permit denied','Police deny your rally permit, citing security, two hours before the event.',[
+   ['Comply and move the rally online',1,3,0,'A record online audience. You look responsible.'],
+   ['Ask a court for an urgent order',[.5,3,-1],0,-20,['The judge grants it. The rally goes ahead and is huge.','The court will not sit until next week.']],
+   ['March anyway',-3,-6,0,'Clashes outside the venue dominate the news.']]],
+ ['business','Investors\' dinner','Business leaders want your plan for the currency and inflation.',[
+   ['Present a credible plan with your economic team',1,3,40,'Legal, declared donations follow.'],
+   ['Promise them special tax breaks',-1,-5,0,'A recording leaks: "special deals for the rich."'],
+   ['Wing it',-3,-4,0,'Nobody in the room is convinced, and they talk.']]],
+ ['press','Fact-check','A fact-checking group finds an error in your jobs figure.',[
+   ['Correct it publicly and thank them',1,6,0,'Rare honesty. Even rivals\' supporters notice.'],
+   ['Insist the figure is right',-3,-8,0,'They publish the evidence. You look dishonest.'],
+   ['Say nothing',-1,-2,0,'The correction circulates without you.']]],
+ ['rivals','The defector','A powerful rival politician offers to defect to your party, with his supporters, for a top post.',[
+   ['Welcome him with no promise of a post',[.5,3,-1],0,0,['He comes anyway and brings his machine.','He walks away and joins someone else.']],
+   ['Offer him the running-mate slot',-1,-5,0,'Your loyal members feel betrayed.'],
+   ['Politely decline',1,2,0,'Your base respects the loyalty.']]],
+ ['creators','#EndUnemployment','A youth hashtag about jobs is trending and it tags you.',[
+   ['Reply with your jobs plan and open a live chat',1,4,0,'Thousands join. The questions are tough but fair.'],
+   ['Host a weekend hackathon for job ideas',[.55,3,-1],0,-20,['Brilliant ideas and great coverage.','Low turnout and a glitchy livestream.']],
+   ['Post a glossy campaign ad',-1,-3,0,'"Ads don\'t create jobs," reply thousands.']]],
+ ['civil','Show your assets','Transparency groups ask every candidate to publish their asset declaration.',[
+   ['Publish it in full',3,8,0,'You set the standard. Rivals scramble to follow.'],
+   ['Publish a short summary',-1,-2,0,'"What are you hiding?" ask the groups.'],
+   ['Refuse: it is private',-3,-10,0,'The refusal leads every bulletin.']]],
+ ['health','Cholera outbreak','A cholera outbreak hits a state where you are due to hold a rally.',[
+   ['Cancel and fund clean-water kits',1,5,-30,'Health workers thank you publicly.'],
+   ['Visit the clinics with health officials',[.6,3,-1],2,0,['You are seen helping, not campaigning.','Officials say your visit got in the way.']],
+   ['Hold the rally anyway',-3,-8,0,'Health officials condemn the crowd risk.']]],
+ ['press','The fake video','A fake video of you insulting a region is spreading fast.',[
+   ['Respond with proof and ask platforms to remove it',1,3,0,'Fact-checkers confirm it is fake. The story turns.'],
+   ['Accuse a rival without evidence',-1,-4,0,'Now there are two stories, and neither helps you.'],
+   ['Ignore it',-3,-8,0,'By the time you speak, millions have seen it.']]],
+ ['importers','Port gridlock','Importers say port delays are costing billions and pushing up prices.',[
+   ['Visit the port and set out a fix',1,3,0,'Importers and truck drivers both like what they hear.'],
+   ['Promise to sack port officials on day one',[.4,3,-1],0,0,['Frustrated traders cheer.','Port workers\' unions turn against you.']],
+   ['Blame the customs workers on TV',-1,-4,0,'The customs union demands an apology.']]]
+],
+red:[
+ ['debate','The final debate','In the final televised debate, the moderator asks for your biggest failure in public life.',[
+   ['Name it honestly and say what you learned',1,6,0,'Calm, human, believable. The undecided warm to you.'],
+   ['Open with a joke, then answer',[.5,3,-3],0,0,['The room laughs, then listens. Your best moment of the race.','The joke falls flat and the answer never recovers.']],
+   ['Turn it into an attack on a rival',-3,-6,0,'The moderator calls it out. So does the audience.']]],
+ ['military','A quiet offer','A retired general privately says "some officers" could help secure your victory.',[
+   ['Refuse firmly: the military stays out of politics',1,6,0,'You keep faith with the constitution. Word of your answer spreads quietly.'],
+   ['Report the approach publicly',[.5,3,-1],3,0,['You are praised for courage across the country.','You are accused of grandstanding without proof.']],
+   ['Say you will think about it',-3,-12,0,'The conversation leaks. Your campaign is in crisis.']]],
+ ['electoral','Collation delays','Results from three states are delayed at collation. Your supporters are restless.',[
+   ['Call for calm and trust the process',1,5,0,'Observers praise your restraint.'],
+   ['Send agents with documents to every centre',[.6,3,-1],0,-30,['Your agents\' records match the count. Confidence grows.','Some agents never reach the centres.']],
+   ['Declare yourself the winner early',-3,-12,0,'The electoral body rebukes you. Tension spreads.']]],
+ ['judiciary','The petition','A rival files a petition saying your nomination papers were flawed.',[
+   ['Have your lawyers answer with every document',1,2,-20,'The papers are in order. The petition stalls.'],
+   ['Ask for an early hearing',[.5,3,-1],0,-10,['The case is thrown out quickly.','The hearing is set for after the vote.']],
+   ['Attack the judge on social media',-3,-10,0,'Lawyers across the country condemn you.']]],
+ ['security','Unrest in a region','Violence breaks out in a region days before the vote. Your rally there is tomorrow.',[
+   ['Postpone and back the security response',1,4,0,'You look like a leader, not just a candidate.'],
+   ['Visit victims quietly, with no cameras',[.5,3,-1],3,0,['Families speak of your visit. The story spreads on its own.','Your team is turned back at a checkpoint.']],
+   ['Hold the rally anyway',-3,-6,0,'Security chiefs call it reckless.']]],
+ ['observers','The observers\' report','Election observers criticise your party\'s agents in two states.',[
+   ['Accept the findings and retrain your agents',1,5,0,'The observers note your response in their next report.'],
+   ['Promise an independent inquiry',[.5,3,-1],0,0,['Respected, and seen as serious.','Critics call it a delay tactic.']],
+   ['Call them foreign meddlers',-3,-8,0,'Diplomats and voters alike are unimpressed.']]],
+ ['doctors','The health rumour','Rumours say you are seriously ill. Markets wobble.',[
+   ['Release a report from independent doctors',1,4,0,'The rumour dies within a day.'],
+   ['Run 10 km in public at dawn',[.45,3,-3],0,0,['Thousands run with you. The rumour is buried.','You stop at kilometre four. Cameras catch it all.']],
+   ['Ignore it',-3,-6,0,'The rumour grows into a story about your secrecy.']]],
+ ['unions','Fuel queues','Fuel queues stretch for miles in the final week before the vote.',[
+   ['Visit a depot and explain your fuel plan',1,3,0,'Drivers in the queue hear you out.'],
+   ['Blame the government at a press conference',[.5,3,-3],0,0,['Frustrated voters agree with you.','You are asked what you would do instead, and stumble.']],
+   ['Promise free fuel',-3,-8,0,'Nobody believes it, and economists say so loudly.']]],
+ ['press','The leaked audio','An audio clip appears to have you insulting voters. You do not recognise it.',[
+   ['Order a forensic check and say so publicly',1,3,0,'Experts later confirm the clip was edited.'],
+   ['Release your own full recording of the event',[.6,3,-3],2,0,['It proves the clip was cut. The story turns on its makers.','Your recording has a gap. Doubts grow.']],
+   ['Threaten to shut down the station',-3,-12,0,'Press freedom groups condemn you.']]],
+ ['godfathers','The godfather','A power broker offers to "deliver" his state if you hand him key appointments.',[
+   ['Refuse quietly and campaign there yourself',1,2,0,'Harder, but clean. Local voters respect it.'],
+   ['Refuse in public',[.5,3,-1],4,0,['Voters cheer a candidate who will not be owned.','His machine turns against you in his state.']],
+   ['Accept in private',-3,-12,0,'Such deals never stay private. It leaks within a day.']]],
+ ['world','Foreign praise','A foreign government praises you. Rivals call you a puppet.',[
+   ['Say only Nigerians choose Nigeria\'s leader',1,4,0,'A clear, confident answer that lands well.'],
+   ['Say nothing',-1,-2,0,'The puppet story grows in the silence.'],
+   ['Boast about the praise',-3,-6,0,'It confirms everything your rivals said.']]],
+ ['voters','Will the young vote?','Polls suggest young voters may stay home on election day.',[
+   ['Run a voter-information drive with youth creators',1,4,-10,'Clear, useful, and widely shared.'],
+   ['Hold a midnight concert rally',[.5,3,-1],0,-40,['A huge crowd and a buzz that lasts all week.','Expensive, chaotic and half-empty.']],
+   ['Offer cash for voter cards',-3,-12,-20,'Vote buying is a crime. Arrests follow, and your campaign is named.']]],
+ ['police','Polling day','On polling day, an agent reports snatched ballot boxes at one unit.',[
+   ['Report it to the electoral body and police',1,4,0,'The unit is flagged for review. You stay above the fray.'],
+   ['Post it online before reporting it',[.4,1,-3],0,0,['It goes viral and officials act fast.','It turns out to be a false report. You spread it.']],
+   ['Send supporters to take the boxes back',-3,-12,0,'Violence has no place here. Police arrest several of your supporters.']]],
+ ['rulers','The peace accord','On the last night, faith and traditional leaders call every candidate to sign a peace accord.',[
+   ['Sign and speak first',3,6,0,'Your words set the tone for the night. The country notices.'],
+   ['Sign but skip the ceremony',-1,-2,0,'Your empty seat is the picture on the front pages.'],
+   ['Refuse until rivals apologise',-3,-8,0,'You look like the obstacle to peace.']]],
+ ['electoral','Results day','You are narrowly ahead, but one state\'s results are disputed.',[
+   ['Wait for the official declaration and urge calm',1,4,0,'Your restraint is noticed. The declaration comes.'],
+   ['Ask for a recount in the disputed state',[.5,3,-1],0,-20,['The recount confirms your lead.','The recount narrows your lead to almost nothing.']],
+   ['Hold a victory rally now',-3,-10,0,'The electoral body warns you publicly. Supporters clash.']]]
+]};
+
+// ---------- State ----------
+const $ = id => document.getElementById(id);
+let mode = 'solo';
+let setupRows = [{name:'',party:'lp'}];
+let game = null;
+let soundOn = true;
+
+const store = {
+  get(){ try { return JSON.parse(localStorage.getItem('ladder.table') || '[]'); } catch(e){ return []; } },
+  add(w){ try { const t = store.get(); t.unshift(w); localStorage.setItem('ladder.table', JSON.stringify(t.slice(0,12))); } catch(e){} }
+};
+
+// ---------- Audio ----------
+const A = {
+  ctx:null, master:null, drone:null, filt:null, beatT:null, level:0,
+  init(){
+    if (this.ctx) return;
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      this.ctx = ctx; this.master = ctx.createGain(); this.master.gain.value = soundOn ? 0.9 : 0; this.master.connect(ctx.destination);
+      this.filt = ctx.createBiquadFilter(); this.filt.type = 'lowpass'; this.filt.frequency.value = 260;
+      this.drone = ctx.createGain(); this.drone.gain.value = 0.0; this.filt.connect(this.drone); this.drone.connect(this.master);
+      [55, 55.6, 82.4].forEach(f => { const o = ctx.createOscillator(); o.type = 'sawtooth'; o.frequency.value = f; const g = ctx.createGain(); g.gain.value = .33; o.connect(g); g.connect(this.filt); o.start(); });
+    } catch(e) { this.ctx = null; }
+  },
+  setMute(on){ if (this.master) this.master.gain.setTargetAtTime(on ? 0.9 : 0, this.ctx.currentTime, .05); },
+  tension(level){
+    this.level = level; if (!this.ctx) return;
+    const t = this.ctx.currentTime;
+    this.drone.gain.setTargetAtTime([0.012,0.02,0.032,0.045][level], t, .8);
+    this.filt.frequency.setTargetAtTime([220,300,420,560][level], t, .8);
+    clearInterval(this.beatT);
+    const gap = level >= 3 ? 760 : level === 2 ? 1150 : 0;
+    document.body.style.setProperty('--beat', (gap || 800) / 1000 + 's');
+    if (gap) this.beatT = setInterval(() => this.beat(), gap);
+  },
+  env(freq, type, dur, vol, when=0, slideTo){
+    if (!this.ctx) return;
+    const t = this.ctx.currentTime + when, o = this.ctx.createOscillator(), g = this.ctx.createGain();
+    o.type = type; o.frequency.setValueAtTime(freq, t); if (slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, t + dur);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + .01); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(this.master); o.start(t); o.stop(t + dur + .02);
+  },
+  beat(){ this.env(62,'sine',.16,.5); this.env(55,'sine',.18,.35,.17); },
+  tick(){ this.env(1500,'square',.03,.05); },
+  step(up, i){ up ? this.env(392 * Math.pow(1.19, i),'triangle',.16,.12) : this.env(300 / Math.pow(1.15, i),'sawtooth',.14,.06); },
+  thud(){ this.env(120,'sine',.4,.5,0,40); this.noise(.35,.25); },
+  noise(dur, vol){
+    if (!this.ctx) return;
+    const b = this.ctx.createBuffer(1, this.ctx.sampleRate * dur, this.ctx.sampleRate), d = b.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length);
+    const s = this.ctx.createBufferSource(), f = this.ctx.createBiquadFilter(), g = this.ctx.createGain();
+    f.type = 'bandpass'; f.frequency.setValueAtTime(1800, this.ctx.currentTime); f.frequency.exponentialRampToValueAtTime(200, this.ctx.currentTime + dur);
+    g.gain.value = vol; s.buffer = b; s.connect(f); f.connect(g); g.connect(this.master); s.start();
+  },
+  fanfare(){ [523,659,784,1047].forEach((f,i) => this.env(f,'triangle',.5,.18,i*.14)); }
+};
+const buzz = ms => { try { navigator.vibrate && navigator.vibrate(ms); } catch(e){} };
+
+// ---------- Tower ----------
+const towerH = BASE + TOP * R + TOPH;
+const yOf = pos => BASE + pos * R;
+function groupsIn(key){ return [...new Set(C[key].map(c => c[0]))].map(g => G[g]); }
+function buildTower(){
+  const tw = $('tower'); tw.style.height = towerH + 'px'; tw.innerHTML = '';
+  const add = (html) => { tw.insertAdjacentHTML('beforeend', html); };
+  // ground floor: the people
+  const everyone = [...new Set([...C.green, ...C.amber, ...C.red].map(c => G[c[0]]))];
+  add(`<div class="ground" style="height:${BASE - R/2}px"><div class="floor-label">Ground floor<small>The people at the foot of the ladder</small></div><div class="crowd">${everyone.map(n => `<span>${n}</span>`).join('')}</div></div>`);
+  // floors
+  for (const ph of [PH.green, PH.amber, PH.red]) {
+    const b = yOf(ph.from - .5), h = (ph.to - ph.from + 1) * R;
+    const gs = groupsIn(ph.key), rows = [];
+    for (let i = 0; i < gs.length; i += 2) rows.push(`<div class="door-row"><span class="door">${gs[i]}</span>${gs[i+1] ? `<span class="door">${gs[i+1]}</span>` : '<span></span>'}</div>`);
+    add(`<div class="floor" style="--fc:var(--${ph.key});bottom:${b}px;height:${h}px"><div class="floor-label">Floor ${ph.floor} &middot; ${ph.name}<small>${ph.level} &middot; rungs ${ph.from}&ndash;${ph.to}</small></div><div class="doors">${rows.reverse().join('')}</div></div>`);
+  }
+  // ballroom
+  add(`<div class="ballroom" style="bottom:${yOf(30.5)}px;height:${TOPH - R/2}px"><div class="chandelier"></div><div class="ballroom-title">The High Table<small>Where the winners sit</small></div><div class="table"></div><div class="seats" id="seats"></div></div>`);
+  // ladder
+  let lad = `<div class="ladder" id="ladder">`;
+  for (const ph of [PH.green, PH.amber, PH.red]) {
+    const b = ph.from === 1 ? yOf(0) : yOf(ph.from - .5), top = yOf(ph.to + .5);
+    lad += `<div class="rail" style="--rc:var(--${ph.key});left:0;bottom:${b}px;height:${top - b}px"></div><div class="rail" style="--rc:var(--${ph.key});right:0;bottom:${b}px;height:${top - b}px"></div>`;
+  }
+  for (let r = 1; r <= TOP; r++) {
+    const ph = phaseOf(r);
+    lad += `<div class="rung" data-r="${r}" style="--rc:var(--${ph.key});bottom:${yOf(r)}px"></div><div class="rnum" data-r="${r}" style="bottom:${yOf(r)}px">${r}</div>`;
+  }
+  lad += `<div id="tokens"></div></div>`;
+  add(lad);
+  renderSeats();
+}
+function renderSeats(newWinner){
+  const winners = store.get();
+  const seats = [...FOUNDERS, ...winners].slice(0, 8);
+  while (seats.length < 8) seats.push(null);
+  $('seats').innerHTML = seats.map(s => s
+    ? `<div class="seat" style="--sc:${s.color}"><b>${initials(s.name)}</b><span class="plate">${esc(s.name)}</span>${esc(s.party)}</div>`
+    : `<div class="seat empty"><b>?</b><span class="plate">Empty seat</span>Climb to claim it</div>`).join('');
+}
+const initials = n => n.split(/\s+/).filter(Boolean).slice(0,2).map(w => w[0].toUpperCase()).join('') || '?';
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function placeTokens(){
+  const host = $('tokens'); if (!game) return;
+  const byPos = {};
+  game.players.forEach(p => (byPos[p.pos] = byPos[p.pos] || []).push(p));
+  host.innerHTML = game.players.map((p, i) => {
+    const same = byPos[p.pos], k = same.indexOf(p), off = (k - (same.length - 1) / 2) * 30;
+    return `<div class="token${i === game.cur ? ' active' : ''}" id="tok${i}" style="--pc:${p.color};bottom:${yOf(p.pos)}px;left:calc(50% + ${off}px)" title="${esc(p.name)}">${p.short}</div>`;
+  }).join('');
+  document.querySelectorAll('.rung,.rnum').forEach(el => el.classList.remove('next'));
+  const me = viewer();
+  if (me && me.pos < TOP) document.querySelectorAll(`[data-r="${me.pos + 1}"]`).forEach(el => el.classList.add('next'));
+}
+function moveToken(p){
+  const i = game.players.indexOf(p), el = $('tok' + i);
+  if (el) el.style.bottom = yOf(p.pos) + 'px';
+}
+function camera(pos, instant){
+  const stage = $('stage'), sh = stage.clientHeight;
+  const sheetOpen = !$('sheet').hidden;
+  const covered = sheetOpen ? Math.max(0, stage.getBoundingClientRect().bottom - $('card').getBoundingClientRect().top) : 0;
+  // Keep the climber just above the challenge card (or 40% up the stage when no card is open).
+  let t = yOf(pos) - (sheetOpen ? covered + 80 : sh * 0.4);
+  if (pos >= TOP && !sheetOpen) t = towerH - sh;
+  t = Math.max(-covered, Math.min(towerH - sh, t));
+  const tw = $('tower');
+  if (instant) { tw.style.transition = 'none'; tw.style.transform = `translateY(${t}px)`; tw.offsetHeight; tw.style.transition = ''; }
+  else tw.style.transform = `translateY(${t}px)`;
+}
+
+// ---------- HUD and ambience ----------
+const cur = () => game.players[game.cur];
+const viewer = () => { if (!game) return null; const c = cur(); return c.human ? c : game.players.find(p => p.human); };
+function ambience(){
+  const me = viewer(); if (!me) return;
+  const ph = me.pos >= TOP ? PH.red : phaseOf(me.pos + 1);
+  document.body.dataset.phase = me.pos === 0 ? 'green' : ph.key;
+  A.tension(me.pos === 0 ? 0 : ph.key === 'green' ? 1 : ph.key === 'amber' ? 2 : 3);
+}
+function hud(){
+  const me = viewer(); if (!me) return;
+  const ph = phaseOf(Math.min(TOP, me.pos + 1));
+  $('hudTok').style.setProperty('--pc', me.color); $('hudTok').style.background = me.color; $('hudTok').textContent = me.short;
+  $('hudName').textContent = me.name;
+  $('hudParty').textContent = me.partyName;
+  $('hudPhase').textContent = me.pos === 0 ? 'Ground floor' : `Floor ${ph.floor} · ${ph.level}`;
+  $('hudRung').textContent = `${me.pos}/${TOP}`;
+  $('hudTrust').style.width = me.trust + '%';
+  $('hudFunds').textContent = '₦' + me.funds + 'M';
+  $('hudAllies').textContent = me.allies.length;
+}
+function toast(html, color){
+  const el = document.createElement('div'); el.className = 'toast'; el.style.setProperty('--tc', color || 'var(--muted)'); el.innerHTML = html;
+  $('toasts').prepend(el); while ($('toasts').children.length > 2) $('toasts').lastChild.remove();
+  setTimeout(() => el.remove(), 4200);
+}
+
+// ---------- Setup ----------
+function renderSetup(){
+  const taken = new Set();
+  $('playerRows').innerHTML = setupRows.map((r, i) => `
+    <div class="prow">
+      <input id="pname${i}" placeholder="${mode === 'solo' ? 'Your candidate’s name' : 'Player ' + (i + 1) + ' candidate'}" value="${esc(r.name)}" maxlength="28" aria-label="Candidate name ${i + 1}">
+      <select id="pparty${i}" aria-label="Party ${i + 1}">${PARTIES.map(p => `<option value="${p.id}" ${p.id === r.party ? 'selected' : ''}>${p.short} · ${p.name}</option>`).join('')}</select>
+      ${mode === 'pass' && setupRows.length > 2 ? `<button class="x" data-rm="${i}" aria-label="Remove player ${i + 1}">&times;</button>` : '<span></span>'}
+    </div>`).join('');
+  setupRows.forEach((r, i) => {
+    $('pname' + i).oninput = e => r.name = e.target.value;
+    $('pparty' + i).onchange = e => r.party = e.target.value;
+  });
+  document.querySelectorAll('[data-rm]').forEach(b => b.onclick = () => { setupRows.splice(+b.dataset.rm, 1); renderSetup(); });
+  $('soloExtra').hidden = mode !== 'solo';
+  $('addPlayer').hidden = mode !== 'pass' || setupRows.length >= 4;
+  $('modeSolo').setAttribute('aria-pressed', mode === 'solo'); $('modePass').setAttribute('aria-pressed', mode === 'pass');
+}
+$('modeSolo').onclick = () => { mode = 'solo'; setupRows = setupRows.slice(0, 1); renderSetup(); };
+$('modePass').onclick = () => { mode = 'pass'; const used = setupRows.map(r => r.party); while (setupRows.length < 2) setupRows.push({name:'', party: PARTIES.find(p => !used.includes(p.id)).id}); renderSetup(); };
+$('addPlayer').onclick = () => { const used = setupRows.map(r => r.party); setupRows.push({name:'', party:(PARTIES.find(p => !used.includes(p.id)) || PARTIES[0]).id}); renderSetup(); };
+$('muteBtn').onclick = () => { soundOn = !soundOn; $('muteBtn').setAttribute('aria-pressed', soundOn); A.setMute(soundOn); };
+
+function makePlayer(name, partyId, human){
+  const p = PARTIES.find(x => x.id === partyId);
+  return {name, party:p.id, partyName:p.name, short:p.short, color:p.color, human, pos:0, trust:50, funds:100, allies:[], decks:{}, turns:0, climbed:0, fell:0};
+}
+$('startBtn').onclick = () => {
+  A.init(); if (A.ctx && A.ctx.state === 'suspended') A.ctx.resume();
+  const players = setupRows.map((r, i) => makePlayer(r.name.trim() || (mode === 'solo' ? 'Your candidate' : 'Player ' + (i + 1)), r.party, true));
+  if (mode === 'solo') {
+    const n = +$('rivalCount').value, used = [players[0].party];
+    const pool = PARTIES.filter(p => !used.includes(p.id));
+    for (let i = 0; i < n; i++) players.push(makePlayer(RIVALS[i], pool[i].id, false));
+  }
+  game = {players, cur:0, over:false, round:1, humans:players.filter(p => p.human).length};
+  $('setup').hidden = true;
+  buildTower(); placeTokens(); hud(); ambience(); camera(0, true);
+  toast(`<b>The campaign begins.</b> Win the people on each floor to climb.`, 'var(--brass)');
+  setTimeout(startTurn, 500);
+};
+
+// ---------- Turns ----------
+function draw(p, key){
+  if (!p.decks[key] || !p.decks[key].length) {
+    const idx = C[key].map((_, i) => i);
+    for (let i = idx.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [idx[i], idx[j]] = [idx[j], idx[i]]; }
+    p.decks[key] = idx;
+  }
+  return C[key][p.decks[key].pop()];
+}
+function startTurn(){
+  if (game.over) return;
+  const p = cur(); p.funds += 8; p.turns++;
+  placeTokens(); hud(); ambience(); camera(p.pos);
+  if (!p.human) { setTimeout(() => aiTurn(p), 420); return; }
+  if (game.humans > 1) {
+    $('handoffName').textContent = p.name;
+    $('handoffSub').textContent = `${p.partyName} · rung ${p.pos} of ${TOP}. Pass the phone, then tap when ready.`;
+    $('handoff').hidden = false;
+    $('handoffBtn').onclick = () => { $('handoff').hidden = true; showChallenge(p); };
+  } else showChallenge(p);
+}
+function nextTurn(){
+  if (game.over) return;
+  game.cur = (game.cur + 1) % game.players.length;
+  if (game.cur === 0) game.round++;
+  setTimeout(startTurn, game.players[game.cur].human ? 350 : 150);
+}
+
+let timerT = null;
+function showChallenge(p){
+  const ph = phaseOf(p.pos + 1), ch = draw(p, ph.key);
+  const [g, title, scen, opts] = ch;
+  const order = opts.map((_, i) => i).sort(() => Math.random() - .5);
+  $('card').innerHTML = `
+    <div class="eyebrow">Rung ${p.pos + 1} &middot; ${G[g]}</div>
+    <h2>${esc(title)}</h2>
+    <p>${esc(scen)}</p>
+    <div class="timer-row"><span>Decide</span><span id="secs">${ph.time}s</span></div>
+    <div class="timer"><i id="tbar"></i></div>
+    <div class="opts">${order.map(i => {
+      const o = opts[i], cost = o[3] < 0 ? -o[3] : 0, bold = Array.isArray(o[1]);
+      return `<button class="opt" data-i="${i}" ${cost > p.funds ? 'disabled' : ''}><span>${esc(o[0])}</span><span class="chips">${bold ? '<span class="chip bold">Bold</span>' : ''}${cost ? `<span class="chip">₦${cost}M</span>` : ''}</span></button>`;
+    }).join('')}</div>`;
+  $('sheet').hidden = false;
+  requestAnimationFrame(() => camera(p.pos));
+  let left = ph.time;
+  const bar = $('tbar');
+  requestAnimationFrame(() => { bar.style.transform = `scaleX(${(left - 1) / ph.time})`; });
+  clearInterval(timerT);
+  timerT = setInterval(() => {
+    left--; $('secs').textContent = left + 's'; bar.style.transform = `scaleX(${Math.max(0, left - 1) / ph.time})`;
+    if (left <= 5 && left > 0) A.tick();
+    if (left <= 0) { clearInterval(timerT); resolve(p, ch, -1, ph); }
+  }, 1000);
+  document.querySelectorAll('.opt').forEach(b => b.onclick = () => { clearInterval(timerT); resolve(p, ch, +b.dataset.i, ph); });
+}
+
+function resolve(p, ch, i, ph){
+  const [g, , , opts] = ch;
+  let move, text, dT = 0, dF = 0, bold = false;
+  if (i < 0) { move = ph.timeout; text = 'You hesitated. In politics, silence is an answer too.'; dT = -3; }
+  else {
+    const o = opts[i]; dT = o[2]; dF = o[3];
+    if (Array.isArray(o[1])) {
+      bold = true;
+      const chance = Math.max(.1, Math.min(.9, o[1][0] + (p.trust - 50) / 200));
+      const won = Math.random() < chance;
+      move = won ? o[1][1] : o[1][2]; text = won ? o[4][0] : o[4][1];
+    } else { move = o[1]; text = o[4]; }
+  }
+  p.trust = Math.max(0, Math.min(100, p.trust + dT)); p.funds = Math.max(0, p.funds + dF);
+  let gained = null;
+  if (move > 0 && !p.allies.includes(g) && p.allies.length < 5) { p.allies.push(g); gained = G[g]; }
+  hud();
+  showResult(p, move, text, dT, dF, gained, bold);
+}
+
+function moveWord(m){ return m > 0 ? `Up ${m}` : m < 0 ? `Down ${-m}` : 'Hold'; }
+function showResult(p, move, text, dT, dF, gained, bold){
+  const softened = () => -1;
+  const render = (m, shieldUsed) => {
+    $('card').innerHTML = `
+      <div class="eyebrow">${m > 0 ? 'Right move' : m < 0 ? 'Wrong move' : 'Steady'}${bold ? ' · bold call' : ''}</div>
+      <div class="move ${m > 0 ? 'up' : m < 0 ? 'down' : 'still'}">${moveWord(m)}</div>
+      <p>${esc(text)}${shieldUsed ? ` ${esc(shieldUsed)} stood by you and broke the fall.` : ''}</p>
+      <div class="deltas">${dT ? `<span>Trust ${dT > 0 ? '+' : '\u2212'}${Math.abs(dT)}</span>` : ''}${dF ? `<span>Funds ${dF > 0 ? '+' : '−'}₦${Math.abs(dF)}M</span>` : ''}${gained ? `<span style="color:var(--brass)">New ally: ${esc(gained)}</span>` : ''}</div>
+      ${m <= -3 && !shieldUsed && p.allies.length ? `<div class="eyebrow" style="color:var(--brass)">Call on an ally to cut the fall to one rung</div><div class="allies">${p.allies.map(a => `<button class="ally" data-a="${a}">${esc(G[a])}</button>`).join('')}</div>` : ''}
+      <button class="btn" id="goBtn">${m > 0 ? 'Climb' : m < 0 ? 'Take the fall' : 'Continue'}</button>`;
+    document.querySelectorAll('[data-a]').forEach(b => b.onclick = () => {
+      p.allies = p.allies.filter(a => a !== b.dataset.a); hud();
+      render(softened(m), G[b.dataset.a]);
+    });
+    $('goBtn').onclick = () => { $('sheet').hidden = true; doMove(p, m); };
+  };
+  render(move, null);
+  requestAnimationFrame(() => camera(p.pos));
+  if (move < 0) { A.thud(); buzz(120); } else if (move > 0) A.step(true, 0);
+}
+
+function doMove(p, m, quiet){
+  return new Promise(res => {
+    const steps = Math.abs(m), dir = Math.sign(m);
+    if (!steps) { placeTokens(); finish(); return; }
+    let k = 0;
+    const el = $('tok' + game.players.indexOf(p));
+    if (dir < 0 && el) el.classList.add('fall');
+    const go = () => {
+      const next = Math.max(0, Math.min(TOP, p.pos + dir));
+      if (next === p.pos) { finish(); return; }
+      p.pos = next; dir > 0 ? p.climbed++ : p.fell++;
+      moveToken(p); camera(p.pos); A.step(dir > 0, k);
+      if (++k < steps) setTimeout(go, dir > 0 ? 260 : 170); else setTimeout(finish, p.human ? 420 : 260);
+    };
+    function finish(){
+      if (el) el.classList.remove('fall');
+      placeTokens(); hud(); ambience();
+      if (p.pos >= TOP) { win(p); res(); return; }
+      if (p.human && !quiet) {
+        const ph = phaseOf(p.pos + 1), was = phaseOf(Math.max(1, p.pos + 1 - m));
+        if (ph.key !== was.key) toast(`${dir > 0 ? 'You reach' : 'You fall back to'} <b>Floor ${ph.floor} · ${ph.name}</b>. ${ph.level} challenges${dir > 0 && ph.key === 'red' ? '. Every mistake now costs three rungs.' : '.'}`, `var(--${ph.key})`);
+      }
+      res(); nextTurn();
+    }
+    setTimeout(go, 200);
+  });
+}
+
+function aiTurn(p){
+  const ph = phaseOf(p.pos + 1), ch = draw(p, ph.key), r = Math.random();
+  const ok = r < ph.ai.win;
+  const m = ok ? (Math.random() < ph.ai.big ? 3 : 1) : (Math.random() < ph.ai.bigFall ? -3 : -1);
+  const verb = ok ? (m === 3 ? 'won over' : 'handled') : (m === -3 ? 'badly mishandled' : 'stumbled with');
+  toast(`<b>${esc(p.name)}</b> (${p.short}) ${verb} ${esc(G[ch[0]].toLowerCase())}: <b>${moveWord(m).toLowerCase()}</b>.`, m > 0 ? 'var(--green)' : 'var(--red)');
+  doMove(p, m, true);
+}
+
+function win(p){
+  game.over = true; clearInterval(timerT); $('sheet').hidden = true;
+  placeTokens(); camera(TOP);
+  const human = p.human;
+  if (human) { store.add({name:p.name, party:p.short + ' · ' + new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}), color:p.color}); renderSeats(); A.fanfare(); }
+  else { A.thud(); }
+  A.tension(0);
+  setTimeout(() => {
+    const me = viewer();
+    $('endPanel').innerHTML = `
+      <div class="mast"><div class="kicker">${human ? 'Sworn in' : 'The race is over'}</div></div>
+      <h2 class="end-title" style="color:${human ? 'var(--brass)' : 'var(--ink)'}">${human ? esc(p.name) : esc(p.name) + ' takes the seat'}</h2>
+      <p class="note" style="font-size:14px;color:var(--muted)">${human ? `${esc(p.partyName)} climbs all ${TOP} rungs and takes a seat at the High Table as the new president.` : `${esc(p.partyName)} reached the High Table first. You finished on rung ${me.pos} of ${TOP}.`}</p>
+      <div class="statgrid"><div><b>${p.turns}</b><span>Turns</span></div><div><b>${p.fell}</b><span>Rungs lost</span></div><div><b>${p.trust}</b><span>Trust</span></div></div>
+      <div class="row"><button class="btn" id="againBtn">Play again</button>${human ? '<button class="btn ghost" id="copyBtn">Copy result</button>' : ''}</div>
+      <p class="note">Simulated result, not a prediction. Fictional candidates.</p>`;
+    $('endScreen').hidden = false;
+    $('againBtn').onclick = () => { $('endScreen').hidden = true; $('setup').hidden = false; game = null; document.body.dataset.phase = 'green'; renderSetup(); };
+    const cb = $('copyBtn');
+    if (cb) cb.onclick = async () => {
+      const txt = `I climbed all ${TOP} rungs to the High Table in Politikat Ladder as ${p.name} (${p.short}) in ${p.turns} turns.`;
+      try { await navigator.clipboard.writeText(txt); cb.textContent = 'Copied'; } catch(e) { cb.textContent = txt; }
+    };
+  }, 1600);
+}
+
+// ---------- Boot ----------
+if (location.hash === '#test') window.__ladder = {C};
+renderSetup();
+buildTower();
+camera(0, true);
+window.addEventListener('resize', () => { const me = viewer(); camera(me ? me.pos : 0, true); });
+})();
+</script>

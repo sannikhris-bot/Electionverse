@@ -114,7 +114,18 @@ Debates are contested: the rival also performs, and only the difference moves th
 - Colour-blind patterns on the map are not done; tile labels and screen-reader text carry the leader so colour is not the only signal.
 - `npx expo install` could not reach Expo's servers from the build machine, so dependency versions were pinned from Expo SDK 57's bundled module list. Run `npx expo install --check` once on your machine.
 
-## Next steps
+## The Ladder (launch game prototype)
+
+`apps/ladder-prototype/index.html` is a playable, single-file prototype of the launch game: a political snakes and ladders.
+
+- **Board**: a building in cross-section. Ground floor: the people (traders, nurses, journalists, police, the military and more). Floor 1 (green, easy, rungs 1 to 10), Floor 2 (amber, hard, 11 to 20), Floor 3 (red, hardest, 21 to 30). At the top, a ballroom with the High Table, where winners take a seat beside fictional founding leaders.
+- **Challenges** come from each part of society (45 in all, 15 per floor). A right move climbs 1 or 3 rungs, a wrong one drops 1 or 3. "Bold" answers can go either way, helped by public trust. Timers shrink from 25 to 18 to 12 seconds; hesitating in the red floor costs 3 rungs.
+- **Allies**: win a group over and it becomes an ally that can cut a 3-rung fall to 1.
+- **Modes**: solo against 1 to 3 rival candidates, or pass-and-play for 2 to 4 players.
+- **Tension**: the ladder sways more on higher floors; a drone, a heartbeat and a ticking clock build with height (sound starts when you press Begin).
+- **Balance** (simulated, 4,000 games, against 2 rivals): a near-perfect player wins about 83%, a good player about 52%, a careless one about 22%.
+- Real parties, fictional candidates; vote buying, violence and military shortcuts always lose.
+
 
 The product is now **Politikat**, a politics-only social app (polls on seven topics, video polls, live debate responses) with ElectionVerse as its game. The full plan is the [Politikat blueprint](https://claude.ai/code/artifact/07b2a6e3-422b-413f-a3c8-fda76c5abdb6) (Claude Docs).
 
