@@ -18,6 +18,7 @@
   color-scheme:dark;
 }
 html,body{height:100%}
+[hidden]{display:none!important}
 body{background:var(--night);color:var(--ink);font-family:var(--body);font-size:15px;overflow:hidden;-webkit-tap-highlight-color:transparent}
 button{font:inherit;color:inherit;cursor:pointer}
 button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
@@ -187,12 +188,23 @@ input,select{width:100%;min-width:0;padding:10px;border-radius:8px;border:1px so
 .token.climber.active .pill{outline:2px solid var(--brass);outline-offset:1px}
 .speaker{display:flex;gap:12px;align-items:flex-end}
 .spk{width:72px;height:86px;flex-shrink:0;border-radius:12px;background:radial-gradient(circle at 50% 30%,color-mix(in srgb,var(--phase) 28%,transparent),transparent 70%),var(--hall-2);border:1px solid var(--line);overflow:hidden}
-.spk .ch{width:72px;height:86px}
 .speaker h2{margin-bottom:0}
-.crowd-ch{display:block;width:40px}
-.crowd-ch .ch{width:40px;height:56px}
+.crowd-ch{display:block;width:38px;height:66px}
+.who-art{display:block;height:66px;transform-origin:50% 100%;animation:artIdle 3.2s ease-in-out infinite;animation-delay:var(--d,0s)}
+.who-art img{display:block;height:66px;width:auto;margin:0 auto;filter:drop-shadow(0 3px 3px rgba(0,0,0,.6))}
+.who-art.sway{animation:artSway 2.4s ease-in-out infinite;animation-delay:var(--d,0s)}
 .door{display:flex;align-items:center;gap:5px}
-.door .ch{width:24px;height:29px;flex-shrink:0;border-radius:4px;background:var(--hall-2)}
+.door-face{width:26px;height:30px;flex-shrink:0;border-radius:4px;background-color:var(--hall-2);background-repeat:no-repeat;background-size:200% auto;background-position:50% 0}
+.who-bust{display:block;width:72px;height:86px;position:relative;transform-origin:50% 100%}
+.who-bust img{position:absolute;left:50%;top:5px;height:190px;width:auto;transform:translateX(-50%);filter:drop-shadow(0 3px 4px rgba(0,0,0,.5))}
+.who-bust.talking{animation:artTalk .42s ease-in-out infinite}
+.who-bust.cheer{animation:candHop .6s ease-in-out 3}
+.who-bust.sad{animation:artSad .9s ease-out forwards}
+@keyframes artIdle{0%,100%{transform:rotate(-1.2deg)}50%{transform:rotate(1.2deg) translateY(-1px)}}
+@keyframes artSway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg) translateY(-2px)}}
+@keyframes artTalk{0%,100%{transform:rotate(-1.5deg) scale(1)}50%{transform:rotate(1.5deg) scale(1.02,.99)}}
+@keyframes artSad{to{transform:translateY(6px) rotate(-4deg);filter:saturate(.6) brightness(.85)}}
+@media (prefers-reduced-motion:reduce){.who-art,.who-bust,.cand,.cand-img{animation:none!important}}
 .looks{display:flex;gap:5px}
 .look{display:grid;justify-items:center;gap:2px;padding:4px 2px 5px;border-radius:9px;border:1px solid var(--line);background:var(--hall-2);font-size:10px;line-height:1.15;color:var(--muted);flex:1 1 0;min-width:0}
 .look .ch{width:40px;height:48px}
@@ -286,8 +298,8 @@ const PARTIES = [
   {id:'sdp',short:'SDP',name:'Social Democratic Party',color:'#2B47B8',img:'assets/candidates/sdp.webp',rival:'Zainab Lawal-Ndako'}
 ];
 // Fictional former leaders. No real president is depicted.
-const FOUNDERS = ['Ifeoma Danjuma','Olumide Bakare','Haruna Okpara','Bisola Adeyemi-Garba','Chinedu Abubakar','Aminu Ekanem',
-  'Folake Nwosu-Bello','Ibrahim Oyelaran','Ngozi Etim-Lawal','Tamuno Iheanacho','Zara Mohammed-Okon','Kunle Ishaku'].map(n => ({name:n, party:'Former president (fictional)'}));
+const FOUNDERS = ['Ifeanyi Danjuma','Olumide Bakare','Haruna Okpara','Bisola Adeyemi-Garba','Chinedu Abubakar','Aminu Ekanem',
+  'Folake Nwosu-Bello','Ibrahim Oyelaran','Ngozi Etim-Lawal','Tamuno Iheanacho','Zubairu Mohammed-Okon','Kunle Ishaku'].map((n, i) => ({name:n, party:'Former president (fictional)', img:`assets/presidents/pres-${String([1,2,3,4,5,6,8,7,11,9,10,12][i]).padStart(2, '0')}.webp`}));
 const G = {
   traders:'Market traders',farmers:'Farmers',students:'Students',riders:'Okada riders',faith:'Faith leaders',rulers:'Traditional rulers',
   teachers:'Teachers',women:"Women's groups",creators:'Youth and creators',delegates:'Party delegates',artisans:'Artisans',tenants:'Tenants and landlords',
@@ -746,7 +758,11 @@ let towerH = BASE + TOP * R + TOPH;
 const yOf = pos => BASE + pos * R;
 function groupsIn(key){ return [...new Set(C[key].map(c => c[0]))]; }
 const CROWD = ['traders','farmers','students','riders','nurses','doctors','police','military','press','unions','teachers','women','rulers','faith','creators','judiciary'];
-const door = g => `<span class="door">${charSVG(specFor(g, 'door' + g), {crop:'bust'})}<span>${G[g]}</span></span>`;
+// 3D society characters (assets/society/<group>.webp), matching the candidate art.
+const artSrc = g => `assets/society/${g}.webp`;
+const art = (g, cls = '', d = 0) => `<span class="who-art ${cls}" style="--d:${d}s"><img src="${artSrc(g)}" alt="" loading="lazy" decoding="async"></span>`;
+const bust = (g, cls = '') => `<span class="who-bust ${cls}"><img src="${artSrc(g)}" alt=""></span>`;
+const door = g => `<span class="door"><span class="door-face" style="background-image:url('${artSrc(g)}')"></span><span>${G[g]}</span></span>`;
 function buildTower(){
   // The state room keeps its 6:5 proportions at any stage width.
   const sw = $('stage').clientWidth || 360;
@@ -755,7 +771,7 @@ function buildTower(){
   const tw = $('tower'); tw.style.height = towerH + 'px'; tw.innerHTML = '';
   const add = (html) => { tw.insertAdjacentHTML('beforeend', html); };
   // ground floor: the people
-  add(`<div class="ground" style="height:${BASE - R/2}px"><div class="floor-label">Ground floor<small>The people at the foot of the ladder</small></div><div class="crowd">${CROWD.map((g, i) => `<span class="crowd-ch" title="${G[g]}">${charSVG(specFor(g, 'crowd' + i), {cls: i % 5 === 1 ? 'wave' : i % 3 === 0 ? 'gesture' : ''})}</span>`).join('')}</div></div>`);
+  add(`<div class="ground" style="height:${BASE - R/2}px"><div class="floor-label">Ground floor<small>The people at the foot of the ladder</small></div><div class="crowd">${CROWD.map((g, i) => `<span class="crowd-ch" title="${G[g]}">${art(g, i % 4 === 1 ? 'sway' : '', -(i * .37) % 3)}</span>`).join('')}</div></div>`);
   // floors
   for (const ph of [PH.green, PH.amber, PH.red]) {
     const b = yOf(ph.from - .5), h = (ph.to - ph.from + 1) * R;
@@ -788,10 +804,10 @@ const GELE = ['#C2185B','#E0A100','#00897B','#8E24AA'];
 function hashN(t){ let h = 2166136261; for (const c of t) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
 function figureSVG(x, person, w, cls){
   const h = w / 0.6;
-  return `<image class="cand-img ${cls || ''}" href="${person.img}" x="${x - w / 2}" y="${300 - h * 0.46}" width="${w}" height="${h}" preserveAspectRatio="xMidYMin meet" style="animation-delay:${-(hashN(person.name) % 3000) / 1000}s"/>`;
+  return `<image class="cand-img ${cls || ''}" href="${person.img}" x="${x - w / 2}" y="${300 - h * 0.5}" width="${w}" height="${h}" preserveAspectRatio="xMidYMin meet" style="animation-delay:${-(hashN(person.name) % 3000) / 1000}s"/>`;
 }
 function personSVG(x, person, lean, sash, cls){
-  if (person.img) return figureSVG(x, person, x === 300 ? 66 : 50, cls);
+  if (person.img) return `<g clip-path="url(#aboveCloth)"><g transform="rotate(${lean} ${x} 300)">${figureSVG(x, person, x === 300 ? 84 : 68, cls)}</g></g>`;
   const spec = {...(person.spec || specFor('president', person.name))};
   if (sash) spec.sash = sash;
   // Seated rig: the hips sit at the table edge.
@@ -831,6 +847,7 @@ function tableSVG(incoming, others){
     <linearGradient id="cloth" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FBF8F0"/><stop offset="1" stop-color="#DCD3BE"/></linearGradient>
     <linearGradient id="spot" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFF6D8" stop-opacity=".02"/><stop offset="1" stop-color="#FFF6D8" stop-opacity=".22"/></linearGradient>
     <radialGradient id="halo"><stop offset="0" stop-color="#FFE7A3" stop-opacity=".55"/><stop offset="1" stop-color="#FFE7A3" stop-opacity="0"/></radialGradient>
+    <clipPath id="aboveCloth"><rect x="0" y="0" width="600" height="338"/></clipPath>
     <linearGradient id="floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2B2420"/><stop offset="1" stop-color="#14100E"/></linearGradient>
   </defs>
   <rect width="600" height="360" fill="url(#wall)"/>
@@ -1020,9 +1037,9 @@ function showChallenge(p){
   const ph = phaseOf(p.pos + 1), ch = draw(p, ph.key);
   const [g, title, scen, opts] = ch;
   const order = opts.map((_, i) => i).sort(() => Math.random() - .5);
-  p.speaker = specFor(g, g + p.turns);
+  p.speaker = g;
   $('card').innerHTML = `
-    <div class="speaker"><div class="spk">${charSVG(p.speaker, {crop:'bust', cls:'talking'})}</div><div style="min-width:0"><div class="eyebrow">Rung ${p.pos + 1} &middot; ${G[g]}</div>
+    <div class="speaker"><div class="spk">${bust(p.speaker, 'talking')}</div><div style="min-width:0"><div class="eyebrow">Rung ${p.pos + 1} &middot; ${G[g]}</div>
     <h2>${esc(title)}</h2></div></div>
     <p>${esc(scen)}</p>
     <div class="timer-row"><span>Decide</span><span id="secs">${ph.time}s</span></div>
@@ -1032,7 +1049,7 @@ function showChallenge(p){
       return `<button class="opt" data-i="${i}" ${cost > p.funds ? 'disabled' : ''}><span>${esc(o[0])}</span><span class="chips">${bold ? '<span class="chip bold">Bold</span>' : ''}${cost ? `<span class="chip">₦${cost}M</span>` : ''}</span></button>`;
     }).join('')}</div>`;
   $('sheet').hidden = false;
-  setTimeout(() => { const t = document.querySelector('.spk .ch'); if (t) t.classList.remove('talking'); }, 2600);
+  setTimeout(() => { const t = document.querySelector('.spk .who-bust'); if (t) t.classList.remove('talking'); }, 2600);
   requestAnimationFrame(() => camera(p.pos));
   let left = ph.time;
   const bar = $('tbar');
@@ -1071,7 +1088,7 @@ function showResult(p, move, text, dT, dF, gained, bold){
   const softened = () => -1;
   const render = (m, shieldUsed) => {
     $('card').innerHTML = `
-      <div class="speaker">${p.speaker ? `<div class="spk">${charSVG(p.speaker, {crop:'bust', cls: m > 0 ? 'cheer' : m < 0 ? 'sad' : ''})}</div>` : ''}<div><div class="eyebrow">${m > 0 ? 'Right move' : m < 0 ? 'Wrong move' : 'Steady'}${bold ? ' · bold call' : ''}</div>
+      <div class="speaker">${p.speaker ? `<div class="spk">${bust(p.speaker, m > 0 ? 'cheer' : m < 0 ? 'sad' : '')}</div>` : ''}<div><div class="eyebrow">${m > 0 ? 'Right move' : m < 0 ? 'Wrong move' : 'Steady'}${bold ? ' · bold call' : ''}</div>
       <div class="move ${m > 0 ? 'up' : m < 0 ? 'down' : 'still'}">${moveWord(m)}</div></div></div>
       <p>${esc(text)}${shieldUsed ? ` ${esc(shieldUsed)} stood by you and broke the fall.` : ''}</p>
       <div class="deltas">${dT ? `<span>Trust ${dT > 0 ? '+' : '\u2212'}${Math.abs(dT)}</span>` : ''}${dF ? `<span>Funds ${dF > 0 ? '+' : '−'}₦${Math.abs(dF)}M</span>` : ''}${gained ? `<span style="color:var(--brass)">New ally: ${esc(gained)}</span>` : ''}</div>
@@ -1157,7 +1174,7 @@ function win(p){
 }
 
 // ---------- Boot ----------
-if (location.hash === '#test') window.__ladder = {C, charSVG, specFor, ROLES, LOOKS, candidateSpec, G};
+if (location.hash === '#test') window.__ladder = {C, charSVG, specFor, ROLES, LOOKS, candidateSpec, G, renderTable};
 renderSetup();
 buildTower();
 camera(0, true);

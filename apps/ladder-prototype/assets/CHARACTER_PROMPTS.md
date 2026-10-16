@@ -1,5 +1,7 @@
 # The Ladder: character art brief
 
+**Status:** all 48 generated (16 Oct 2026) with Higgsfield `gpt_image_2_5`, 3:4, with the APC and PDP candidate images as `image_references`, and placed in `society/` and `presidents/`. Each prompt also asked for a face, age and build different from the references, and for no brand marks. To redo one, reuse its line below with that prefix.
+
 The five candidates in `assets/candidates/` set the style. Every other character should match them so the game looks like one world.
 
 ## Style (paste at the start of every prompt)
