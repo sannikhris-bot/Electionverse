@@ -129,7 +129,13 @@ legend{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:upperca
 .seg{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .seg button{padding:10px;border-radius:9px;border:1px solid var(--line);background:var(--hall-2);font-weight:600}
 .seg button[aria-pressed="true"]{border-color:var(--brass);background:var(--brass-soft)}
-.prow{display:grid;grid-template-columns:1fr 1fr auto;gap:6px;align-items:center}
+.prow{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center}
+.party-name{font-size:12px;color:var(--muted);max-width:150px;text-align:right}
+.picks{display:flex;gap:6px}
+.pick{flex:1 1 0;min-width:0;display:grid;justify-items:center;gap:2px;padding:6px 2px 4px;border-radius:10px;border:1px solid var(--line);background:radial-gradient(circle at 50% 35%,color-mix(in srgb,var(--pc) 30%,transparent),transparent 70%),var(--hall-2);font-size:11px;font-weight:700}
+.pick img{height:88px;width:auto;max-width:100%;object-fit:contain;filter:drop-shadow(0 3px 4px rgba(0,0,0,.5))}
+.pick[aria-pressed="true"]{border-color:var(--brass);box-shadow:0 0 0 1px var(--brass)}
+.pick:disabled{opacity:.35}
 input,select{width:100%;min-width:0;padding:10px;border-radius:8px;border:1px solid var(--line);background:var(--hall-2);color:var(--ink);font:inherit;font-size:14px}
 .x{width:36px;height:40px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--muted)}
 .note{font-size:12px;color:var(--faint);text-align:center;line-height:1.4}
@@ -165,8 +171,17 @@ input,select{width:100%;min-width:0;padding:10px;border-radius:8px;border:1px so
 @keyframes chFlail{from{transform:rotate(-14deg)}to{transform:rotate(14deg)}}
 .hud-face{width:42px;height:42px;border-radius:50%;background:var(--hall-2);border:2px solid var(--pc,var(--brass));overflow:hidden;flex-shrink:0}
 .hud-face .ch{width:100%;height:100%}
-.climber{width:40px;height:66px;margin-left:-20px;margin-bottom:-16px;border:0;background:none;box-shadow:none;border-radius:0;display:block}
-.climber .ch{width:40px;height:56px;filter:drop-shadow(0 3px 4px rgba(0,0,0,.6))}
+.climber{width:52px;height:96px;margin-left:-26px;margin-bottom:-12px;border:0;background:none;box-shadow:none;border-radius:0;display:block}
+.cand{display:block;height:84px;transform-origin:50% 100%;animation:candIdle 2.8s ease-in-out infinite;animation-delay:var(--d,0s)}
+.cand img{display:block;height:84px;width:auto;margin:0 auto;filter:drop-shadow(0 4px 5px rgba(0,0,0,.65))}
+.cand.climbing{animation:candHop .26s ease-in-out infinite}
+.cand.falling{animation:candFall .17s linear infinite alternate}
+@keyframes candIdle{0%,100%{transform:rotate(-1.6deg)}50%{transform:rotate(1.6deg) translateY(-1px)}}
+@keyframes candHop{0%,100%{transform:translateY(0) scale(1,1)}35%{transform:translateY(-9px) scale(.96,1.05)}75%{transform:translateY(0) scale(1.04,.94)}}
+@keyframes candFall{from{transform:rotate(-18deg) translateX(-4px)}to{transform:rotate(18deg) translateX(4px)}}
+.face-crop{display:block;width:100%;height:100%;background-repeat:no-repeat;background-size:230% auto;background-position:50% 2%}
+.cand-img{transform-box:fill-box;transform-origin:50% 100%;animation:candIdle 3s ease-in-out infinite}
+.cand-img.cheer{animation:candHop .6s ease-in-out infinite}
 .climber .pill{display:block;margin:-2px auto 0;width:max-content;font-size:9px;font-weight:700;color:#fff;background:var(--pc);border-radius:999px;padding:1px 5px;border:1px solid rgba(255,255,255,.7)}
 .token.climber.active{box-shadow:none}
 .token.climber.active .pill{outline:2px solid var(--brass);outline-offset:1px}
@@ -262,14 +277,14 @@ const PH = {
   red:{key:'red',floor:3,name:'The Summit',level:'Hardest',time:12,timeout:-3,from:21,to:30,ai:{win:.68,big:.35,bigFall:.4}}
 };
 const phaseOf = r => r <= 10 ? PH.green : r <= 20 ? PH.amber : PH.red;
+// The five candidate characters (3D art supplied for the game; cut-outs in assets/candidates).
 const PARTIES = [
-  {id:'apc',short:'APC',name:'All Progressives Congress',color:'#1E88E5'},
-  {id:'pdp',short:'PDP',name:'Peoples Democratic Party',color:'#E53935'},
-  {id:'lp',short:'LP',name:'Labour Party',color:'#2E9E4F'},
-  {id:'nnpp',short:'NNPP',name:'New Nigeria Peoples Party',color:'#D9822B'},
-  {id:'adc',short:'ADC',name:'African Democratic Congress',color:'#8E44AD'}
+  {id:'apc',short:'APC',name:'All Progressives Congress',color:'#1E88E5',img:'assets/candidates/apc.webp',rival:'Haruna Tanko Gidado'},
+  {id:'pdp',short:'PDP',name:'Peoples Democratic Party',color:'#E53935',img:'assets/candidates/pdp.webp',rival:'Adaeze Okonkwo-Bassey'},
+  {id:'lp',short:'LP',name:'Labour Party',color:'#2E9E4F',img:'assets/candidates/lp.webp',rival:'Tunde Adewale-Coker'},
+  {id:'apga',short:'APGA',name:'All Progressives Grand Alliance',color:'#D9A400',img:'assets/candidates/apga.webp',rival:'Emeka Nwachukwu Ibe'},
+  {id:'sdp',short:'SDP',name:'Social Democratic Party',color:'#2B47B8',img:'assets/candidates/sdp.webp',rival:'Zainab Lawal-Ndako'}
 ];
-const RIVALS = ['Haruna Tanko Gidado','Adaeze Okonkwo-Bassey','Tunde Adewale-Coker','Zainab Lawal-Ndako','Emeka Nwachukwu Ibe'];
 // Fictional former leaders. No real president is depicted.
 const FOUNDERS = ['Ifeoma Danjuma','Olumide Bakare','Haruna Okpara','Bisola Adeyemi-Garba','Chinedu Abubakar','Aminu Ekanem',
   'Folake Nwosu-Bello','Ibrahim Oyelaran','Ngozi Etim-Lawal','Tamuno Iheanacho','Zara Mohammed-Okon','Kunle Ishaku'].map(n => ({name:n, party:'Former president (fictional)'}));
@@ -771,7 +786,12 @@ const ATTIRE = [['agbada','#F1EADB'],['suit','#1C2333'],['agbada','#2E5E8C'],['k
 const HATS = ['fila','none','gele','fila','none','gele','fila'];
 const GELE = ['#C2185B','#E0A100','#00897B','#8E24AA'];
 function hashN(t){ let h = 2166136261; for (const c of t) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
+function figureSVG(x, person, w, cls){
+  const h = w / 0.6;
+  return `<image class="cand-img ${cls || ''}" href="${person.img}" x="${x - w / 2}" y="${300 - h * 0.46}" width="${w}" height="${h}" preserveAspectRatio="xMidYMin meet" style="animation-delay:${-(hashN(person.name) % 3000) / 1000}s"/>`;
+}
 function personSVG(x, person, lean, sash, cls){
+  if (person.img) return figureSVG(x, person, x === 300 ? 66 : 50, cls);
   const spec = {...(person.spec || specFor('president', person.name))};
   if (sash) spec.sash = sash;
   // Seated rig: the hips sit at the table edge.
@@ -868,7 +888,7 @@ function placeTokens(){
   game.players.forEach(p => (byPos[p.pos] = byPos[p.pos] || []).push(p));
   host.innerHTML = game.players.map((p, i) => {
     const same = byPos[p.pos], k = same.indexOf(p), off = (k - (same.length - 1) / 2) * 30;
-    return `<div class="token climber${i === game.cur ? ' active' : ''}" id="tok${i}" style="--pc:${p.color};bottom:${yOf(p.pos)}px;left:calc(50% + ${off * 1.3}px)" title="${esc(p.name)}">${charSVG(p.spec, {pose:'climb'})}<span class="pill">${p.short}</span></div>`;
+    return `<div class="token climber${i === game.cur ? ' active' : ''}" id="tok${i}" style="--pc:${p.color};bottom:${yOf(p.pos)}px;left:calc(50% + ${off * 1.3}px)" title="${esc(p.name)}"><span class="cand" style="--d:${-i * .7}s"><img src="${p.img}" alt=""></span><span class="pill">${p.short}</span></div>`;
   }).join('');
   document.querySelectorAll('.rung,.rnum').forEach(el => el.classList.remove('next'));
   const me = viewer();
@@ -903,7 +923,7 @@ function ambience(){
 function hud(){
   const me = viewer(); if (!me) return;
   const ph = phaseOf(Math.min(TOP, me.pos + 1));
-  $('hudTok').style.setProperty('--pc', me.color); $('hudTok').innerHTML = charSVG(me.spec, {crop:'head'});
+  $('hudTok').style.setProperty('--pc', me.color); $('hudTok').innerHTML = `<span class="face-crop" style="background-image:url('${me.img}')"></span>`;
   $('hudName').textContent = me.name;
   $('hudParty').textContent = me.partyName;
   $('hudPhase').textContent = me.pos === 0 ? 'Ground floor' : `Floor ${ph.floor} · ${ph.level}`;
@@ -924,15 +944,14 @@ function renderSetup(){
   $('playerRows').innerHTML = setupRows.map((r, i) => `
     <div class="prow">
       <input id="pname${i}" placeholder="${mode === 'solo' ? 'Your candidate’s name' : 'Player ' + (i + 1) + ' candidate'}" value="${esc(r.name)}" maxlength="28" aria-label="Candidate name ${i + 1}">
-      <select id="pparty${i}" aria-label="Party ${i + 1}">${PARTIES.map(p => `<option value="${p.id}" ${p.id === r.party ? 'selected' : ''}>${p.short} · ${p.name}</option>`).join('')}</select>
+      <span class="party-name">${PARTIES.find(x => x.id === r.party).short} · ${PARTIES.find(x => x.id === r.party).name}</span>
       ${mode === 'pass' && setupRows.length > 2 ? `<button class="x" data-rm="${i}" aria-label="Remove player ${i + 1}">&times;</button>` : '<span></span>'}
     </div>
-    <div class="looks" role="group" aria-label="Candidate look ${i + 1}">${Object.keys(LOOKS).map(k => `<button class="look" data-row="${i}" data-look="${k}" aria-pressed="${(r.look || 'agbada') === k}">${charSVG(candidateSpec(k, PARTIES.find(x => x.id === r.party).color, 'preview' + i), {crop:'bust'})}${LOOK_NAMES[k]}</button>`).join('')}</div>`).join('');
+    <div class="picks" role="group" aria-label="Choose a candidate for player ${i + 1}">${PARTIES.map(pt => { const usedBy = setupRows.findIndex((o, j) => j !== i && o.party === pt.id); return `<button class="pick" data-row="${i}" data-party="${pt.id}" aria-pressed="${r.party === pt.id}" ${usedBy >= 0 ? 'disabled' : ''} style="--pc:${pt.color}"><img src="${pt.img}" alt="${pt.short} candidate"><span>${pt.short}</span></button>`; }).join('')}</div>`).join('');
   setupRows.forEach((r, i) => {
     $('pname' + i).oninput = e => r.name = e.target.value;
-    $('pparty' + i).onchange = e => { r.party = e.target.value; renderSetup(); };
   });
-  document.querySelectorAll('.look').forEach(b => b.onclick = () => { setupRows[+b.dataset.row].look = b.dataset.look; renderSetup(); });
+  document.querySelectorAll('.pick').forEach(b => b.onclick = () => { setupRows[+b.dataset.row].party = b.dataset.party; renderSetup(); });
   document.querySelectorAll('[data-rm]').forEach(b => b.onclick = () => { setupRows.splice(+b.dataset.rm, 1); renderSetup(); });
   $('soloExtra').hidden = mode !== 'solo';
   $('addPlayer').hidden = mode !== 'pass' || setupRows.length >= 4;
@@ -951,7 +970,7 @@ function candidateSpec(look, color, seed){
 const RIVAL_LOOKS = ['agbada','iro','suit','skirtsuit','kaftan'];
 function makePlayer(name, partyId, human, look){
   const p = PARTIES.find(x => x.id === partyId);
-  return {name, party:p.id, partyName:p.name, short:p.short, color:p.color, human, look, spec:candidateSpec(look, p.color, name + p.id), pos:0, trust:50, funds:100, allies:[], decks:{}, turns:0, climbed:0, fell:0};
+  return {name, party:p.id, partyName:p.name, short:p.short, color:p.color, img:p.img, human, look, spec:candidateSpec(look, p.color, name + p.id), pos:0, trust:50, funds:100, allies:[], decks:{}, turns:0, climbed:0, fell:0};
 }
 $('startBtn').onclick = () => {
   A.init(); if (A.ctx && A.ctx.state === 'suspended') A.ctx.resume();
@@ -959,7 +978,7 @@ $('startBtn').onclick = () => {
   if (mode === 'solo') {
     const n = +$('rivalCount').value, used = [players[0].party];
     const pool = PARTIES.filter(p => !used.includes(p.id));
-    for (let i = 0; i < n; i++) players.push(makePlayer(RIVALS[i], pool[i].id, false, RIVAL_LOOKS[i]));
+    for (let i = 0; i < n; i++) players.push(makePlayer(pool[i].rival, pool[i].id, false, RIVAL_LOOKS[i]));
   }
   game = {players, cur:0, over:false, round:1, humans:players.filter(p => p.human).length};
   $('setup').hidden = true;
@@ -1075,7 +1094,7 @@ function doMove(p, m, quiet){
     if (!steps) { placeTokens(); finish(); return; }
     let k = 0;
     const el = $('tok' + game.players.indexOf(p));
-    const chEl = el && el.querySelector('.ch');
+    const chEl = el && el.querySelector('.cand');
     if (chEl) chEl.classList.add(dir > 0 ? 'climbing' : 'falling');
     if (dir < 0 && el) el.classList.add('fall');
     const go = () => {
@@ -1114,7 +1133,7 @@ function win(p){
   placeTokens(); camera(TOP);
   const human = p.human;
   let seat = null;
-  if (human) { seat = {id: Date.now(), name:p.name, party:p.short + ' · ' + new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}), color:p.color, spec:p.spec}; store.add(seat); renderTable(seat); A.fanfare(); }
+  if (human) { seat = {id: Date.now(), name:p.name, party:p.short + ' · ' + new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}), color:p.color, spec:p.spec, img:p.img}; store.add(seat); renderTable(seat); A.fanfare(); }
   else { A.thud(); }
   A.tension(0);
   setTimeout(() => {

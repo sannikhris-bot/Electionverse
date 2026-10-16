@@ -124,7 +124,8 @@ Debates are contested: the rival also performs, and only the difference moves th
 - **Modes**: solo against 1 to 3 rival candidates, or pass-and-play for 2 to 4 players.
 - **Tension**: the ladder sways more on higher floors; a drone, a heartbeat and a ticking clock build with height (sound starts when you press Begin).
 - **Balance** (simulated, 4,000 games, against 2 rivals): a near-perfect player wins about 83%, a good player about 52%, a careless one about 22%.
-- **Characters**: every person is an animated, code-drawn character (no image files): 35 society roles with their own dress and props (nurse's cap, police uniform, judge's wig, press vest and microphone, okada helmet, trader's headtie and more), five candidate looks in party colours (agbada, suit, kaftan, iro and gele, skirt suit), and seated former presidents. They blink, look around, talk while asking a challenge, cheer or slump at your answer, climb and flail.
+- **Candidates**: five 3D candidate characters (APC, PDP, LP, APGA, SDP) supplied as art, cut out to transparent WebP in `apps/ladder-prototype/assets/candidates`. They hop up the ladder, wobble when they fall and take the INCOMING seat when they win. The brief for matching art for everyone else is in `assets/CHARACTER_PROMPTS.md`.
+- **Other characters** (until matching art arrives): every other person is an animated, code-drawn character (no image files): 35 society roles with their own dress and props (nurse's cap, police uniform, judge's wig, press vest and microphone, okada helmet, trader's headtie and more), five candidate looks in party colours (agbada, suit, kaftan, iro and gele, skirt suit), and seated former presidents. They blink, look around, talk while asking a challenge, cheer or slump at your answer, climb and flail.
 - Real parties, fictional candidates; vote buying, violence and military shortcuts always lose.
 
 
