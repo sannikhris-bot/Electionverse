@@ -136,3 +136,15 @@ The product is now **Politikat**, a politics-only social app (polls on seven top
 3. ElectionVerse's Nigeria campaign as the Play tab (`LAUNCH_GAME` in `packages/packs`), weekly challenge seeded by topic polls.
 4. Closed beta with founding members, then public launch (about 13 weeks from the start of the build).
 5. After launch: live debate rooms, US/UK/Canada games, verify Nigeria with INEC EC8D forms, import the UK 2024 results.
+
+## Road to Aso Rock (second game)
+
+`apps/aso-rock/index.html` is a single-file game built from the same characters.
+
+- **Goal**: six candidates (APC, PDP, LP, APGA, SDP, ADC) race to Aso Rock Villa. First through the 12th checkpoint wins.
+- **One rule**: answer a challenge at each boom gate. Right answer: the gate lifts and you move on. Wrong answer or out of time: you go back one checkpoint. Risky answers open the gate only sometimes.
+- **Route**: Lagos Market (gates 1 to 3), Lagos Streets (4 to 6), The Estate (7 to 9), Abuja (10 to 12), then the Villa. Time per question drops from 25 to 14 seconds.
+- **Look and sound**: scenes, vehicles (danfo, taxi, okada), a street hawker and the ADC candidate were generated with Higgsfield in the candidates' 3D style. Danfos, taxis and okadas drive through the scene; horns, market chatter and traffic are synthesised in the browser.
+- **Modes**: solo against five rivals, or 2 to 6 players passing one phone (empty seats are filled by rivals).
+- **Balance** (simulated, 4,000 races): a player who always answers right wins every time in 12 turns; 90% right wins about 87%; 80% about 60%; 70% about 29%.
+- Real parties, fictional candidates. ADC's green, yellow and red come from its constitution's flag description.

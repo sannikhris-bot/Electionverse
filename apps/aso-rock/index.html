@@ -1,0 +1,729 @@
+<title>Road to Aso Rock</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap">
+<style>
+/* Layout: a portrait road-trip. HUD and race strip on top, a live street scene with a boom gate in the middle, the challenge card below. */
+:root{
+  --asphalt:#121417; --panel:#1B1E23; --panel-2:#23272E; --line:#323841;
+  --danfo:#F5C518; --flag:#008751; --chalk:#F4F2EA; --muted:#A7ACB4; --stop:#E5484D; --go:#2FBF71;
+  --display:'Bungee', Impact, 'Arial Black', sans-serif;
+  --body:'Bricolage Grotesque', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color-scheme:dark;
+}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{background:var(--asphalt);color:var(--chalk);font-family:var(--body);font-size:15px;overflow:hidden;-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:2px solid var(--danfo);outline-offset:2px}
+.app{height:100%;max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:8px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:10px}
+
+/* HUD */
+.hud{display:flex;align-items:center;gap:10px}
+.face{width:42px;height:42px;border-radius:50%;flex-shrink:0;background-color:var(--panel-2);background-repeat:no-repeat;background-size:230% auto;background-position:50% 3%;border:2px solid var(--pc,var(--danfo))}
+.who{min-width:0;flex:1}
+.who b{display:block;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.who span{font-size:12px;color:var(--muted)}
+.gatecount{font-family:var(--display);font-size:13px;color:var(--danfo);text-align:right;line-height:1.1;font-variant-numeric:tabular-nums}
+.gatecount small{display:block;font-family:var(--body);font-size:11px;color:var(--muted);font-weight:600}
+.icon-btn{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--panel);flex-shrink:0;display:grid;place-items:center}
+.icon-btn svg{width:18px;height:18px}
+
+/* Race strip */
+.track{position:relative;height:46px;flex-shrink:0}
+.lane{position:absolute;left:0;right:30px;top:20px;height:8px;border-radius:4px;display:flex;overflow:hidden}
+.lane i{flex:1;opacity:.9}
+.lane i:nth-child(1){background:#E0782A}.lane i:nth-child(2){background:var(--danfo)}.lane i:nth-child(3){background:#27A397}.lane i:nth-child(4){background:var(--flag)}
+.ticks{position:absolute;left:0;right:30px;top:17px;height:14px;pointer-events:none}
+.ticks span{position:absolute;top:0;width:2px;height:14px;background:var(--asphalt);margin-left:-1px}
+.lane-labels{position:absolute;left:0;right:30px;top:32px;display:flex;font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.lane-labels span{flex:1;text-align:center}
+.villa-ico{position:absolute;right:0;top:4px;width:28px;height:34px}
+.dots{position:absolute;left:0;right:30px;top:0;height:20px}
+.dot{position:absolute;top:0;width:20px;height:20px;margin-left:-10px;border-radius:50%;background-color:var(--panel-2);background-size:250% auto;background-position:50% 3%;background-repeat:no-repeat;border:2px solid var(--pc);transition:left .7s cubic-bezier(.3,1.4,.5,1),transform .3s}
+.dot.me{border-color:var(--danfo);box-shadow:0 0 0 2px var(--asphalt),0 0 0 3.5px var(--danfo);z-index:2}
+
+/* Stage */
+.stage{position:relative;width:100%;aspect-ratio:4/3.1;max-height:44vh;border-radius:14px;overflow:hidden;flex-shrink:0;background:#2a2d33;isolation:isolate}
+.bg{position:absolute;inset:0;background-size:cover;background-repeat:no-repeat;transition:background-position 1.3s cubic-bezier(.45,0,.2,1),transform 1.3s cubic-bezier(.45,0,.2,1),opacity .8s;transform:scale(1.08)}
+.bg.fade{opacity:0}
+.shade{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.45),transparent 38%);z-index:1;pointer-events:none}
+.veh{position:absolute;z-index:1;left:0;pointer-events:none;filter:drop-shadow(0 6px 4px rgba(0,0,0,.45))}
+.veh.ltr{animation:drive var(--dur,6s) linear forwards}
+.veh.rtl{animation:driveBack var(--dur,6s) linear forwards}
+.veh.rtl img{transform:scaleX(-1)}
+.veh img{display:block;height:100%;width:auto;animation:bump .32s ease-in-out infinite alternate}
+@keyframes drive{from{transform:translateX(-110%)}to{transform:translateX(calc(var(--sw) + 10%))}}
+@keyframes driveBack{from{transform:translateX(calc(var(--sw) + 10%))}to{transform:translateX(-110%)}}
+@keyframes bump{to{transform:translateY(-1.5px)}}
+.veh.rtl img{animation:none}
+.cand{position:absolute;z-index:2;left:16%;bottom:5%;height:64%;transform-origin:50% 100%;transition:transform 1.1s cubic-bezier(.5,0,.3,1),opacity .4s}
+.cand img{height:100%;width:auto;display:block;filter:drop-shadow(0 6px 5px rgba(0,0,0,.55));animation:idle 2.8s ease-in-out infinite;transform-origin:50% 100%}
+.cand.walk img{animation:hop .3s ease-in-out infinite}
+.cand.shove img{animation:wobble .16s linear infinite alternate}
+@keyframes idle{0%,100%{transform:rotate(-1.4deg)}50%{transform:rotate(1.4deg) translateY(-1px)}}
+@keyframes hop{0%,100%{transform:translateY(0)}45%{transform:translateY(-7%) scale(.97,1.03)}}
+@keyframes wobble{from{transform:rotate(-9deg)}to{transform:rotate(9deg)}}
+.gate{position:absolute;z-index:3;left:4%;bottom:7%;width:84%;overflow:visible}
+.gate .arm{transform-box:view-box;transform-origin:262px 52px;transition:transform .75s cubic-bezier(.6,-0.2,.3,1.3)}
+.gate.open .arm{transform:rotate(80deg)}
+.gate.shake .arm{animation:shake .12s linear 5}
+@keyframes shake{0%,100%{transform:rotate(0)}50%{transform:rotate(-2.5deg)}}
+.lamp{transition:fill .3s}
+.asker{position:absolute;z-index:4;right:-1%;bottom:3%;height:58%;transform-origin:50% 100%}
+.asker img{height:100%;width:auto;display:block;filter:drop-shadow(0 6px 5px rgba(0,0,0,.55));transform-origin:50% 100%}
+.asker.talk img{animation:talk .45s ease-in-out infinite}
+.asker.cheer img{animation:hop .5s ease-in-out 3}
+.asker.sad img{animation:sag .8s ease-out forwards}
+@keyframes talk{0%,100%{transform:rotate(-1.5deg)}50%{transform:rotate(1.5deg) scale(1.01,.99)}}
+@keyframes sag{to{transform:translateY(4%) rotate(4deg);filter:saturate(.6) brightness(.8)}}
+.tag{position:absolute;z-index:5;right:3%;top:5%;background:rgba(18,20,23,.82);border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:12px;font-weight:700;backdrop-filter:blur(4px)}
+.banner{position:absolute;z-index:6;inset:auto 0 38% 0;text-align:center;pointer-events:none;opacity:0;transform:translateY(10px);transition:opacity .4s,transform .4s}
+.banner.show{opacity:1;transform:none}
+.banner b{display:inline-block;font-family:var(--display);font-size:clamp(18px,6vw,26px);color:var(--asphalt);background:var(--danfo);padding:6px 14px;border-radius:6px;box-shadow:0 6px 0 rgba(0,0,0,.35);text-wrap:balance}
+.banner small{display:block;margin-top:8px;font-weight:800;font-size:13px;text-shadow:0 1px 4px #000}
+
+/* Card */
+.card{flex:1;min-height:0;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 14px 16px;display:flex;flex-direction:column;gap:10px}
+.eyebrow{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--danfo);font-weight:800}
+.card h2{margin:0;font-size:21px;line-height:1.15;font-weight:800;text-wrap:balance}
+.card p{margin:0;line-height:1.45;color:#DCDAD2;max-width:62ch}
+.timer{height:6px;border-radius:3px;background:var(--panel-2);overflow:hidden}
+.timer i{display:block;height:100%;background:var(--danfo);transform-origin:left;transition:transform 1s linear}
+.timer.low i{background:var(--stop)}
+.opts{display:grid;gap:8px}
+.opt{display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left;padding:12px 13px;border-radius:11px;border:1px solid var(--line);background:var(--panel-2);font-weight:600;line-height:1.3}
+.opt:hover{border-color:var(--danfo)}
+.opt:active{transform:scale(.99)}
+.chip{font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--danfo);border:1px solid currentColor;border-radius:999px;padding:2px 7px;white-space:nowrap}
+.verdict{font-family:var(--display);font-size:30px;line-height:1}
+.verdict.ok{color:var(--go)} .verdict.no{color:var(--stop)}
+.meanwhile{display:grid;gap:5px;border-top:1px dashed var(--line);padding-top:10px}
+.meanwhile .lbl{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:800}
+.mw{display:flex;align-items:center;gap:8px;font-size:13.5px}
+.mw .face{width:24px;height:24px;border-width:1.5px}
+.mw .up{color:var(--go);font-weight:800}.mw .down{color:var(--stop);font-weight:800}
+.btn{border:0;border-radius:12px;background:var(--danfo);color:#16140A;font-weight:800;padding:13px 16px;font-size:16px}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--chalk)}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.row>.btn{flex:1}
+
+/* Overlays */
+.overlay{position:fixed;inset:0;z-index:20;display:flex;justify-content:center;overflow:auto;background:var(--asphalt)}
+.overlay .inner{width:100%;max-width:520px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:calc(16px + env(safe-area-inset-top,0px)) calc(20px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px}
+.hero{position:relative;border-radius:16px;overflow:hidden;aspect-ratio:4/3;max-width:100%;background:url('assets/scenes/villa.webp') center/cover}
+.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(10,12,14,.92),rgba(10,12,14,.1) 55%)}
+.hero h1{position:absolute;z-index:1;left:16px;right:16px;bottom:14px;margin:0;font-family:var(--display);font-weight:400;font-size:clamp(30px,10vw,46px);line-height:.95;color:var(--chalk);text-shadow:0 3px 0 rgba(0,0,0,.4)}
+.hero h1 em{font-style:normal;color:var(--danfo)}
+.rules{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.rules li{display:flex;gap:10px;align-items:flex-start;line-height:1.35}
+.rules svg{width:28px;height:28px;flex-shrink:0}
+.sect{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:800}
+.prow{display:grid;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px}
+.prow-top{display:flex;gap:8px;align-items:center}
+.prow input{flex:1;min-width:0;background:var(--panel-2);border:1px solid var(--line);border-radius:9px;padding:9px 10px;font:inherit;color:var(--chalk)}
+.picks{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}
+.pick{display:grid;justify-items:center;gap:2px;padding:5px 1px 4px;border-radius:9px;border:1px solid var(--line);background:radial-gradient(circle at 50% 30%,color-mix(in srgb,var(--pc) 35%,transparent),transparent 70%),var(--panel-2);font-size:10.5px;font-weight:800;min-width:0}
+.pick img{height:64px;width:auto;max-width:100%;object-fit:contain}
+.pick[aria-pressed="true"]{border-color:var(--danfo);box-shadow:0 0 0 1px var(--danfo)}
+.pick:disabled{opacity:.3}
+.x{border:1px solid var(--line);background:none;border-radius:8px;width:34px;height:34px}
+.fine{font-size:12px;color:var(--muted);text-align:center;margin:0}
+.handoff .inner,.end .inner{justify-content:center;text-align:center}
+.end{background:#0c0e10}
+.end .scene{position:relative;border-radius:16px;overflow:hidden;aspect-ratio:4/3;max-width:100%;background:url('assets/scenes/villa.webp') center/cover}
+.end .scene img{position:absolute;left:50%;bottom:2%;height:62%;transform:translateX(-50%);filter:drop-shadow(0 8px 6px rgba(0,0,0,.6));animation:hop .55s ease-in-out infinite}
+.end h2{margin:0;font-family:var(--display);font-weight:400;font-size:clamp(24px,8vw,34px);line-height:1.05;text-wrap:balance}
+.end p{margin:0;color:#DCDAD2;line-height:1.45}
+.confetti{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.confetti i{position:absolute;top:-10px;width:7px;height:12px;border-radius:2px;animation:fall linear infinite}
+@keyframes fall{to{transform:translateY(420px) rotate(540deg)}}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stats div{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 4px;font-variant-numeric:tabular-nums}
+.stats b{display:block;font-family:var(--display);font-size:20px;font-weight:400}
+.stats span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+</style>
+
+<div class="app" id="app">
+  <header class="hud">
+    <span class="face" id="hudFace"></span>
+    <div class="who"><b id="hudName">Road to Aso Rock</b><span id="hudParty">Six candidates. One villa.</span></div>
+    <div class="gatecount" id="hudGate">GATE 1/12<small>Lagos Market</small></div>
+    <button class="icon-btn" id="muteBtn" aria-label="Sound on" aria-pressed="true"></button>
+  </header>
+  <div class="track" aria-label="Race to Aso Rock Villa">
+    <div class="dots" id="dots"></div>
+    <div class="lane"><i></i><i></i><i></i><i></i></div>
+    <div class="ticks" id="ticks"></div>
+    <div class="lane-labels"><span>Market</span><span>Streets</span><span>Estate</span><span>Abuja</span></div>
+    <svg class="villa-ico" viewBox="0 0 28 34" aria-label="Aso Rock Villa"><line x1="14" y1="2" x2="14" y2="14" stroke="#F4F2EA" stroke-width="1.4"/><rect x="14" y="2" width="4" height="6" fill="#008751"/><rect x="18" y="2" width="4" height="6" fill="#fff"/><rect x="22" y="2" width="4" height="6" fill="#008751"/><path d="M6 22a8 8 0 0 1 16 0z" fill="#0A8A4E"/><rect x="3" y="22" width="22" height="9" fill="#F1E9D6"/><path d="M6 24v6M10 24v6M14 24v6M18 24v6M22 24v6" stroke="#C9BFA5" stroke-width="1.2"/></svg>
+  </div>
+  <div class="stage" id="stage">
+    <div class="shade"></div>
+    <div id="vehicles"></div>
+    <div class="cand" id="cand"><img id="candImg" alt=""></div>
+    <svg class="gate" id="gate" viewBox="0 0 300 120" aria-hidden="true">
+      <defs>
+        <pattern id="stripe" width="28" height="12" patternUnits="userSpaceOnUse"><rect width="28" height="12" fill="#F4F2EA"/><rect width="14" height="12" fill="#D7263D"/></pattern>
+        <pattern id="hazard" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="10" height="10" fill="#F5C518"/><rect width="5" height="10" fill="#15171A"/></pattern>
+      </defs>
+      <ellipse cx="262" cy="118" rx="20" ry="3.5" fill="rgba(0,0,0,.45)"/>
+      <rect x="252" y="40" width="22" height="78" rx="3" fill="url(#hazard)" stroke="#15171A" stroke-width="1.5"/>
+      <rect x="249" y="14" width="28" height="26" rx="4" fill="#15171A"/>
+      <circle class="lamp" id="lamp" cx="263" cy="27" r="8" fill="#E5484D"/>
+      <g class="arm">
+        <rect x="22" y="46" width="244" height="12" rx="6" fill="url(#stripe)" stroke="#15171A" stroke-width="1.5"/>
+        <rect x="266" y="44" width="22" height="16" rx="3" fill="#2B2F36"/>
+        <circle cx="262" cy="52" r="5" fill="#15171A"/>
+      </g>
+    </svg>
+    <div class="asker" id="asker"><img id="askerImg" alt=""></div>
+    <div class="tag" id="askerTag">Lagos Market</div>
+    <div class="banner" id="banner"><b id="bannerTitle"></b><small id="bannerSub"></small></div>
+  </div>
+  <section class="card" id="card" aria-live="polite"></section>
+</div>
+
+<div class="overlay" id="setup">
+  <div class="inner">
+    <div class="hero"><h1>Road to<br><em>Aso Rock</em></h1></div>
+    <ul class="rules">
+      <li><svg viewBox="0 0 28 28"><rect x="22" y="8" width="4" height="18" fill="#F5C518"/><rect x="4" y="8" width="20" height="4" rx="2" fill="#2FBF71" transform="rotate(-40 24 10)"/></svg><span><b>Right answer:</b> the boom gate lifts and you move up to the next checkpoint.</span></li>
+      <li><svg viewBox="0 0 28 28"><path d="M20 14H6m0 0 5-5m-5 5 5 5" stroke="#E5484D" stroke-width="3" fill="none" stroke-linecap="round"/></svg><span><b>Wrong answer or out of time:</b> you are sent back to the previous checkpoint.</span></li>
+      <li><svg viewBox="0 0 28 28"><path d="M7 16a7 7 0 0 1 14 0z" fill="#0A8A4E"/><rect x="5" y="16" width="18" height="8" fill="#F1E9D6"/><line x1="14" y1="3" x2="14" y2="10" stroke="#F4F2EA" stroke-width="1.5"/><rect x="14" y="3" width="6" height="4" fill="#008751"/></svg><span><b>12 checkpoints</b> through the market, the streets, the estate and Abuja. First of the six candidates through the last gate takes Aso Rock Villa.</span></li>
+    </ul>
+    <div class="sect" id="setupLabel">Choose your candidate</div>
+    <div id="rows" class="row" style="flex-direction:column"></div>
+    <div class="row"><button class="btn ghost" id="addBtn">Add a player</button></div>
+    <button class="btn" id="startBtn">Start the campaign</button>
+    <p class="fine">Real parties, fictional candidates. Simulated campaign, not a prediction. Vote buying and violence never open a gate.</p>
+  </div>
+</div>
+
+<div class="overlay handoff" id="handoff" hidden>
+  <div class="inner">
+    <span class="face" id="handFace" style="width:96px;height:96px;margin:0 auto"></span>
+    <h2 style="margin:0;font-family:var(--display);font-weight:400;font-size:26px" id="handTitle"></h2>
+    <p class="fine" id="handSub"></p>
+    <button class="btn" id="handBtn">I'm ready</button>
+  </div>
+</div>
+
+<div class="overlay end" id="end" hidden>
+  <div class="inner">
+    <div class="scene"><div class="confetti" id="confetti"></div><img id="endImg" alt=""></div>
+    <div class="sect" id="endEyebrow">Sworn in</div>
+    <h2 id="endTitle"></h2>
+    <p id="endText"></p>
+    <div class="stats" id="endStats"></div>
+    <div class="row"><button class="btn" id="againBtn">Play again</button></div>
+    <p class="fine">Simulated result, not a prediction. Fictional candidates.</p>
+  </div>
+</div>
+
+<script>
+// ---------- data ----------
+const PARTIES = [
+  {id:'apc', short:'APC', name:'All Progressives Congress', color:'#1E88E5', img:'assets/candidates/apc.webp', rival:'Haruna Tanko Gidado'},
+  {id:'pdp', short:'PDP', name:'Peoples Democratic Party', color:'#E53935', img:'assets/candidates/pdp.webp', rival:'Adaeze Okonkwo-Bassey'},
+  {id:'lp', short:'LP', name:'Labour Party', color:'#2E9E4F', img:'assets/candidates/lp.webp', rival:'Tunde Adewale-Coker'},
+  {id:'apga', short:'APGA', name:'All Progressives Grand Alliance', color:'#D9A400', img:'assets/candidates/apga.webp', rival:'Emeka Nwachukwu Ibe'},
+  {id:'sdp', short:'SDP', name:'Social Democratic Party', color:'#2B47B8', img:'assets/candidates/sdp.webp', rival:'Zainab Lawal-Ndako'},
+  {id:'adc', short:'ADC', name:'African Democratic Congress', color:'#C0392B', img:'assets/candidates/adc.webp', rival:'Halima Oyedepo-Nnaji'}
+];
+// Society groups and their challenges (shared with The Ladder).
+const G = {
+  traders:'Market traders',farmers:'Farmers',students:'Students',riders:'Okada riders',faith:'Faith leaders',rulers:'Traditional rulers',
+  teachers:'Teachers',women:"Women's groups",creators:'Youth and creators',delegates:'Party delegates',artisans:'Artisans',tenants:'Tenants and landlords',
+  herders:'Farmers and herders',agents:'Polling agents',weather:'The weather',
+  press:'Journalists',unions:'Labour unions',doctors:'Doctors',nurses:'Nurses',lobby:'Lobbyists',diaspora:'The diaspora',police:'Police',
+  business:'Business leaders',rivals:'Rival politicians',civil:'Civil society',health:'Health officials',importers:'Importers and ports',
+  debate:'Debate moderators',military:'The military',electoral:'Electoral officials',judiciary:'The courts',security:'Security services',
+  observers:'Election observers',godfathers:'Power brokers',world:'Foreign governments',voters:'First-time voters'
+};
+// Challenge: [group, title, scenario, options]; option: [answer, move | [chance, win, lose], trust, funds, result | [win, lose]]
+const C = {
+green:[
+ ['traders','The market levy','Traders at the main market say a new council levy is killing their business. They have blocked your convoy.',[
+   ['Get out and sit with the market women',1,6,0,'They share kola nuts and complaints. Word spreads that you listen.'],
+   ['Promise to scrap the levy on the spot',[.55,3,-1],-2,0,['The market roars. Your name is on every stall by evening.','A trader asks how the council will pay its workers. You have no answer.']],
+   ['Tell your driver to go around',-1,-6,0,'A video of your convoy reversing goes round every WhatsApp group.']]],
+ ['farmers','Empty storehouses','Farmers show you empty storehouses. Fertiliser prices have doubled since planting season.',[
+   ['Lay out a costed plan for farm cooperatives',1,4,-10,'Farmers nod at the numbers. The cooperative chairman shakes your hand.'],
+   ['Hand out cash envelopes',-3,-10,-20,'Vote buying is a crime. A reporter films the envelopes and the story runs nationwide.'],
+   ['Blame the last government',-1,-3,0,'They have heard it before. Nobody claps.']]],
+ ['students','Campus town hall','Students ask why lecturers keep striking and degrees take six years to finish.',[
+   ['Invite a student leader to co-write your education plan',3,6,0,'The student union shares the invitation. Campuses start talking about you.'],
+   ['Present a funding plan with a timeline',1,4,0,'Solid and serious. A few students take notes.'],
+   ['Make a joke about strikes',-1,-5,0,'Nobody laughs. The clip trends for the wrong reasons.']]],
+ ['riders','The okada ban','Commercial motorcycle riders fear a ban in the city. Hundreds have gathered at the junction.',[
+   ['Propose safety training and licences, not a ban',1,4,0,'Riders honk their horns in approval as you leave.'],
+   ['Promise to fight any ban',[.5,3,-1],0,0,['The junction erupts. Riders escort you to your next stop.','Commuters hit by okada accidents call you reckless.']],
+   ['Climb on a bike for a photo, no helmet',-1,-3,0,'The photo becomes a meme: the candidate who ignores safety.']]],
+ ['faith','Interfaith prayer','Christian and Muslim leaders invite you to an interfaith prayer for peace.',[
+   ['Attend and speak briefly about unity',1,5,0,'Both communities welcome you. The photo of the gathering travels well.'],
+   ['Ask them to endorse you from the pulpit',-1,-5,0,'They decline politely. Places of worship stay neutral.'],
+   ['Send a deputy instead',-1,-2,0,'Your empty chair is noticed.']]],
+ ['rulers','The palace audience','A respected traditional ruler grants you an audience and expects palace custom to be respected.',[
+   ['Follow protocol and listen to his concerns',1,3,0,'He blesses your journey and wishes you well.'],
+   ['Ask for his public endorsement',[.35,3,-1],0,0,['To everyone\'s surprise, he speaks warmly of you to the press.','He reminds you that the palace does not take sides.']],
+   ['Arrive two hours late',-3,-6,0,'The palace doors stay shut. The story travels across the state.']]],
+ ['teachers','Four months unpaid','Primary school teachers in the state have not been paid for four months.',[
+   ['Commit to clearing arrears first, with a date',1,5,0,'The teachers\' union calls it the first concrete promise of the race.'],
+   ['Fund one school\'s salaries for a month',1,3,-30,'Generous, but critics ask about the other schools.'],
+   ['Say it is a state matter',-1,-4,0,'The teachers turn their backs.']]],
+ ['women','The cabinet question',"The market women's association asks how many women will serve in your cabinet.",[
+   ['Give a specific number and how you will meet it',1,5,0,'They write the number down and promise to hold you to it.'],
+   ['Promise half the cabinet with no plan',[.5,3,-1],0,0,['The hall cheers. The promise trends.','A journalist asks for names. You have none.']],
+   ['Change the subject',-1,-4,0,'They hear a polite no.']]],
+ ['creators','The live dare','Young creators dare you to go live and answer unscripted questions for an hour.',[
+   ['Go live and answer everything',[.6,3,-1],2,0,['Two million views. Young people say you sound real.','One stumble on a question becomes a meme.']],
+   ['Go live with prepared answers only',1,2,0,'Safe. The comments call it scripted, but views are steady.'],
+   ['Ignore the dare',-1,-3,0,'"Scared of the youth?" trends for a day.']]],
+ ['delegates','Transport money','Delegates at your ward congress hint that they expect "transport money" for their votes.',[
+   ['Refuse and ask for their votes on merit',1,4,0,'Some grumble. The honest ones respect it, and you scrape through.'],
+   ['Pay them',-3,-10,-30,'The payment leaks. Vote buying is a crime and your rivals pounce.'],
+   ['Promise them jobs later',-1,-4,0,'They take the promise and the rumour of it spreads.']]],
+ ['artisans','Generator economics','Tailors and welders say generator fuel now costs more than their profits.',[
+   ['Show a costed plan for local power',1,3,0,'An artisans\' association invites you back to explain it to more members.'],
+   ['Promise 24-hour power in six months',[.3,3,-1],-2,0,['They want to believe you, and many do.','An engineer in the crowd explains why that is impossible.']],
+   ['Say everyone is suffering the same',-1,-4,0,'"Not you," shouts a welder.']]],
+ ['tenants','Rent doubled','Tenants say rents have doubled. Landlords say their costs have doubled too.',[
+   ['Bring both sides into one room',1,4,0,'A tense meeting ends with both sides agreeing to a follow-up.'],
+   ['Side loudly with the tenants',[.5,3,-1],0,0,['Renters across the city share your speech.','Landlords and their families turn against you.']],
+   ['Skip the meeting',-1,-3,0,'Both sides notice.']]],
+ ['herders','Land dispute','Farmers and herders in a district are close to clashing over grazing land.',[
+   ['Bring both sides and local leaders together to talk',1,6,0,'Tempers cool. Both sides credit you with keeping the peace.'],
+   ['Promise the land to one side',-3,-8,0,'Tension rises and you are accused of stoking conflict.'],
+   ['Post a call for calm online',-1,-1,0,'Nobody in the district has data to see it.']]],
+ ['agents','Thousands of polling units','You need trained agents for thousands of polling units across the state.',[
+   ['Recruit and train volunteers early',1,2,-10,'By the end of the month you have a trained agent list.'],
+   ['Copy last election\'s list without checking',-1,-2,0,'Half the numbers are switched off.'],
+   ['Leave it until later',-3,-3,0,'Your rivals sign up the best organisers first.']]],
+ ['weather','Storm over the rally','A storm hits just as your first big rally begins.',[
+   ['Speak in the rain',[.6,3,-1],2,0,['Soaked and defiant. The pictures lead the evening news.','Half the crowd leaves and the speech is drowned out.']],
+   ['Move indoors with a smaller crowd',1,1,-10,'A warm, packed hall. No harm done.'],
+   ['Cancel',-1,-3,0,'Rivals mock the no-show.']]]
+],
+amber:[
+ ['press','The live grilling','A top presenter asks for your plan\'s exact cost, live on air.',[
+   ['Give the figures and where they come from',1,5,0,'Calm and precise. The clip is shared as a model answer.'],
+   ['Attack the presenter\'s bias',-3,-8,0,'You look rattled. Every channel replays it.'],
+   ['Promise the numbers next week',-1,-4,0,'"Next week" becomes a running joke.']]],
+ ['unions','Strike threat','The labour congress threatens a nationwide strike over the minimum wage.',[
+   ['Meet the union leaders and agree how to negotiate',1,5,0,'They call you the only candidate who picked up the phone.'],
+   ['Pledge a big wage rise today',[.45,3,-3],0,0,['Workers cheer across the country.','Economists tear the numbers apart and the clip trends.']],
+   ['Call the strike unpatriotic',-3,-8,0,'The unions mobilise against you.']]],
+ ['doctors','Doctors leaving','Resident doctors say half their colleagues have left the country. They want a plan.',[
+   ['Draw up a retention plan with them',1,5,-10,'The doctors\' association calls it serious.'],
+   ['Promise hazard pay with no detail',[.5,3,-1],0,0,['Hospital staff share the promise widely.','Doctors ask where the money comes from.']],
+   ['Tell them to be patriotic and stay',-3,-8,0,'The phrase haunts you for weeks.']]],
+ ['nurses','The night shift','On a night visit, a nurse shows you a ward lit only by phone torches.',[
+   ['Stay the whole shift and listen',3,6,0,'At dawn the nurses walk you out. The story moves the country.'],
+   ['Take photos and leave',-1,-4,0,'"Photo op," say the nurses.'],
+   ['Promise a new hospital in every town',-1,-3,0,'Nobody believes it, least of all the nurses.']]],
+ ['lobby','The envelope','A lobbyist offers ₦200 million for your campaign if you promise his firm a contract.',[
+   ['Refuse and report the offer',1,6,0,'Anti-corruption groups praise you.'],
+   ['Take it quietly',-3,-12,80,'Money now, scandal later: the deal leaks within days.'],
+   ['Ask for time to think',-1,-2,0,'He tells others you are open to offers.']]],
+ ['diaspora','Voting from abroad','Nigerians abroad ask why they still cannot vote from where they live.',[
+   ['Commit to a diaspora voting bill with a timeline',1,4,0,'Diaspora groups organise watch parties for your next speech.'],
+   ['Tell them to come home to vote',-1,-4,0,'The clip is shared from Toronto to London, mockingly.'],
+   ['Ask them to fund your campaign instead',-1,-3,0,'Your lawyer reminds you that foreign donations are restricted.']]],
+ ['police','Permit denied','Police deny your rally permit, citing security, two hours before the event.',[
+   ['Comply and move the rally online',1,3,0,'A record online audience. You look responsible.'],
+   ['Ask a court for an urgent order',[.5,3,-1],0,-20,['The judge grants it. The rally goes ahead and is huge.','The court will not sit until next week.']],
+   ['March anyway',-3,-6,0,'Clashes outside the venue dominate the news.']]],
+ ['business','Investors\' dinner','Business leaders want your plan for the currency and inflation.',[
+   ['Present a credible plan with your economic team',1,3,40,'Legal, declared donations follow.'],
+   ['Promise them special tax breaks',-1,-5,0,'A recording leaks: "special deals for the rich."'],
+   ['Wing it',-3,-4,0,'Nobody in the room is convinced, and they talk.']]],
+ ['press','Fact-check','A fact-checking group finds an error in your jobs figure.',[
+   ['Correct it publicly and thank them',1,6,0,'Rare honesty. Even rivals\' supporters notice.'],
+   ['Insist the figure is right',-3,-8,0,'They publish the evidence. You look dishonest.'],
+   ['Say nothing',-1,-2,0,'The correction circulates without you.']]],
+ ['rivals','The defector','A powerful rival politician offers to defect to your party, with his supporters, for a top post.',[
+   ['Welcome him with no promise of a post',[.5,3,-1],0,0,['He comes anyway and brings his machine.','He walks away and joins someone else.']],
+   ['Offer him the running-mate slot',-1,-5,0,'Your loyal members feel betrayed.'],
+   ['Politely decline',1,2,0,'Your base respects the loyalty.']]],
+ ['creators','#EndUnemployment','A youth hashtag about jobs is trending and it tags you.',[
+   ['Reply with your jobs plan and open a live chat',1,4,0,'Thousands join. The questions are tough but fair.'],
+   ['Host a weekend hackathon for job ideas',[.55,3,-1],0,-20,['Brilliant ideas and great coverage.','Low turnout and a glitchy livestream.']],
+   ['Post a glossy campaign ad',-1,-3,0,'"Ads don\'t create jobs," reply thousands.']]],
+ ['civil','Show your assets','Transparency groups ask every candidate to publish their asset declaration.',[
+   ['Publish it in full',3,8,0,'You set the standard. Rivals scramble to follow.'],
+   ['Publish a short summary',-1,-2,0,'"What are you hiding?" ask the groups.'],
+   ['Refuse: it is private',-3,-10,0,'The refusal leads every bulletin.']]],
+ ['health','Cholera outbreak','A cholera outbreak hits a state where you are due to hold a rally.',[
+   ['Cancel and fund clean-water kits',1,5,-30,'Health workers thank you publicly.'],
+   ['Visit the clinics with health officials',[.6,3,-1],2,0,['You are seen helping, not campaigning.','Officials say your visit got in the way.']],
+   ['Hold the rally anyway',-3,-8,0,'Health officials condemn the crowd risk.']]],
+ ['press','The fake video','A fake video of you insulting a region is spreading fast.',[
+   ['Respond with proof and ask platforms to remove it',1,3,0,'Fact-checkers confirm it is fake. The story turns.'],
+   ['Accuse a rival without evidence',-1,-4,0,'Now there are two stories, and neither helps you.'],
+   ['Ignore it',-3,-8,0,'By the time you speak, millions have seen it.']]],
+ ['importers','Port gridlock','Importers say port delays are costing billions and pushing up prices.',[
+   ['Visit the port and set out a fix',1,3,0,'Importers and truck drivers both like what they hear.'],
+   ['Promise to sack port officials on day one',[.4,3,-1],0,0,['Frustrated traders cheer.','Port workers\' unions turn against you.']],
+   ['Blame the customs workers on TV',-1,-4,0,'The customs union demands an apology.']]]
+],
+red:[
+ ['debate','The final debate','In the final televised debate, the moderator asks for your biggest failure in public life.',[
+   ['Name it honestly and say what you learned',1,6,0,'Calm, human, believable. The undecided warm to you.'],
+   ['Open with a joke, then answer',[.5,3,-3],0,0,['The room laughs, then listens. Your best moment of the race.','The joke falls flat and the answer never recovers.']],
+   ['Turn it into an attack on a rival',-3,-6,0,'The moderator calls it out. So does the audience.']]],
+ ['military','A quiet offer','A retired general privately says "some officers" could help secure your victory.',[
+   ['Refuse firmly: the military stays out of politics',1,6,0,'You keep faith with the constitution. Word of your answer spreads quietly.'],
+   ['Report the approach publicly',[.5,3,-1],3,0,['You are praised for courage across the country.','You are accused of grandstanding without proof.']],
+   ['Say you will think about it',-3,-12,0,'The conversation leaks. Your campaign is in crisis.']]],
+ ['electoral','Collation delays','Results from three states are delayed at collation. Your supporters are restless.',[
+   ['Call for calm and trust the process',1,5,0,'Observers praise your restraint.'],
+   ['Send agents with documents to every centre',[.6,3,-1],0,-30,['Your agents\' records match the count. Confidence grows.','Some agents never reach the centres.']],
+   ['Declare yourself the winner early',-3,-12,0,'The electoral body rebukes you. Tension spreads.']]],
+ ['judiciary','The petition','A rival files a petition saying your nomination papers were flawed.',[
+   ['Have your lawyers answer with every document',1,2,-20,'The papers are in order. The petition stalls.'],
+   ['Ask for an early hearing',[.5,3,-1],0,-10,['The case is thrown out quickly.','The hearing is set for after the vote.']],
+   ['Attack the judge on social media',-3,-10,0,'Lawyers across the country condemn you.']]],
+ ['security','Unrest in a region','Violence breaks out in a region days before the vote. Your rally there is tomorrow.',[
+   ['Postpone and back the security response',1,4,0,'You look like a leader, not just a candidate.'],
+   ['Visit victims quietly, with no cameras',[.5,3,-1],3,0,['Families speak of your visit. The story spreads on its own.','Your team is turned back at a checkpoint.']],
+   ['Hold the rally anyway',-3,-6,0,'Security chiefs call it reckless.']]],
+ ['observers','The observers\' report','Election observers criticise your party\'s agents in two states.',[
+   ['Accept the findings and retrain your agents',1,5,0,'The observers note your response in their next report.'],
+   ['Promise an independent inquiry',[.5,3,-1],0,0,['Respected, and seen as serious.','Critics call it a delay tactic.']],
+   ['Call them foreign meddlers',-3,-8,0,'Diplomats and voters alike are unimpressed.']]],
+ ['doctors','The health rumour','Rumours say you are seriously ill. Markets wobble.',[
+   ['Release a report from independent doctors',1,4,0,'The rumour dies within a day.'],
+   ['Run 10 km in public at dawn',[.45,3,-3],0,0,['Thousands run with you. The rumour is buried.','You stop at kilometre four. Cameras catch it all.']],
+   ['Ignore it',-3,-6,0,'The rumour grows into a story about your secrecy.']]],
+ ['unions','Fuel queues','Fuel queues stretch for miles in the final week before the vote.',[
+   ['Visit a depot and explain your fuel plan',1,3,0,'Drivers in the queue hear you out.'],
+   ['Blame the government at a press conference',[.5,3,-3],0,0,['Frustrated voters agree with you.','You are asked what you would do instead, and stumble.']],
+   ['Promise free fuel',-3,-8,0,'Nobody believes it, and economists say so loudly.']]],
+ ['press','The leaked audio','An audio clip appears to have you insulting voters. You do not recognise it.',[
+   ['Order a forensic check and say so publicly',1,3,0,'Experts later confirm the clip was edited.'],
+   ['Release your own full recording of the event',[.6,3,-3],2,0,['It proves the clip was cut. The story turns on its makers.','Your recording has a gap. Doubts grow.']],
+   ['Threaten to shut down the station',-3,-12,0,'Press freedom groups condemn you.']]],
+ ['godfathers','The godfather','A power broker offers to "deliver" his state if you hand him key appointments.',[
+   ['Refuse quietly and campaign there yourself',1,2,0,'Harder, but clean. Local voters respect it.'],
+   ['Refuse in public',[.5,3,-1],4,0,['Voters cheer a candidate who will not be owned.','His machine turns against you in his state.']],
+   ['Accept in private',-3,-12,0,'Such deals never stay private. It leaks within a day.']]],
+ ['world','Foreign praise','A foreign government praises you. Rivals call you a puppet.',[
+   ['Say only Nigerians choose Nigeria\'s leader',1,4,0,'A clear, confident answer that lands well.'],
+   ['Say nothing',-1,-2,0,'The puppet story grows in the silence.'],
+   ['Boast about the praise',-3,-6,0,'It confirms everything your rivals said.']]],
+ ['voters','Will the young vote?','Polls suggest young voters may stay home on election day.',[
+   ['Run a voter-information drive with youth creators',1,4,-10,'Clear, useful, and widely shared.'],
+   ['Hold a midnight concert rally',[.5,3,-1],0,-40,['A huge crowd and a buzz that lasts all week.','Expensive, chaotic and half-empty.']],
+   ['Offer cash for voter cards',-3,-12,-20,'Vote buying is a crime. Arrests follow, and your campaign is named.']]],
+ ['police','Polling day','On polling day, an agent reports snatched ballot boxes at one unit.',[
+   ['Report it to the electoral body and police',1,4,0,'The unit is flagged for review. You stay above the fray.'],
+   ['Post it online before reporting it',[.4,1,-3],0,0,['It goes viral and officials act fast.','It turns out to be a false report. You spread it.']],
+   ['Send supporters to take the boxes back',-3,-12,0,'Violence has no place here. Police arrest several of your supporters.']]],
+ ['rulers','The peace accord','On the last night, faith and traditional leaders call every candidate to sign a peace accord.',[
+   ['Sign and speak first',3,6,0,'Your words set the tone for the night. The country notices.'],
+   ['Sign but skip the ceremony',-1,-2,0,'Your empty seat is the picture on the front pages.'],
+   ['Refuse until rivals apologise',-3,-8,0,'You look like the obstacle to peace.']]],
+ ['electoral','Results day','You are narrowly ahead, but one state\'s results are disputed.',[
+   ['Wait for the official declaration and urge calm',1,4,0,'Your restraint is noticed. The declaration comes.'],
+   ['Ask for a recount in the disputed state',[.5,3,-1],0,-20,['The recount confirms your lead.','The recount narrows your lead to almost nothing.']],
+   ['Hold a victory rally now',-3,-10,0,'The electoral body warns you publicly. Supporters clash.']]]
+]};
+const GATES_PER = 3, TOTAL = 12;
+const SCENES = [
+  {key:'market', name:'Lagos Market', sub:'Win over the traders', img:'assets/scenes/market.webp', time:25, ai:.72,
+   groups:['traders','farmers','women','artisans','importers','herders','weather','faith','rulers'], traffic:['hawker','okada','hawker'], amb:{crowd:.06, traffic:.012, horns:.15}},
+  {key:'streets', name:'Lagos Streets', sub:'Go-slow, danfos and okadas', img:'assets/scenes/street.webp', time:22, ai:.68,
+   groups:['riders','unions','police','creators','students','teachers','voters','civil','press'], traffic:['danfo','taxi','okada','danfo','taxi','hawker'], amb:{crowd:.03, traffic:.05, horns:.7}},
+  {key:'estate', name:'The Estate', sub:'Behind the gates', img:'assets/scenes/estate.webp', time:18, ai:.64,
+   groups:['tenants','business','security','lobby','diaspora','doctors','nurses','health'], traffic:['taxi'], amb:{crowd:.008, traffic:.012, horns:.08}},
+  {key:'abuja', name:'Abuja', sub:'The last stretch to the Villa', img:'assets/scenes/abuja.webp', time:14, ai:.6,
+   groups:['delegates','agents','electoral','judiciary','observers','military','godfathers','rivals','world','debate'], traffic:['taxi'], amb:{crowd:.006, traffic:.03, horns:.1}}
+];
+const SPRITES = {danfo:{src:'assets/sprites/danfo.webp',h:.30,speed:7}, taxi:{src:'assets/sprites/taxi.webp',h:.21,speed:5.5}, okada:{src:'assets/sprites/okada.webp',h:.30,speed:4.2}, hawker:{src:'assets/sprites/hawker.webp',h:.42,speed:16}};
+const ALL = [...C.green, ...C.amber, ...C.red];
+const POOLS = SCENES.map(s => ALL.filter(c => s.groups.includes(c[0])));
+const sceneOf = pos => Math.min(SCENES.length - 1, Math.floor(pos / GATES_PER));
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const party = id => PARTIES.find(p => p.id === id);
+const faceStyle = p => `--pc:${p.color};background-image:url('${p.img}')`;
+
+// ---------- sound (synthesised, starts on the first tap) ----------
+const A = {
+  ctx:null, on:true, master:null, crowd:null, traffic:null, hornRate:0, hornT:null,
+  init(){
+    if (this.ctx) return;
+    try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) { return; }
+    const c = this.ctx; this.master = c.createGain(); this.master.gain.value = this.on ? 1 : 0; this.master.connect(c.destination);
+    const noise = () => { const b = c.createBuffer(1, c.sampleRate * 2, c.sampleRate), d = b.getChannelData(0); let last = 0; for (let i = 0; i < d.length; i++) { last = (last + .02 * (Math.random() * 2 - 1)) / 1.02; d[i] = last * 3.5; } const s = c.createBufferSource(); s.buffer = b; s.loop = true; return s; };
+    // market chatter: band-passed rumble with a slow wobble
+    const n1 = noise(), bp = c.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 700; bp.Q.value = .7;
+    this.crowd = c.createGain(); this.crowd.gain.value = 0; n1.connect(bp).connect(this.crowd).connect(this.master); n1.start();
+    const lfo = c.createOscillator(), lg = c.createGain(); lfo.frequency.value = .35; lg.gain.value = 250; lfo.connect(lg).connect(bp.frequency); lfo.start();
+    // engine and tyre rumble
+    const n2 = noise(), lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 160;
+    this.traffic = c.createGain(); this.traffic.gain.value = 0; n2.connect(lp).connect(this.traffic).connect(this.master); n2.start();
+  },
+  setOn(v){ this.on = v; if (this.master) this.master.gain.setTargetAtTime(v ? 1 : 0, this.ctx.currentTime, .05); },
+  scene(s){
+    if (!this.ctx) return;
+    const t = this.ctx.currentTime;
+    this.crowd.gain.setTargetAtTime(s.amb.crowd, t, .6); this.traffic.gain.setTargetAtTime(s.amb.traffic, t, .6);
+    this.hornRate = s.amb.horns; clearTimeout(this.hornT); this.loopHorns();
+  },
+  loopHorns(){ this.hornT = setTimeout(() => { if (Math.random() < this.hornRate) this.horn(Math.random() < .5 ? 2 : 1, .5 + Math.random() * .5); this.loopHorns(); }, 1200 + Math.random() * 2200); },
+  tone(f, start, dur, type, vol, f2){
+    const c = this.ctx; if (!c) return; const o = c.createOscillator(), g = c.createGain();
+    o.type = type; o.frequency.setValueAtTime(f, c.currentTime + start); if (f2) o.frequency.exponentialRampToValueAtTime(f2, c.currentTime + start + dur);
+    g.gain.setValueAtTime(0, c.currentTime + start); g.gain.linearRampToValueAtTime(vol, c.currentTime + start + .015); g.gain.exponentialRampToValueAtTime(.0001, c.currentTime + start + dur);
+    o.connect(g).connect(this.master); o.start(c.currentTime + start); o.stop(c.currentTime + start + dur + .05);
+  },
+  horn(times = 1, v = 1){
+    const base = [330, 392, 440, 349][Math.floor(Math.random() * 4)];
+    for (let i = 0; i < times; i++) { const s = i * .22; this.tone(base, s, .18, 'square', .035 * v); this.tone(base * 1.26, s, .18, 'sawtooth', .025 * v); }
+  },
+  gate(){ this.tone(170, 0, .7, 'sawtooth', .03, 320); },
+  good(){ [523, 659, 784, 1047].forEach((f, i) => this.tone(f, i * .09, .35, 'triangle', .09)); },
+  bad(){ this.tone(196, 0, .25, 'square', .06, 150); this.tone(147, .22, .45, 'square', .06, 98); },
+  tick(){ this.tone(1200, 0, .05, 'square', .03); },
+  win(){ [523, 659, 784, 659, 784, 1047].forEach((f, i) => this.tone(f, i * .14, .4, 'triangle', .1)); this.horn(3, 1); }
+};
+const ICON_ON = '<svg viewBox="0 0 24 24" fill="none" stroke="#F4F2EA" stroke-width="2" stroke-linecap="round"><path d="M4 9v6h4l5 4V5L8 9z" fill="#F4F2EA"/><path d="M16 9a4 4 0 0 1 0 6M19 6a8 8 0 0 1 0 12"/></svg>';
+const ICON_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="#A7ACB4" stroke-width="2" stroke-linecap="round"><path d="M4 9v6h4l5 4V5L8 9z" fill="#A7ACB4"/><path d="M17 9l5 6M22 9l-5 6"/></svg>';
+function paintMute(){ $('muteBtn').innerHTML = A.on ? ICON_ON : ICON_OFF; $('muteBtn').setAttribute('aria-pressed', String(A.on)); $('muteBtn').setAttribute('aria-label', A.on ? 'Sound on' : 'Sound off'); }
+$('muteBtn').onclick = () => { A.init(); A.setOn(!A.on); paintMute(); try { localStorage.setItem('asorock.sound', A.on ? '1' : '0'); } catch(e) {} };
+try { A.on = localStorage.getItem('asorock.sound') !== '0'; } catch(e) {}
+paintMute();
+
+// ---------- the scene ----------
+let curScene = -1, trafficT = null;
+function setScene(si, gateInScene){
+  const s = SCENES[si], stage = $('stage');
+  if (si !== curScene) {
+    const old = stage.querySelector('.bg');
+    const bg = document.createElement('div'); bg.className = 'bg fade'; bg.style.backgroundImage = `url('${s.img}')`;
+    stage.prepend(bg);
+    requestAnimationFrame(() => requestAnimationFrame(() => bg.classList.remove('fade')));
+    if (old) setTimeout(() => old.remove(), 900);
+    curScene = si; $('vehicles').innerHTML = ''; A.scene(s);
+    clearTimeout(trafficT); scheduleTraffic();
+    banner(`Phase ${si + 1} · ${s.name}`, s.sub);
+  }
+  // each checkpoint frames a different part of the scene, so the camera moves as you advance
+  const bg = stage.querySelector('.bg');
+  bg.style.backgroundPosition = `${[22, 50, 78][gateInScene]}% 62%`;
+  bg.style.transform = `scale(${1.08 + gateInScene * .05})`;
+}
+function banner(title, sub){
+  $('bannerTitle').textContent = title; $('bannerSub').textContent = sub || '';
+  $('banner').classList.add('show'); clearTimeout(banner.t); banner.t = setTimeout(() => $('banner').classList.remove('show'), 1900);
+}
+function scheduleTraffic(){
+  const s = SCENES[curScene];
+  trafficT = setTimeout(() => { spawn(s.traffic[Math.floor(Math.random() * s.traffic.length)]); scheduleTraffic(); }, curScene === 1 ? 1600 + Math.random() * 2400 : 4500 + Math.random() * 5000);
+}
+function spawn(kind){
+  const sp = SPRITES[kind], stage = $('stage'), host = $('vehicles');
+  if (host.children.length > 3) return;
+  const sw = stage.clientWidth, sh = stage.clientHeight;
+  const ltr = kind === 'hawker' || Math.random() < .6;
+  const el = document.createElement('div');
+  const far = Math.random() < .5;
+  const h = sh * sp.h * (far ? .72 : 1);
+  el.className = 'veh ' + (ltr ? 'ltr' : 'rtl');
+  el.style.cssText = `height:${h}px;bottom:${far ? 30 : 20}%;--sw:${sw}px;--dur:${sp.speed * (far ? 1.25 : 1)}s;opacity:${far ? .92 : 1}`;
+  el.innerHTML = `<img src="${sp.src}" alt="">`;
+  host.appendChild(el);
+  if (kind !== 'hawker' && Math.random() < .55) setTimeout(() => A.horn(Math.random() < .4 ? 2 : 1, far ? .5 : 1), 600 + Math.random() * 1500);
+  el.addEventListener('animationend', () => el.remove());
+}
+
+// ---------- race strip ----------
+(function ticks(){ let h = ''; for (let i = 1; i < TOTAL; i++) h += `<span style="left:${i / TOTAL * 100}%"></span>`; $('ticks').innerHTML = h; })();
+function renderDots(){
+  const groups = {};
+  $('dots').innerHTML = G_.players.map(p => {
+    const k = p.pos, n = (groups[k] = (groups[k] || 0) + 1) - 1;
+    return `<span class="dot ${p === focus() ? 'me' : ''}" title="${esc(p.name)} (${p.short}): gate ${Math.min(p.pos + 1, TOTAL)}" style="${faceStyle(p)};left:calc(${p.pos / TOTAL * 100}% + ${n * 7}px);transform:translateY(${n % 2 ? -3 : 0}px)"></span>`;
+  }).join('');
+}
+
+// ---------- game state ----------
+const G_ = {players:[], turn:0, round:1, meanwhile:[], lastHuman:null, over:false};
+const focus = () => G_.lastHuman || G_.players.find(p => p.human);
+function makePlayer(name, partyId, human){
+  const p = party(partyId);
+  return {name, party:p.id, short:p.short, color:p.color, img:p.img, partyName:p.name, human, pos:0, used:new Set(), turns:0, setbacks:0, best:0, skill:human ? 1 : .94 + Math.random() * .12};
+}
+function hud(p){
+  const s = sceneOf(p.pos);
+  $('hudFace').setAttribute('style', faceStyle(p));
+  $('hudName').textContent = p.name;
+  $('hudParty').textContent = p.partyName;
+  $('hudGate').innerHTML = `GATE ${Math.min(p.pos + 1, TOTAL)}/${TOTAL}<small>${SCENES[s].name}</small>`;
+  renderDots();
+}
+function draw(p){
+  const si = sceneOf(p.pos), pool = POOLS[si];
+  let fresh = pool.filter(c => !p.used.has(c[1]));
+  if (!fresh.length) { pool.forEach(c => p.used.delete(c[1])); fresh = pool; }
+  const ch = fresh[Math.floor(Math.random() * fresh.length)];
+  p.used.add(ch[1]); return ch;
+}
+// An option is either right (opens the gate) or wrong; a risky option opens it only sometimes.
+const isRisky = o => Array.isArray(o[1]);
+function outcome(o){
+  if (isRisky(o)) { const ok = Math.random() < Math.max(.35, o[1][0]); return {ok, text: ok ? o[4][0] : o[4][1]}; }
+  return {ok: o[1] > 0, text: o[4]};
+}
+
+// ---------- turns ----------
+let timerT = null;
+function nextTurn(){
+  if (G_.over) return;
+  if (G_.turn >= G_.players.length) { G_.turn = 0; G_.round++; }
+  const p = G_.players[G_.turn];
+  if (!p.human) {
+    const ok = Math.random() < SCENES[sceneOf(p.pos)].ai * p.skill;
+    const from = p.pos;
+    p.pos = ok ? p.pos + 1 : Math.max(0, p.pos - 1); p.turns++; if (!ok && from > 0) p.setbacks++;
+    G_.meanwhile.push({p, ok, gate: ok ? p.pos : from + 1, back: !ok && from === 0});
+    if (p.pos >= TOTAL) return finish(p);
+    G_.turn++; return nextTurn();
+  }
+  const humans = G_.players.filter(x => x.human).length;
+  if (humans > 1) return showHandoff(p);
+  showChallenge(p);
+}
+function showHandoff(p){
+  $('handFace').setAttribute('style', `width:96px;height:96px;margin:0 auto;${faceStyle(p)}`);
+  $('handTitle').textContent = `${p.name}, you're up`;
+  $('handSub').textContent = `${p.short} · Gate ${p.pos + 1} of ${TOTAL} · ${SCENES[sceneOf(p.pos)].name}. Pass the phone and keep your answer to yourself.`;
+  $('handoff').hidden = false;
+  $('handBtn').onclick = () => { $('handoff').hidden = true; showChallenge(p); };
+}
+function placeCandidate(p, instant){
+  const c = $('cand');
+  if (instant) { c.style.transition = 'none'; }
+  c.style.transform = 'translateX(0)'; c.style.opacity = '1'; c.className = 'cand';
+  $('candImg').src = p.img;
+  if (instant) { void c.offsetWidth; c.style.transition = ''; }
+}
+function showChallenge(p){
+  G_.lastHuman = p;
+  const si = sceneOf(p.pos), sc = SCENES[si], gi = p.pos % GATES_PER;
+  setScene(si, gi); hud(p); placeCandidate(p, true);
+  $('gate').classList.remove('open', 'shake'); $('lamp').setAttribute('fill', '#E5484D');
+  const ch = draw(p), [g, title, scen, opts] = ch;
+  $('askerImg').src = `assets/society/${g}.webp`; $('asker').className = 'asker talk';
+  $('askerTag').textContent = G[g];
+  const order = opts.map((_, i) => i).sort(() => Math.random() - .5);
+  $('card').innerHTML = `
+    <div class="eyebrow">Checkpoint ${p.pos + 1} of ${TOTAL} · ${esc(sc.name)} · ${esc(G[g])}</div>
+    <h2>${esc(title)}</h2>
+    <p>${esc(scen)}</p>
+    <div class="timer" id="timer"><i id="tbar"></i></div>
+    <div class="opts">${order.map(i => `<button class="opt" data-i="${i}"><span>${esc(opts[i][0])}</span>${isRisky(opts[i]) ? '<span class="chip">Risky</span>' : ''}</button>`).join('')}</div>`;
+  $('card').scrollTop = 0;
+  G_.current = {p, ch};
+  setTimeout(() => { $('asker').classList.remove('talk'); }, 2600);
+  let left = sc.time; const bar = $('tbar');
+  requestAnimationFrame(() => { bar.style.transform = `scaleX(${(left - 1) / sc.time})`; });
+  clearInterval(timerT);
+  timerT = setInterval(() => {
+    left--; bar.style.transform = `scaleX(${Math.max(0, left - 1) / sc.time})`;
+    if (left <= 5) { $('timer').classList.add('low'); if (left > 0) A.tick(); }
+    if (left <= 0) { clearInterval(timerT); answer(p, ch, -1); }
+  }, 1000);
+  document.querySelectorAll('.opt').forEach(b => b.onclick = () => { clearInterval(timerT); answer(p, ch, +b.dataset.i); });
+}
+function answer(p, ch, i){
+  document.querySelectorAll('.opt').forEach(b => b.disabled = true);
+  const res = i < 0 ? {ok:false, text:'Time ran out. The gate stays shut.'} : outcome(ch[3][i]);
+  const from = p.pos; p.turns++;
+  const c = $('cand');
+  if (res.ok) {
+    A.good(); A.gate(); $('lamp').setAttribute('fill', '#2FBF71');
+    $('gate').classList.add('open'); $('asker').className = 'asker cheer';
+    setTimeout(() => { c.classList.add('walk'); c.style.transform = 'translateX(260%)'; }, 500);
+    p.pos++;
+  } else {
+    A.bad(); $('gate').classList.add('shake'); $('asker').className = 'asker sad';
+    setTimeout(() => { c.classList.add('shove'); c.style.transform = 'translateX(-140%)'; c.style.opacity = '0'; }, 450);
+    if (from > 0) p.setbacks++;
+    p.pos = Math.max(0, p.pos - 1);
+  }
+  p.best = Math.max(p.best, p.pos);
+  renderDots();
+  setTimeout(() => showResult(p, res, from), 1300);
+}
+function showResult(p, res, from){
+  const won = p.pos >= TOTAL;
+  const mw = G_.meanwhile.splice(0);
+  const verdict = res.ok ? (won ? 'Through the last gate' : 'Gate open') : (from === 0 ? 'Gate stays shut' : 'Sent back');
+  const where = res.ok ? (won ? 'Aso Rock Villa is yours.' : `On to checkpoint ${p.pos + 1}${sceneOf(p.pos) !== sceneOf(from) ? ` in ${SCENES[sceneOf(p.pos)].name}` : ''}.`)
+    : (from === 0 ? 'Try again from the first checkpoint.' : `Back to checkpoint ${p.pos + 1}${sceneOf(p.pos) !== sceneOf(from) ? ` in ${SCENES[sceneOf(p.pos)].name}` : ''}.`);
+  $('card').innerHTML = `
+    <div class="verdict ${res.ok ? 'ok' : 'no'}">${verdict}</div>
+    <p>${esc(res.text)}</p>
+    <p><b>${where}</b></p>
+    ${mw.length ? `<div class="meanwhile"><div class="lbl">Meanwhile</div>${mw.map(m => `<div class="mw"><span class="face" style="${faceStyle(m.p)}"></span><span>${esc(m.p.short)} ${m.ok ? `<span class="up">opened gate ${m.gate}</span>` : m.back ? `<span class="down">stuck at gate 1</span>` : `<span class="down">sent back to gate ${m.p.pos + 1}</span>`}</span></div>`).join('')}</div>` : ''}
+    <button class="btn" id="nextBtn">${won ? 'Enter the Villa' : 'Next checkpoint'}</button>`;
+  $('card').scrollTop = 0;
+  $('nextBtn').onclick = () => { if (won) return finish(p); G_.turn++; nextTurn(); };
+  $('nextBtn').focus({preventScroll:true});
+}
+function finish(w){
+  G_.over = true; clearInterval(timerT); clearTimeout(trafficT);
+  const me = G_.players.find(x => x.human);
+  const humanWon = w.human;
+  $('endImg').src = w.img;
+  $('endEyebrow').textContent = humanWon ? 'Sworn in' : 'The race is over';
+  $('endTitle').textContent = humanWon ? `${w.name} takes Aso Rock Villa` : `${w.name} reached the Villa first`;
+  $('endText').textContent = humanWon
+    ? `${w.partyName} cleared all ${TOTAL} checkpoints, from the market to Abuja, and moves into the Villa.`
+    : `${w.partyName} (${w.short}) got through the last gate. ${G_.players.filter(x => x.human).map(x => `${x.name} reached checkpoint ${Math.min(x.pos + 1, TOTAL)}`).join('; ')}.`;
+  const focusP = humanWon ? w : me;
+  $('endStats').innerHTML = `<div><b>${focusP.turns}</b><span>Turns</span></div><div><b>${focusP.setbacks}</b><span>Sent back</span></div><div><b>${Math.min(focusP.pos, TOTAL)}/${TOTAL}</b><span>Gates</span></div>`;
+  $('confetti').innerHTML = humanWon ? Array.from({length:46}, (_, i) => `<i style="left:${Math.random() * 100}%;background:${['#008751','#FFFFFF','#F5C518','#2FBF71'][i % 4]};animation-duration:${2.2 + Math.random() * 2.5}s;animation-delay:${-Math.random() * 3}s"></i>`).join('') : '';
+  $('end').hidden = false;
+  if (humanWon) A.win(); else A.bad();
+  try { const t = JSON.parse(localStorage.getItem('asorock.wins') || '{}'); t[w.short] = (t[w.short] || 0) + 1; localStorage.setItem('asorock.wins', JSON.stringify(t)); } catch(e) {}
+}
+
+// ---------- setup ----------
+let rows = [{name:'', party:'lp'}];
+function renderRows(){
+  $('setupLabel').textContent = rows.length > 1 ? `${rows.length} players on one phone. Each picks a candidate` : 'Choose your candidate';
+  $('rows').innerHTML = rows.map((r, i) => `
+    <div class="prow">
+      <div class="prow-top"><input id="pname${i}" aria-label="Player ${i + 1} name" maxlength="28" placeholder="${rows.length > 1 ? `Player ${i + 1}` : 'Your name'}" value="${esc(r.name)}">${rows.length > 1 ? `<button class="x" data-rm="${i}" aria-label="Remove player ${i + 1}">&times;</button>` : ''}</div>
+      <div class="picks" role="group" aria-label="Candidate for player ${i + 1}">${PARTIES.map(pt => { const taken = rows.some((o, j) => j !== i && o.party === pt.id); return `<button class="pick" data-row="${i}" data-party="${pt.id}" aria-pressed="${r.party === pt.id}" ${taken ? 'disabled' : ''} style="--pc:${pt.color}"><img src="${pt.img}" alt="${pt.short} candidate"><span>${pt.short}</span></button>`; }).join('')}</div>
+    </div>`).join('');
+  rows.forEach((r, i) => { $('pname' + i).oninput = e => { r.name = e.target.value; }; });
+  document.querySelectorAll('.pick').forEach(b => b.onclick = () => { rows[+b.dataset.row].party = b.dataset.party; renderRows(); });
+  document.querySelectorAll('[data-rm]').forEach(b => b.onclick = () => { rows.splice(+b.dataset.rm, 1); renderRows(); });
+  $('addBtn').hidden = rows.length >= 6;
+  $('addBtn').textContent = rows.length > 1 ? 'Add another player' : 'Play with friends on this phone';
+}
+$('addBtn').onclick = () => { const free = PARTIES.find(p => !rows.some(r => r.party === p.id)); rows.push({name:'', party:free.id}); renderRows(); };
+$('startBtn').onclick = () => {
+  A.init(); A.setOn(A.on);
+  const humans = rows.map((r, i) => makePlayer(r.name.trim() || (rows.length > 1 ? `Player ${i + 1}` : 'You'), r.party, true));
+  const ais = PARTIES.filter(p => !rows.some(r => r.party === p.id)).map(p => makePlayer(p.rival, p.id, false));
+  Object.assign(G_, {players:[...humans, ...ais], turn:0, round:1, meanwhile:[], lastHuman:null, over:false});
+  curScene = -1; $('setup').hidden = true; $('end').hidden = true;
+  nextTurn();
+};
+$('againBtn').onclick = () => { $('end').hidden = true; $('setup').hidden = false; renderRows(); };
+renderRows();
+// opening frame behind the setup screen
+setScene(0, 1); $('candImg').src = 'assets/candidates/lp.webp'; $('askerImg').src = 'assets/society/traders.webp'; $('askerTag').textContent = 'Market traders';
+G_.players = PARTIES.map(p => makePlayer(p.rival, p.id, p.id === 'lp')); renderDots(); G_.players = [];
+$('card').innerHTML = '<div class="eyebrow">Checkpoint 1 of 12 · Lagos Market</div><h2>The campaign starts here</h2><p>Six candidates, twelve boom gates, one villa.</p>';
+if (location.hash === '#test') window.__ar = {G_, outcome, isRisky, POOLS, SCENES, spawn, setScene, best(){ const {ch} = G_.current; let bi = 0, bv = -9; ch[3].forEach((o, i) => { const v = isRisky(o) ? o[1][0] - .5 : o[1]; if (v > bv) { bv = v; bi = i; } }); return bi; }};
+</script>
