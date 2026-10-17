@@ -61,6 +61,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--danfo);outline-
 .cand{position:absolute;z-index:2;left:16%;bottom:5%;height:64%;transform-origin:50% 100%;transition:transform 1.1s cubic-bezier(.5,0,.3,1),opacity .4s}
 .cand img{height:100%;width:auto;display:block;filter:drop-shadow(0 6px 5px rgba(0,0,0,.55));animation:idle 2.8s ease-in-out infinite;transform-origin:50% 100%}
 .cand.walk img{animation:hop .3s ease-in-out infinite}
+.cand.clip img,.asker.clip img{animation:none}
 .cand.shove img{animation:wobble .16s linear infinite alternate}
 @keyframes idle{0%,100%{transform:rotate(-1.4deg)}50%{transform:rotate(1.4deg) translateY(-1px)}}
 @keyframes hop{0%,100%{transform:translateY(0)}45%{transform:translateY(-7%) scale(.97,1.03)}}
@@ -133,7 +134,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--danfo);outline-
 .handoff .inner,.end .inner{justify-content:center;text-align:center}
 .end{background:#0c0e10}
 .end .scene{position:relative;border-radius:16px;overflow:hidden;aspect-ratio:4/3;max-width:100%;background:url('assets/scenes/villa.webp') center/cover}
-.end .scene img{position:absolute;left:50%;bottom:2%;height:62%;transform:translateX(-50%);filter:drop-shadow(0 8px 6px rgba(0,0,0,.6));animation:hop .55s ease-in-out infinite}
+.end .scene img{position:absolute;left:50%;bottom:2%;height:62%;transform:translateX(-50%);filter:drop-shadow(0 8px 6px rgba(0,0,0,.6))}
 .end h2{margin:0;font-family:var(--display);font-weight:400;font-size:clamp(24px,8vw,34px);line-height:1.05;text-wrap:balance}
 .end p{margin:0;color:#DCDAD2;line-height:1.45}
 .confetti{position:absolute;inset:0;pointer-events:none;overflow:hidden}
@@ -606,11 +607,36 @@ function showHandoff(p){
   $('handoff').hidden = false;
   $('handBtn').onclick = () => { $('handoff').hidden = true; showChallenge(p); };
 }
+// ---------- animated clips (Higgsfield video, cut out to transparent animated WebP) ----------
+// Each play gets its own blob URL so the animation restarts from the first frame.
+const PARTY_IDS = ['apc','pdp','lp','apga','sdp','adc'];
+const CLIPS = new Set([...PARTY_IDS.map(id => id + '-pass'), ...PARTY_IDS.map(id => id + '-fail'),
+  'traders','women','riders','press','police','security','electoral','judiciary']);
+const clipCache = {};
+function clipBlob(name){
+  if (!CLIPS.has(name)) return Promise.resolve(null);
+  if (!clipCache[name]) clipCache[name] = fetch(`assets/anim/${name}.webp`).then(r => r.ok ? r.blob() : null).catch(() => null);
+  return clipCache[name];
+}
+function setStill(img, src){
+  img.dataset.tok = String(+(img.dataset.tok || 0) + 1);
+  const old = img.dataset.blob; delete img.dataset.blob; img.src = src;
+  if (old) setTimeout(() => URL.revokeObjectURL(old), 500);
+}
+async function playClip(img, name){
+  const tok = String(+(img.dataset.tok || 0) + 1); img.dataset.tok = tok;
+  const b = await clipBlob(name);
+  if (!b || img.dataset.tok !== tok) return false;
+  const old = img.dataset.blob, u = URL.createObjectURL(b);
+  img.src = u; img.dataset.blob = u;
+  if (old) setTimeout(() => URL.revokeObjectURL(old), 500);
+  return true;
+}
 function placeCandidate(p, instant){
   const c = $('cand');
   if (instant) { c.style.transition = 'none'; }
   c.style.transform = 'translateX(0)'; c.style.opacity = '1'; c.className = 'cand';
-  $('candImg').src = p.img;
+  setStill($('candImg'), p.img);
   if (instant) { void c.offsetWidth; c.style.transition = ''; }
 }
 function showChallenge(p){
@@ -619,7 +645,8 @@ function showChallenge(p){
   setScene(si, gi); hud(p); placeCandidate(p, true);
   $('gate').classList.remove('open', 'shake'); $('lamp').setAttribute('fill', '#E5484D');
   const ch = draw(p), [g, title, scen, opts] = ch;
-  $('askerImg').src = `assets/society/${g}.webp`; $('asker').className = 'asker talk';
+  setStill($('askerImg'), `assets/society/${g}.webp`); $('asker').className = 'asker talk';
+  if (CLIPS.has(g)) playClip($('askerImg'), g).then(ok => { if (ok) $('asker').className = 'asker clip'; });
   $('askerTag').textContent = G[g];
   const order = opts.map((_, i) => i).sort(() => Math.random() - .5);
   $('card').innerHTML = `
@@ -631,6 +658,7 @@ function showChallenge(p){
   $('card').scrollTop = 0;
   G_.current = {p, ch};
   setTimeout(() => { $('asker').classList.remove('talk'); }, 2600);
+  clipBlob(p.party + '-pass'); clipBlob(p.party + '-fail');
   let left = sc.time; const bar = $('tbar');
   requestAnimationFrame(() => { bar.style.transform = `scaleX(${(left - 1) / sc.time})`; });
   clearInterval(timerT);
@@ -645,15 +673,24 @@ function answer(p, ch, i){
   document.querySelectorAll('.opt').forEach(b => b.disabled = true);
   const res = i < 0 ? {ok:false, text:'Time ran out. The gate stays shut.'} : outcome(ch[3][i]);
   const from = p.pos; p.turns++;
-  const c = $('cand');
+  const c = $('cand'), g = ch[0];
+  setStill($('askerImg'), `assets/society/${g}.webp`);
   if (res.ok) {
     A.good(); A.gate(); $('lamp').setAttribute('fill', '#2FBF71');
     $('gate').classList.add('open'); $('asker').className = 'asker cheer';
-    setTimeout(() => { c.classList.add('walk'); c.style.transform = 'translateX(260%)'; }, 500);
+    // the candidate's own clip: walks up and punches the air; the old slide is the fallback
+    playClip($('candImg'), p.party + '-pass').then(ok => {
+      if (ok) c.classList.add('clip');
+      else setTimeout(() => { c.classList.add('walk'); c.style.transform = 'translateX(260%)'; }, 500);
+    });
     p.pos++;
   } else {
     A.bad(); $('gate').classList.add('shake'); $('asker').className = 'asker sad';
-    setTimeout(() => { c.classList.add('shove'); c.style.transform = 'translateX(-140%)'; c.style.opacity = '0'; }, 450);
+    // shakes head, turns and walks back
+    playClip($('candImg'), p.party + '-fail').then(ok => {
+      if (ok) c.classList.add('clip');
+      else setTimeout(() => { c.classList.add('shove'); c.style.transform = 'translateX(-140%)'; c.style.opacity = '0'; }, 450);
+    });
     if (from > 0) p.setbacks++;
     p.pos = Math.max(0, p.pos - 1);
   }
@@ -681,7 +718,7 @@ function finish(w){
   G_.over = true; clearInterval(timerT); clearTimeout(trafficT);
   const me = G_.players.find(x => x.human);
   const humanWon = w.human;
-  $('endImg').src = w.img;
+  setStill($('endImg'), w.img); playClip($('endImg'), w.party + '-pass');
   $('endEyebrow').textContent = humanWon ? 'Sworn in' : 'The race is over';
   $('endTitle').textContent = humanWon ? `${w.name} takes Aso Rock Villa` : `${w.name} reached the Villa first`;
   $('endText').textContent = humanWon
