@@ -40,6 +40,10 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 @keyframes walk{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-2.5%) rotate(1.5deg)}}
 @keyframes walkf{0%,100%{transform:scaleX(-1) translateY(0) rotate(-1.5deg)}50%{transform:scaleX(-1) translateY(-2.5%) rotate(1.5deg)}}
 .prop{position:absolute;pointer-events:none}
+.bgvid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;pointer-events:none}
+.veh{position:absolute;left:0;pointer-events:none;filter:drop-shadow(0 6px 4px rgba(0,0,0,.45))}
+.veh img{display:block;height:100%;width:auto;animation:bump .32s ease-in-out infinite alternate}
+@keyframes bump{to{translate:0 -1.5px}}
 .notice{width:6.5%;aspect-ratio:3/4;background:linear-gradient(#FFFDF4,#EDE4CC);border:1px solid #BCA97D;box-shadow:0 3px 6px rgba(0,0,0,.4);transform:rotate(-4deg);display:grid;place-items:center;font:700 7px/1.1 var(--body);color:#5A2A12;text-align:center;padding:2px}
 .hotspot{position:absolute;z-index:40;transform:translate(-50%,-50%);display:grid;justify-items:center;gap:4px;border:0;background:none;padding:6px}
 .hotspot .ring{width:34px;height:34px;border-radius:50%;border:2.5px solid #fff;background:rgba(255,255,255,.18);box-shadow:0 0 0 0 rgba(255,255,255,.6);animation:pulse 1.8s ease-out infinite;display:grid;place-items:center}
@@ -212,7 +216,12 @@ const CLUES = {
   notice:  {name:"The levy notice says 'subject to council approval'"},
   contract:{name:"Sule says Chief Dapo holds the collection contract himself"}
 };
-const SCENES = {street:{img:'assets/scenes/street.webp'}, market:{img:'assets/scenes/market.webp'}};
+// Each scene is a looping video (generated from the still) with the still as poster and fallback.
+const SCENES = {
+  street:{img:'assets/scenes/street.webp', video:'assets/scenes/street.mp4', aspect:4/3, traffic:['danfo','taxi','okada','hawker','taxi'], every:[1800, 3200]},
+  market:{img:'assets/scenes/market.webp', video:'assets/scenes/market.mp4', aspect:4/3, traffic:['hawker','okada','hawker'], every:[4500, 7000]}
+};
+const SPRITES = {danfo:{src:'assets/sprites/danfo.webp', h:.26, speed:9}, taxi:{src:'assets/sprites/taxi.webp', h:.19, speed:7}, okada:{src:'assets/sprites/okada.webp', h:.27, speed:5.5}, hawker:{src:'assets/sprites/hawker.webp', h:.36, speed:22}};
 
 // ===================== State =====================
 const S = {party:null, name:'', clues:[], rel:{}, flags:{}, choices:[], scene:0};
@@ -273,14 +282,34 @@ const W = {w:0, h:0, cam:0, actors:{}, player:null, px:0};
 function vw(){ return $('stage').clientWidth; }
 function setWorld(key){
   const world = $('world'), h = $('stage').clientHeight;
-  W.h = h; W.w = Math.max(vw(), Math.round(h * 4 / 3));
-  world.style.width = W.w + 'px'; world.style.backgroundImage = `url('${SCENES[key].img}')`;
+  const sc = SCENES[key];
+  W.h = h; W.w = Math.max(vw(), Math.round(h * (sc.aspect || 4 / 3)));
+  world.style.width = W.w + 'px'; world.style.backgroundImage = `url('${sc.img}')`;
   world.innerHTML = ''; W.actors = {};
+  if (sc.video) { const v = document.createElement('video'); v.className = 'bgvid'; v.muted = true; v.loop = true; v.autoplay = true; v.playsInline = true; v.setAttribute('playsinline', ''); v.setAttribute('muted', ''); v.poster = sc.img; v.innerHTML = `<source src="${sc.video}" type="video/mp4"><source src="${sc.video.replace('.mp4', '.webm')}" type="video/webm">`; world.appendChild(v); v.play && v.play().catch(() => {}); }
+  startTraffic(key);
   const pa = P();
   W.player = addActor('player', pa.img, .5, .37);
   W.player.el.style.setProperty('--d', '-1.2s');
 }
 let a0 = null;
+// background life: vehicles and hawkers crossing the scene, with horns on the street
+let trafficT = null;
+function startTraffic(key){ clearTimeout(trafficT); const sc = SCENES[key]; if (!sc.traffic || TEST) return;
+  const tick = () => { spawn(sc.traffic[Math.floor(Math.random() * sc.traffic.length)]); trafficT = setTimeout(tick, sc.every[0] + Math.random() * (sc.every[1] - sc.every[0])); };
+  trafficT = setTimeout(tick, 600); }
+function spawn(kind){
+  const sp = SPRITES[kind], world = $('world'); if (world.querySelectorAll('.veh').length > 3) return;
+  const far = Math.random() < .55, ltr = kind === 'hawker' ? Math.random() < .5 : Math.random() < .6;
+  const el = document.createElement('div'); el.className = 'veh';
+  const h = W.h * sp.h * (far ? .7 : 1), dur = sp.speed * (far ? 1.3 : 1) * (W.w / 1200);
+  el.style.cssText = `height:${h}px;bottom:${far ? 26 : 15}%;z-index:${far ? 3 : 6};opacity:${far ? .9 : 1}`;
+  el.innerHTML = `<img src="${sp.src}" alt="" style="${ltr ? '' : 'transform:scaleX(-1)'}">`;
+  world.appendChild(el);
+  const from = ltr ? -h * 2.2 : W.w + 20, to = ltr ? W.w + 20 : -h * 2.2;
+  el.animate([{transform:`translateX(${from}px)`}, {transform:`translateX(${to}px)`}], {duration:dur * 1000, easing:'linear'}).onfinish = () => el.remove();
+  if (kind !== 'hawker' && Math.random() < .5) setTimeout(() => A.horn(), 500 + Math.random() * 1500);
+}
 function addActor(id, img, x, hFrac, opts = {}){
   const el = document.createElement('div'); el.className = 'actor'; el.style.height = (hFrac * 100) + '%';
   el.style.bottom = (opts.bottom ?? 5) + '%'; el.style.zIndex = String(opts.z ?? 10);
