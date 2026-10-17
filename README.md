@@ -161,3 +161,7 @@ The product is now **Politikat**, a politics-only social app (polls on seven top
 - **Relationships and endings**: seven characters (Tobi, Alhaja Rukayat, Mama Nkechi, Sule, Zee, Kunle Bello, Chief Dapo) track trust from -5 to +5. Tomorrow's headline and the Chapter 2 teaser change with your choices (walk in or send police, take the fifty million or refuse, fight the levy, broker talks, or pay it yourself).
 - **Notebook**: clues, where people stand and what you did; progress saves on the device.
 - All characters and the market are fictional. The old race game stays in `apps/aso-rock/`.
+
+## Road to Aso Rock: interactive film (apps/aso-rock-film)
+
+Chapter 1, "The Levy", told as an interactive movie. Each scene is a full-screen cinematic shot (5 looping Kling video shots plus 13 stills with slow camera moves), with film subtitles, device voices, and Life is Strange-style timed choices. Choices change relationships, clues, the face-off with Chief Dapo, the ending headline and the Chapter 2 teaser. Play as any of the six party candidates. Test hook: `index.html#test` exposes `window.__story`.

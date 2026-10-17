@@ -1,0 +1,595 @@
+<meta charset="utf-8">
+<title>Road to Aso Rock</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap">
+<style>
+/* Layout: a full-bleed 16:9 film frame that covers the screen, with film subtitles and Life-is-Strange-style choices over the lower third. Single dark cinema look. */
+:root{
+  --night:#07080A; --ink:#0E0F12; --chalk:#F4F1E8; --muted:#A9A496; --gold:#F2C14E; --green:#2FBF71; --red:#E5484D;
+  --panel:rgba(10,11,14,.72); --line:rgba(244,241,232,.18);
+  --hand:'Caveat',ui-rounded,'Comic Sans MS',cursive; --body:'Bricolage Grotesque',ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;
+  color-scheme:dark;
+}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{background:var(--night);color:var(--chalk);font-family:var(--body);font-size:16px;overflow:hidden;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+#stage{position:fixed;inset:0;overflow:hidden;background:var(--night)}
+/* the film frame: 16:9, covering the screen in landscape */
+.frame{position:absolute;left:50%;top:50%;width:max(100vw,177.78vh);aspect-ratio:16/9;max-width:none;transform:translate(-50%,-50%);overflow:hidden}
+@media (max-aspect-ratio:1/1){ .frame{width:178vw;top:40%} }
+.layer{position:absolute;inset:0;opacity:0;transition:opacity .9s ease}
+.layer.on{opacity:1}
+.layer img,.layer video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;max-width:none}
+.layer.kb1 img{animation:kb1 18s ease-out forwards}
+.layer.kb2 img{animation:kb2 18s ease-out forwards}
+.layer.kb3 img{animation:kb3 18s ease-out forwards}
+.layer.vid video{animation:kbv 12s ease-out forwards}
+@keyframes kb1{from{transform:scale(1.03)}to{transform:scale(1.16) translate(-2%,-1%)}}
+@keyframes kb2{from{transform:scale(1.16) translate(2%,1%)}to{transform:scale(1.04)}}
+@keyframes kb3{from{transform:scale(1.06) translate(-2%,0)}to{transform:scale(1.14) translate(2%,-1.5%)}}
+@keyframes kbv{from{transform:scale(1)}to{transform:scale(1.05)}}
+.grade{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.55)),linear-gradient(transparent 55%,rgba(0,0,0,.75));z-index:5}
+.shake{animation:shake .45s}
+@keyframes shake{20%{transform:translate(calc(-50% - 6px),-50%)}60%{transform:translate(calc(-50% + 5px),calc(-50% + 2px))}}
+/* paper notice drawn over the blank sheet in the notice shot */
+.paperText{position:absolute;z-index:4;left:37.6%;top:17%;width:23%;height:58%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4%;text-align:center;color:#3B1F10;font-family:var(--body);transform:rotate(-1deg);opacity:0;transition:opacity .8s}
+.paperText.on{opacity:1}
+.paperText b{font-size:1.45vw;line-height:1.05;letter-spacing:.02em}
+.paperText big{font-size:2.6vw;font-weight:800;color:#8C1C13}
+.paperText i{font-style:normal;font-size:.95vw;font-weight:600}
+.paperText small{font-size:.75vw;opacity:.75;border-top:1px solid #8a6d4a;padding-top:4%}
+@media (max-aspect-ratio:1/1){ .paperText b{font-size:2.6vw}.paperText big{font-size:4.6vw}.paperText i{font-size:1.7vw}.paperText small{font-size:1.4vw} }
+/* letterbox */
+.bar{position:absolute;left:0;right:0;height:7vh;background:#000;z-index:20;transition:transform .8s ease;pointer-events:none}
+.bar.top{top:0;transform:translateY(-100%)} .bar.bot{bottom:0;transform:translateY(100%)}
+.cine .bar{transform:none}
+@media (max-aspect-ratio:1/1){ .bar{display:none} }
+.fade{position:absolute;inset:0;background:#000;z-index:40;transition:opacity .8s;pointer-events:none}
+.fade.out{opacity:0}
+/* HUD */
+.hud{position:absolute;z-index:60;top:calc(10px + env(safe-area-inset-top,0px));right:max(12px,env(safe-area-inset-right,0px));display:flex;gap:8px}
+.chap{position:absolute;z-index:60;top:calc(12px + env(safe-area-inset-top,0px));left:max(14px,env(safe-area-inset-left,0px));font-family:var(--hand);font-size:22px;line-height:1;color:var(--chalk);text-shadow:0 2px 8px #000;max-width:55%}
+.chap small{display:block;font-family:var(--body);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.pill{height:38px;min-width:38px;border-radius:999px;border:1px solid var(--line);background:var(--panel);display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:0 12px;font-weight:700;font-size:14px;backdrop-filter:blur(6px)}
+.pill svg{width:18px;height:18px}
+/* narration card */
+.caption{position:absolute;z-index:45;left:50%;top:22%;transform:translateX(-50%);width:min(86%,560px);text-align:center;font-size:clamp(17px,2.2vw,24px);line-height:1.45;color:var(--chalk);text-shadow:0 2px 12px #000,0 0 3px #000;opacity:0;transition:opacity .6s;pointer-events:none;text-wrap:balance}
+.caption.show{opacity:1}
+.caption em{font-style:normal;color:var(--gold)}
+/* subtitles */
+.subs{position:absolute;z-index:50;left:0;right:0;bottom:0;padding:0 max(16px,env(safe-area-inset-right,0px)) calc(9vh + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;pointer-events:none;opacity:0;transition:opacity .35s}
+.subs.show{opacity:1}
+.subs .who{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--pc,var(--gold));text-shadow:0 1px 4px #000}
+.subs .who i{width:26px;height:26px;border-radius:50%;background:#222 center 12%/cover;border:2px solid var(--pc,var(--gold));display:none}
+.subs .who.me i{display:block}
+.subs .line{max-width:min(92vw,820px);font-size:clamp(18px,2.3vw,26px);line-height:1.35;font-weight:600;color:#fff;text-shadow:0 2px 3px #000,0 0 14px rgba(0,0,0,.9);text-wrap:balance}
+.subs .line.thought{font-style:italic;color:#E9E3D2}
+@media (max-aspect-ratio:1/1){ .subs{padding-bottom:calc(5vh + env(safe-area-inset-bottom,0px))} .subs .line{font-size:19px} }
+/* choices */
+.choices{position:absolute;z-index:55;left:0;right:0;bottom:0;padding:0 max(16px,env(safe-area-inset-right,0px)) calc(5vh + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;align-items:center;gap:10px;background:linear-gradient(transparent,rgba(0,0,0,.7) 40%)}
+.choices .prompt{font-family:var(--hand);font-size:26px;color:var(--gold);text-shadow:0 2px 8px #000}
+.timer{width:min(420px,70vw);height:4px;border-radius:2px;background:rgba(255,255,255,.18);overflow:hidden}
+.timer i{display:block;height:100%;background:var(--gold);transform-origin:left}
+.opts{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;max-width:980px}
+.opt{position:relative;display:flex;align-items:center;gap:10px;min-height:48px;max-width:min(440px,92vw);text-align:left;padding:10px 16px 10px 12px;border-radius:12px;border:1px solid var(--line);background:rgba(12,13,16,.86);font-weight:600;font-size:15.5px;line-height:1.3;box-shadow:0 8px 22px rgba(0,0,0,.45);transition:transform .15s,border-color .15s,background .15s;animation:rise .4s both}
+.opt:nth-child(2){animation-delay:.06s}.opt:nth-child(3){animation-delay:.12s}.opt:nth-child(4){animation-delay:.18s}.opt:nth-child(5){animation-delay:.24s}.opt:nth-child(6){animation-delay:.3s}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}}
+.opt:hover:not(:disabled){border-color:var(--gold);background:rgba(30,26,12,.92);transform:translateY(-2px)}
+.opt:disabled{opacity:.5;cursor:not-allowed}
+.opt .k{flex:none;width:26px;height:26px;border-radius:7px;display:grid;place-items:center;font-size:12px;font-weight:800;background:rgba(242,193,78,.16);color:var(--gold)}
+.opt .tag{flex:none;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);border:1px solid rgba(242,193,78,.5);border-radius:999px;padding:2px 7px;margin-left:auto}
+.opt .tag.lock{color:var(--muted);border-color:var(--line)}
+.opt.done{opacity:.55}
+.opt.done .k{background:rgba(47,191,113,.18);color:var(--green)}
+@media (max-width:640px){ .opts{flex-direction:column;align-items:stretch;width:100%} .opt{max-width:none} }
+/* toasts */
+.toasts{position:absolute;z-index:70;left:max(14px,env(safe-area-inset-left,0px));top:calc(62px + env(safe-area-inset-top,0px));display:flex;flex-direction:column;gap:8px;max-width:min(360px,80vw);pointer-events:none}
+.toast{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;background:var(--panel);border:1px solid var(--line);font-size:14px;font-weight:600;backdrop-filter:blur(8px);animation:tin .5s both,tout .6s 3.4s forwards}
+.toast svg{flex:none;width:22px;height:22px}
+@keyframes tin{from{opacity:0;transform:translateX(-14px)}} @keyframes tout{to{opacity:0;transform:translateX(-10px)}}
+/* crowd meter */
+.meter{position:absolute;z-index:56;left:50%;top:calc(64px + env(safe-area-inset-top,0px));transform:translateX(-50%);width:min(420px,78vw);text-align:center;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.meter .track{position:relative;height:10px;margin-top:6px;border-radius:5px;background:linear-gradient(90deg,var(--red),#7A6A3A 50%,var(--green))}
+.meter .knob{position:absolute;top:50%;left:50%;width:20px;height:20px;border-radius:50%;background:#fff;border:3px solid var(--night);transform:translate(-50%,-50%);transition:left .7s cubic-bezier(.3,1.4,.5,1)}
+.meter .ends{display:flex;justify-content:space-between;margin-top:4px}
+/* title, recap, notebook */
+.screen{position:absolute;inset:0;z-index:80;overflow:auto;background:rgba(5,6,8,.55)}
+.screen .inner{min-height:100%;display:flex;flex-direction:column;justify-content:center;gap:18px;padding-block:calc(28px + env(safe-area-inset-top,0px)) calc(28px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));max-width:880px;margin:0 auto}
+.kicker{font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--gold)}
+.ttl{font-family:var(--hand);font-size:clamp(54px,9vw,104px);line-height:.9;text-shadow:0 4px 24px #000}
+.lede{font-size:17px;line-height:1.5;color:#E3DED0;max-width:56ch;text-shadow:0 1px 8px #000}
+.picks{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+@media (max-width:640px){ .picks{grid-template-columns:repeat(3,minmax(0,1fr))} }
+.pick{position:relative;border-radius:12px;border:2px solid transparent;background:rgba(12,13,16,.8);padding:6px 4px 8px;display:flex;flex-direction:column;align-items:center;gap:2px}
+.pick img{width:100%;aspect-ratio:1;object-fit:cover;object-position:center 12%;border-radius:8px;background:#1a1b1f}
+.pick span{font-weight:800;font-size:14px;color:var(--pc)}
+.pick[aria-pressed="true"]{border-color:var(--pc);background:rgba(30,30,34,.92)}
+.field{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.field input{flex:1;min-width:0;height:46px;border-radius:10px;border:1px solid var(--line);background:rgba(12,13,16,.85);color:var(--chalk);padding:0 14px;font:inherit;font-size:16px}
+.btn{height:48px;border:0;border-radius:999px;padding:0 24px;background:var(--gold);color:#1B1606;font-weight:800;font-size:16px;box-shadow:0 8px 20px rgba(0,0,0,.45)}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--chalk);box-shadow:none}
+.fine{font-size:12.5px;color:var(--muted)}
+.headline{background:#F3EEDF;color:#1A1712;border-radius:6px;padding:16px 18px;font-family:Georgia,'Times New Roman',serif;font-size:clamp(20px,3vw,28px);line-height:1.2;font-weight:700;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.headline small{display:block;font-family:var(--body);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#7A6F5B;margin-bottom:6px;font-weight:800}
+.book{background:rgba(12,13,16,.9);border:1px solid var(--line);border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:10px}
+.book h2{font-family:var(--hand);font-size:30px;line-height:1;margin:0}
+.book h3{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:6px 0 0}
+.book ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;font-size:15px;line-height:1.4}
+.book li.locked{color:var(--muted)}
+.rel{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:10px;align-items:center;font-size:14px}
+.rel .face{width:34px;height:34px;border-radius:50%;background:#222 center 12%/cover;border:2px solid var(--pc)}
+.rel em{font-style:normal;font-size:12px;color:var(--muted)}
+.meter-s{position:relative;height:5px;border-radius:3px;background:rgba(255,255,255,.12);margin-top:4px}
+.meter-s i{position:absolute;top:0;bottom:0;background:var(--green);border-radius:3px}
+.meter-s i.neg{background:var(--red)}
+.meter-s::after{content:"";position:absolute;left:50%;top:-2px;bottom:-2px;width:1px;background:rgba(255,255,255,.4)}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.tap{position:absolute;z-index:51;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(3vh + env(safe-area-inset-bottom,0px));font-size:12px;color:var(--muted);opacity:.8}
+.rotate{display:none}
+@media (max-aspect-ratio:1/1){ .rotate{display:block;position:absolute;z-index:60;left:50%;top:calc(58px + env(safe-area-inset-top,0px));transform:translateX(-50%);font-size:11.5px;color:var(--muted);background:var(--panel);border-radius:999px;padding:4px 10px;white-space:nowrap} }
+@media (prefers-reduced-motion:reduce){ .layer img,.layer video{animation:none!important} .opt{animation:none} }
+</style>
+
+<div id="stage">
+  <div class="frame" id="frame">
+    <div class="layer" id="L0"></div><div class="layer" id="L1"></div>
+    <div class="paperText" id="paper"><b>MARKET<br>DEVELOPMENT<br>LEVY</b><big>₦5,000</big><i>DAILY · BY ORDER</i><small>subject to council approval</small></div>
+    <div class="grade"></div>
+  </div>
+  <div class="bar top"></div><div class="bar bot"></div>
+  <div class="chap" id="chap" hidden><small>Chapter 1</small>The Levy</div>
+  <div class="rotate" id="rotate" hidden>Turn your phone sideways for the full picture</div>
+  <div class="hud" id="hud" hidden>
+    <button class="pill" id="notesBtn" aria-label="Notebook"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M9 9h6M9 13h6"/></svg>Notebook</button>
+    <button class="pill" id="muteBtn" aria-label="Sound"></button>
+  </div>
+  <div class="toasts" id="toasts"></div>
+  <div class="meter" id="meter" hidden>The crowd<div class="track"><div class="knob" id="knob"></div></div><div class="ends"><span>With Dapo</span><span>With you</span></div></div>
+  <div class="caption" id="caption"></div>
+  <div class="subs" id="subs"><div class="who" id="who"><i id="whoFace"></i><span id="whoName"></span></div><div class="line" id="line"></div></div>
+  <div class="tap" id="tap" hidden>Tap to skip ▸</div>
+  <div class="choices" id="choices" hidden><div class="prompt" id="prompt"></div><div class="timer" id="timer" hidden><i id="tbar"></i></div><div class="opts" id="opts"></div></div>
+  <div class="fade" id="fade"></div>
+
+  <div class="screen" id="title">
+    <div class="inner">
+      <div class="kicker">An interactive film · Chapter 1 · The Levy</div>
+      <div class="ttl">Road to<br>Aso Rock</div>
+      <p class="lede">Day three of your run for president. A Lagos market has blocked the road, a contractor is collecting a levy nobody approved, and every choice you make is remembered.</p>
+      <div class="picks" id="picks"></div>
+      <div class="field"><input id="pname" maxlength="28" placeholder="Your candidate's name" autocomplete="off"><button class="btn" id="startBtn">Roll film</button></div>
+      <div class="row" id="resumeRow" hidden><button class="btn ghost" id="resumeBtn">Resume where you stopped</button></div>
+      <p class="fine">Real parties, fictional candidates and characters. Simulated campaign, not a prediction. Sound and voices on.</p>
+    </div>
+  </div>
+  <div class="screen" id="recap" hidden><div class="inner" id="recapInner"></div></div>
+  <div class="screen" id="notes" hidden><div class="inner"><div class="book" id="notebook"></div><div class="row"><button class="btn" id="notesClose">Back to the film</button></div></div></div>
+</div>
+
+<script>
+// ===================== Data =====================
+const PARTIES = [
+  {id:'apc', short:'APC', name:'All Progressives Congress', color:'#1E88E5', img:'assets/candidates/apc.webp'},
+  {id:'pdp', short:'PDP', name:'Peoples Democratic Party', color:'#E53935', img:'assets/candidates/pdp.webp'},
+  {id:'lp', short:'LP', name:'Labour Party', color:'#2E9E4F', img:'assets/candidates/lp.webp'},
+  {id:'apga', short:'APGA', name:'All Progressives Grand Alliance', color:'#D9A400', img:'assets/candidates/apga.webp'},
+  {id:'sdp', short:'SDP', name:'Social Democratic Party', color:'#2B47B8', img:'assets/candidates/sdp.webp'},
+  {id:'adc', short:'ADC', name:'African Democratic Congress', color:'#C0392B', img:'assets/candidates/adc.webp'}
+];
+// Fictional people of Oja Tuntun Market. Relationship scores run from -5 to +5.
+const PEOPLE = {
+  tobi:   {name:'Tobi Adeyemi', role:'Your campaign manager', img:'assets/film/tobi.webp', f:false, color:'#F2C14E'},
+  alhaja: {name:'Alhaja Rukayat', role:"Market women's leader", img:'assets/film/alhaja.webp', f:true, color:'#1FA38F'},
+  nkechi: {name:'Mama Nkechi', role:'Tomato seller', img:'assets/film/nkechi.webp', f:true, color:'#E07A1F'},
+  sule:   {name:'Sule', role:'Okada rider', img:'assets/film/sule.webp', f:false, color:'#F28C28'},
+  zee:    {name:'Zee', role:'Live-streamer', img:'assets/film/zee.webp', f:false, color:'#E5484D'},
+  kunle:  {name:'Kunle Bello', role:'City Desk reporter', img:'assets/film/kunle.webp', f:false, color:'#5B8BFF'},
+  dapo:   {name:'Chief Dapo Martins', role:'Levy contractor', img:'assets/film/dapo.webp', f:false, color:'#D8B24A'},
+  ade:    {name:'Sergeant Ade', role:'Police', img:'assets/film/police.webp', f:false, color:'#7FA2E8'}
+};
+const CLUES = {
+  ticket:  {name:"Mama Nkechi pays ₦2,000 a day for her ticket, plus the new ₦5,000 levy"},
+  receipt: {name:"The levy receipt has no council stamp, only a phone number"},
+  notice:  {name:"The levy notice says 'subject to council approval'"},
+  contract:{name:"Sule says Chief Dapo holds the collection contract himself"}
+};
+// Every shot of the film. Shots with video loop while the scene plays; stills get a slow camera move.
+const F = 'assets/film/';
+const SHOTS = {
+  lagos:{img:F + 'lagos.webp'}, street:{img:'assets/scenes/street.webp', video:'assets/scenes/street.mp4'},
+  convoy:{img:F + 'convoy.webp', video:F + 'convoy.mp4'}, tobi:{img:F + 'tobi.webp'}, police:{img:F + 'police.webp'},
+  market:{img:'assets/scenes/market.webp', video:'assets/scenes/market.mp4'}, alhaja:{img:F + 'alhaja.webp'},
+  nkechi:{img:F + 'nkechi.webp', video:F + 'nkechi.mp4'}, notice:{img:F + 'notice.webp'}, zee:{img:F + 'zee.webp'},
+  kunle:{img:F + 'kunle.webp'}, sule:{img:F + 'sule.webp'}, arrival:{img:F + 'arrival.webp'},
+  dapo:{img:F + 'dapo.webp', video:F + 'dapo.mp4'}, crowd:{img:F + 'dapocrowd.webp', video:F + 'dapocrowd.mp4'},
+  receipt:{img:F + 'receipt.webp'}, cheer:{img:F + 'cheer.webp', video:F + 'cheer.mp4'}, dusk:{img:F + 'dusk.webp'}
+};
+
+// ===================== State =====================
+const S = {party:null, name:'', clues:[], rel:{}, flags:{}, choices:[], scene:0};
+for (const k of Object.keys(PEOPLE)) S.rel[k] = 0;
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const P = () => PARTIES.find(p => p.id === S.party);
+const first = () => (S.name.split(/\s+/)[0] || 'Candidate');
+const TEST = location.hash === '#test';
+const sleep = ms => new Promise(r => setTimeout(r, TEST ? Math.min(ms, 30) : ms));
+function save(){ try { localStorage.setItem('asorock.film', JSON.stringify(S)); } catch(e) {} }
+function load(){ try { const v = JSON.parse(localStorage.getItem('asorock.film') || 'null'); return v && v.party ? v : null; } catch(e) { return null; } }
+
+// ===================== Sound and voices =====================
+const A = {ctx:null, on:true, master:null, crowd:null, traffic:null, hornRate:0, hornT:null,
+  init(){ if (this.ctx) return; try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) { return; }
+    const c = this.ctx; this.master = c.createGain(); this.master.gain.value = this.on ? 1 : 0; this.master.connect(c.destination);
+    const noise = () => { const b = c.createBuffer(1, c.sampleRate * 2, c.sampleRate), d = b.getChannelData(0); let l = 0; for (let i = 0; i < d.length; i++) { l = (l + .02 * (Math.random() * 2 - 1)) / 1.02; d[i] = l * 3.5; } const s = c.createBufferSource(); s.buffer = b; s.loop = true; return s; };
+    const n1 = noise(), bp = c.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 700; bp.Q.value = .7;
+    this.crowd = c.createGain(); this.crowd.gain.value = 0; n1.connect(bp).connect(this.crowd).connect(this.master); n1.start();
+    const lfo = c.createOscillator(), lg = c.createGain(); lfo.frequency.value = .3; lg.gain.value = 260; lfo.connect(lg).connect(bp.frequency); lfo.start();
+    const n2 = noise(), lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 160;
+    this.traffic = c.createGain(); this.traffic.gain.value = 0; n2.connect(lp).connect(this.traffic).connect(this.master); n2.start(); },
+  setOn(v){ this.on = v; if (this.master) this.master.gain.setTargetAtTime(v ? 1 : 0, this.ctx.currentTime, .05); },
+  amb(crowd, traffic, horns){ if (!this.ctx) return; const t = this.ctx.currentTime; this.crowd.gain.setTargetAtTime(crowd, t, .8); this.traffic.gain.setTargetAtTime(traffic, t, .8); this.hornRate = horns; clearTimeout(this.hornT); this.loop(); },
+  loop(){ this.hornT = setTimeout(() => { if (Math.random() < this.hornRate) this.horn(); this.loop(); }, 1400 + Math.random() * 2600); },
+  tone(f, s, d, type, v, f2){ const c = this.ctx; if (!c) return; const o = c.createOscillator(), g = c.createGain(); o.type = type; o.frequency.setValueAtTime(f, c.currentTime + s); if (f2) o.frequency.exponentialRampToValueAtTime(f2, c.currentTime + s + d);
+    g.gain.setValueAtTime(0, c.currentTime + s); g.gain.linearRampToValueAtTime(v, c.currentTime + s + .015); g.gain.exponentialRampToValueAtTime(.0001, c.currentTime + s + d); o.connect(g).connect(this.master); o.start(c.currentTime + s); o.stop(c.currentTime + s + d + .05); },
+  horn(){ const b = [330, 392, 440][Math.floor(Math.random() * 3)], n = Math.random() < .4 ? 2 : 1; for (let i = 0; i < n; i++) { this.tone(b, i * .22, .18, 'square', .03); this.tone(b * 1.26, i * .22, .18, 'sawtooth', .02); } },
+  pick(){ this.tone(660, 0, .12, 'triangle', .07); },
+  remember(){ [784, 988, 1175].forEach((f, i) => this.tone(f, i * .07, .5, 'sine', .05)); },
+  good(){ [523, 659, 784].forEach((f, i) => this.tone(f, i * .08, .35, 'triangle', .08)); },
+  bad(){ this.tone(196, 0, .3, 'square', .05, 140); },
+  sting(){ [220, 277, 330].forEach((f, i) => this.tone(f, i * .12, 1.4, 'sine', .05)); },
+  crowdCheer(){ if (!this.ctx) return; const t = this.ctx.currentTime; this.crowd.gain.setTargetAtTime(.16, t, .1); setTimeout(() => this.crowd.gain.setTargetAtTime(.05, this.ctx.currentTime, .6), 1400); }
+};
+const V = { ok:'speechSynthesis' in window, voices:[],
+  load(){ if (!this.ok) return; try { this.voices = speechSynthesis.getVoices().filter(v => /^en/i.test(v.lang)); } catch(e) {} },
+  pick(f){ const vs = this.voices; if (!vs.length) return null; const r = v => (/en[-_]NG/i.test(v.lang) ? 0 : /en[-_](ZA|KE|GH|GB)/i.test(v.lang) ? 1 : 2);
+    const fem = /female|woman|ezinne|samantha|victoria|karen|moira|tessa|serena|zira|susan|hazel|libby|sonia|leah|aria|jenny/i; const s = [...vs].sort((a, b) => r(a) - r(b)); const top = s.filter(v => r(v) === r(s[0])); return top.find(v => fem.test(v.name) === f) || top[0]; },
+  say(text, f, pitch){ if (!this.ok || !A.on || TEST) return null; try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text.replace(/^\(.*?\)\s*/, '')); const v = this.pick(f); if (v) { u.voice = v; u.lang = v.lang; } u.rate = .98; u.pitch = pitch ?? (f ? 1.1 : .85); speechSynthesis.speak(u); return u; } catch(e) { return null; } },
+  stop(){ if (this.ok) try { speechSynthesis.cancel(); } catch(e) {} } };
+V.load(); if (V.ok) try { speechSynthesis.onvoiceschanged = () => V.load(); } catch(e) {}
+const ICON_ON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 9a4 4 0 0 1 0 6M19 6a8 8 0 0 1 0 12"/></svg>';
+const ICON_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M17 9l5 6M22 9l-5 6"/></svg>';
+function paintMute(){ $('muteBtn').innerHTML = A.on ? ICON_ON : ICON_OFF; $('muteBtn').setAttribute('aria-label', A.on ? 'Sound on' : 'Sound off'); }
+try { A.on = localStorage.getItem('asorock.sound') !== '0'; } catch(e) {}
+paintMute();
+$('muteBtn').onclick = e => { e.stopPropagation(); A.init(); A.setOn(!A.on); if (!A.on) V.stop(); paintMute(); try { localStorage.setItem('asorock.sound', A.on ? '1' : '0'); } catch(e) {} };
+
+// ===================== The film frame =====================
+let cur = 0, curShot = null, kbN = 0;
+// Cut (crossfade) to a shot. Video shots loop silently; the still is the poster and the fallback.
+function shot(key){
+  if (curShot === key) return; curShot = key;
+  const sh = SHOTS[key], next = $('L' + (1 - cur)), prev = $('L' + cur);
+  next.className = 'layer'; next.innerHTML = '';
+  const img = new Image(); img.src = sh.img; img.alt = ''; next.appendChild(img);
+  if (sh.video && !TEST) {
+    const v = document.createElement('video'); v.muted = true; v.loop = true; v.autoplay = true; v.playsInline = true; v.setAttribute('playsinline', ''); v.setAttribute('muted', ''); v.poster = sh.img;
+    v.innerHTML = `<source src="${sh.video}" type="video/mp4">` + (sh.video.includes('scenes/') ? `<source src="${sh.video.replace('.mp4', '.webm')}" type="video/webm">` : '');
+    v.addEventListener('playing', () => { img.style.visibility = 'hidden'; next.classList.add('vid'); });
+    next.appendChild(v); v.play && v.play().catch(() => {});
+    next.classList.add('kb' + (1 + (kbN++ % 3)));
+  } else if (key !== 'notice') next.classList.add('kb' + (1 + (kbN++ % 3)));
+  void next.offsetWidth; next.classList.add('on'); prev.classList.remove('on');
+  setTimeout(() => { if (!prev.classList.contains('on')) { prev.querySelectorAll('video').forEach(v => v.pause()); prev.innerHTML = ''; } }, 1000);
+  cur = 1 - cur;
+  $('paper').classList.toggle('on', key === 'notice');
+}
+function shake(){ const f = $('frame'); f.classList.remove('shake'); void f.offsetWidth; f.classList.add('shake'); }
+async function fadeIn(){ await sleep(60); $('fade').classList.add('out'); await sleep(800); }
+async function fadeOut(){ hideSubs(); $('fade').classList.remove('out'); await sleep(800); }
+
+// ===================== Narrative primitives =====================
+let advance = null;
+$('stage').addEventListener('click', e => { if (e.target.closest('.opt,.hud,.screen')) return; if (advance) advance(); });
+document.addEventListener('keydown', e => {
+  if ((e.key === ' ' || e.key === 'Enter') && advance && $('choices').hidden) { e.preventDefault(); advance(); }
+  if (!$('choices').hidden && /^[1-6]$/.test(e.key)) { const b = $('opts').children[+e.key - 1]; if (b && !b.disabled) b.click(); }
+});
+// wait for a duration, skippable with a tap
+function hold(ms){ return new Promise(r => { let done = false; const fin = () => { if (done) return; done = true; advance = null; r(); }; advance = fin; setTimeout(fin, TEST ? 20 : ms); }); }
+async function caption(html, ms = 3000){
+  hideSubs(); const c = $('caption'); c.innerHTML = html; c.classList.add('show');
+  await hold(ms); c.classList.remove('show'); await sleep(450);
+}
+function hideSubs(){ $('subs').classList.remove('show'); $('tap').hidden = true; }
+// A spoken line as a film subtitle. The voice plays; the line stays up for reading time, or until tapped.
+async function say(id, text, {shot:k} = {}){
+  if (k) shot(k);
+  const me = id === 'player';
+  const pp = me ? {name:S.name, color:P().color, f:/^(pdp|sdp|adc)$/.test(S.party), img:P().img} : PEOPLE[id];
+  $('who').classList.toggle('me', me); $('who').style.setProperty('--pc', pp.color);
+  $('whoFace').style.backgroundImage = me ? `url('${pp.img}')` : '';
+  $('whoName').textContent = me ? `${pp.name} (you)` : pp.name;
+  $('line').textContent = text; $('line').classList.toggle('thought', /^\(/.test(text));
+  $('subs').classList.remove('show'); void $('subs').offsetWidth; $('subs').classList.add('show'); $('tap').hidden = false;
+  const u = V.say(text, pp.f);
+  const read = Math.max(2400, text.length * 62);
+  await new Promise(r => { let done = false; const fin = () => { if (done) return; done = true; advance = null; r(); };
+    advance = fin; setTimeout(fin, TEST ? 15 : read + 700);
+    if (u) u.onend = () => setTimeout(fin, 500); });
+  V.stop();
+}
+// options: [{t, tag?, need?: clueId, hide?, done?, locked?: label}]; returns chosen index; on timeout returns dflt.
+async function choose(options, {timer = 0, dflt = -1, prompt = ''} = {}){
+  hideSubs();
+  $('prompt').textContent = prompt || 'What do you say?';
+  const vis = options.map((o, i) => ({...o, i})).filter(o => !o.hide);
+  $('opts').innerHTML = vis.map((o, n) => { const locked = (o.need && !S.clues.includes(o.need)) || o.locked;
+    const tag = locked ? `<span class="tag lock">${esc(o.locked || 'Needs a clue')}</span>` : o.tag ? `<span class="tag">${esc(o.tag)}</span>` : '';
+    return `<button class="opt${o.done ? ' done' : ''}" data-i="${o.i}" ${locked ? 'disabled' : ''}><span class="k">${o.done ? '✓' : n + 1}</span><span>${esc(o.t)}</span>${tag}</button>`; }).join('');
+  $('choices').hidden = false;
+  const r = await new Promise(res => {
+    $('opts').querySelectorAll('.opt').forEach(b => b.onclick = e => { e.stopPropagation(); A.pick(); res(+b.dataset.i); });
+    if (timer) { const bar = $('tbar'); $('timer').hidden = false; bar.style.transition = 'none'; bar.style.transform = 'scaleX(1)';
+      requestAnimationFrame(() => requestAnimationFrame(() => { bar.style.transition = `transform ${timer}s linear`; bar.style.transform = 'scaleX(0)'; }));
+      setTimeout(() => res(dflt), TEST ? 999999 : timer * 1000); }
+    if (TEST) window.__pending = res;
+  });
+  window.__pending = null;
+  $('choices').hidden = true; $('timer').hidden = true; $('opts').innerHTML = '';
+  return r;
+}
+const ICON_REMEMBER = '<svg viewBox="0 0 24 24" fill="none" stroke="#F2C14E" stroke-width="2" stroke-linecap="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/><circle cx="12" cy="12" r="3" fill="#F2C14E"/></svg>';
+const ICON_CLUE = '<svg viewBox="0 0 24 24" fill="none" stroke="#2FBF71" stroke-width="2" stroke-linecap="round"><circle cx="10" cy="10" r="6"/><path d="M14.5 14.5 20 20"/></svg>';
+function toast(text, icon = ICON_REMEMBER){ const t = document.createElement('div'); t.className = 'toast'; t.innerHTML = icon + `<span>${esc(text)}</span>`; $('toasts').appendChild(t); setTimeout(() => t.remove(), 4100); }
+function rel(id, d, note){ S.rel[id] = Math.max(-5, Math.min(5, S.rel[id] + d)); if (note !== false) { A.remember(); toast(note || `${PEOPLE[id].name} will remember that.`); } }
+function clue(id){ if (S.clues.includes(id)) return; S.clues.push(id); A.good(); toast(`Clue noted: ${CLUES[id].name}`, ICON_CLUE); }
+function record(text){ S.choices.push(text); }
+
+// ===================== Chapter 1: The Levy =====================
+const SCRIPT = [sceneConvoy, sceneMarket, sceneDapo, sceneFinale];
+async function sceneConvoy(){
+  shot('lagos'); A.amb(.01, .05, .3);
+  await fadeIn();
+  await caption(`Lagos. 7:40 a.m.<br><em>Day three</em> of your campaign for president.`, 3400);
+  shot('convoy'); A.amb(.05, .06, .7);
+  await caption(`Your convoy has not moved in twenty minutes. Traders from Oja Tuntun Market have dragged their tables across the road.`, 3800);
+  await say('tobi', `${first()}, they've blocked the road since dawn. The council has added a new levy: five thousand naira a day, on top of their market tickets.`, {shot:'tobi'});
+  await say('tobi', `Every rival campaign would love a photo of you stuck in traffic behind tinted glass. We need to decide. Now.`);
+  shot('convoy');
+  const c = await choose([
+    {t:"Get out. I'll walk in and talk to them myself."},
+    {t:"Call the police to clear the road."},
+    {t:"Turn the convoy around. We're late for the rally."}
+  ], {timer:15, dflt:3, prompt:'Decide before the moment passes'});
+  if (c === 0) { S.flags.walked = true; record('You stepped out of your car and walked to the blockade.');
+    await say('player', `Open the door, Tobi. If they've stopped the road, they want to be heard. So we listen.`, {shot:'tobi'});
+    shot('convoy'); await caption(`You step out into the heat. Horns stop. The placards lower, one by one.`, 3200);
+    rel('tobi', 1, false); rel('alhaja', 1, 'The traders saw you step out of your car.'); }
+  else if (c === 1 || c === 3) { S.flags.police = true;
+    if (c === 3) { await say('tobi', `You're frozen. Fine, I'll make the call.`, {shot:'tobi'}); record('You hesitated, and Tobi called the police.'); rel('tobi', -1, 'Tobi had to decide for you.'); }
+    else { await say('player', `Call the police. We can't campaign from a traffic jam.`, {shot:'tobi'}); record('You called the police to clear the road.'); }
+    shot('police'); shake(); A.bad();
+    await say('ade', `Traders, carry your tables commot for road! Now now!`);
+    await caption(`Shouting. A table goes over. Tomatoes roll under the convoy's wheels. The whole market turns to stare at your car.`, 3600);
+    rel('alhaja', -2, "Alhaja Rukayat will remember who sent the police.");
+    await say('tobi', `That could have gone better. We still have to go in there and fix this.`, {shot:'tobi'}); }
+  else { S.flags.reversed = true; record('You tried to turn the convoy around.'); shot('street');
+    await say('tobi', `If we reverse now, that's the headline: the candidate who ran from a market. Five minutes. Please.`, {shot:'tobi'});
+    await say('player', `Five minutes. Then we leave.`);
+    rel('tobi', -1, 'Tobi noticed you wanted to leave.'); toast('Someone in the crowd filmed your convoy reversing.'); }
+  await fadeOut();
+}
+
+async function sceneMarket(){
+  shot('market'); A.amb(.06, .01, .08);
+  await fadeIn();
+  await caption(`<em>Oja Tuntun Market.</em> Tomatoes, yams, plastic basins, gossip. Everybody is watching you.`, 3200);
+  shot('alhaja');
+  if (S.flags.police) { await say('alhaja', `So. You sent police before you sent greetings. That is how you want to start with us?`);
+    const c = await choose([{t:'That was a mistake. I am sorry, Alhaja.'}, {t:'The road had to be cleared. Let us move on.'}]);
+    if (c === 0) { await say('alhaja', `Hmm. At least you can say sorry. Many of them cannot.`); rel('alhaja', 1); record('You apologised to Alhaja Rukayat for the police.'); }
+    else { await say('alhaja', `"Move on." Okay o. We will see.`); rel('alhaja', -1); } }
+  else if (S.flags.reversed) await say('alhaja', `My daughter showed me a video of your convoy reversing. And yet here you are. Hmm. Welcome, I suppose.`);
+  else await say('alhaja', `A candidate who walks on their own feet into my market! Welcome. My women will tell you everything.`);
+  await say('alhaja', `Don't make speeches yet. Go and see what my women are suffering. Listen to them. Then come back to me.`);
+  // the market: pick who to approach, in any order
+  const done = new Set();
+  const visits = {
+    nkechi: async () => {
+      await say('nkechi', `${/^(pdp|sdp|adc)$/.test(S.party) ? 'Madam' : 'Oga'} candidate, see this ticket. Two thousand naira every morning before I sell one tomato.`, {shot:'nkechi'});
+      clue('ticket');
+      await say('nkechi', `And now this new levy. Five thousand naira! Some days my profit no reach five thousand.`);
+      const c = await choose([{t:'How long has the levy been running?'}, {t:"I'll fix this. You have my word."}, {t:'Have you tried paying it in instalments?'}]);
+      if (c === 0) { await say('nkechi', `Two weeks now. Since Chief Dapo's boys started coming with their receipt books.`);
+        await say('nkechi', `See the receipt. You see council stamp there? Only phone number.`); clue('receipt'); rel('nkechi', 1, false); }
+      else if (c === 1) { await say('nkechi', `Your word. Every candidate get word. Okay. Take this receipt and remember us when you dey Abuja.`); clue('receipt'); rel('nkechi', 1, 'Mama Nkechi has heard promises before.'); S.flags.promisedNkechi = true; }
+      else { await say('nkechi', `Instalment? Na loan I go collect to pay levy? Abeg, go and talk to another person.`); rel('nkechi', -2); } },
+    notice: async () => {
+      shot('notice'); await sleep(900);
+      await say('player', `"Market Development Levy. Five thousand naira daily. By order." And at the bottom, in small print...`);
+      await say('player', `"Subject to council approval." So the council never approved it.`); clue('notice'); },
+    zee: async () => {
+      await say('zee', `We're LIVE! Forty thousand people watching! Candidate, say something to Lagos!`, {shot:'zee'});
+      const c = await choose([{t:"I'm here to listen, not to perform. The traders should talk, not me."}, {t:'Please stop filming. This is not a show.'}, {t:'Hello Lagos! Watch this.', tag:'Dance'}], {timer:10, dflt:1, prompt:'Forty thousand people are watching'});
+      if (c === 0) { await say('zee', `Okay, okay! Chat says "finally a politician who listens." Respect.`); rel('zee', 2); S.flags.youth = 1; record("You told Zee's livestream you came to listen."); }
+      else if (c === 1) { await say('zee', `Wow. Chat says you're hiding something. I'm still streaming, by the way.`); rel('zee', -2); S.flags.youth = -1; }
+      else { await caption(`You dance three steps of a song you half know. The market roars with laughter.`, 3000); await say('zee', `The comments are going CRAZY. Half love it, half say "this is not serious."`); rel('zee', 1); S.flags.youth = 0; S.flags.danced = true; record("You danced on Zee's livestream."); } },
+    kunle: async () => {
+      await say('kunle', `Kunle Bello, City Desk. Off the record, candidate: do you know who holds the collection contract for this levy?`, {shot:'kunle'});
+      const c = await choose([
+        {t:'Sule says it is Chief Dapo himself. Dig into it.', need:'contract'},
+        {t:'On the record: this levy was never approved by the council.', need:'notice'},
+        {t:'No comment.'}]);
+      if (c === 0) { await say('kunle', `Dapo Martins? That's interesting. I'll pull the council records tonight.`); rel('kunle', 2); S.flags.kunleDigs = true; record('You pointed a reporter at the levy contract.'); }
+      else if (c === 1) { await say('kunle', `You've read the notice. Good. That's a quote I can print.`); rel('kunle', 1); S.flags.onRecord = true; record('You told the press, on the record, that the levy was never approved.'); }
+      else { await say('kunle', `No comment. Every politician's favourite song.`); rel('kunle', -1); } },
+    sule: async () => {
+      await say('sule', `Candidate, I fit tell you something, but you no hear am from me o.`, {shot:'sule'});
+      const c = await choose([{t:'Go on. Nobody will know it came from you.'}, {t:"Here's a thousand naira. Talk.", tag:'Pay'}, {t:"I don't listen to gossip."}]);
+      if (c === 2) { await say('sule', `Okay o. Na your choice.`); return; }
+      if (c === 1) { S.flags.paidSule = true; rel('sule', 1, 'Paying for information gets around the market.'); record('You paid Sule for information.'); }
+      else rel('sule', 1, false);
+      await say('sule', `Na Chief Dapo Martins get the contract. The council never sign am. The money dey enter him own pocket.`); clue('contract'); }
+  };
+  const menu = [['nkechi', 'Mama Nkechi, at her tomato stall'], ['notice', 'Read the levy notice on the pole'], ['zee', 'Zee, live-streaming by the stalls'], ['kunle', 'Kunle Bello, the reporter'], ['sule', 'Sule, waiting on his okada']];
+  while (true) {
+    shot('market');
+    const opts = menu.map(([k, t]) => ({t, done:done.has(k)}));
+    opts.push({t:'Go back to Alhaja', locked: done.size < 2 ? 'Talk to 2 people first' : '', tag:'Continue'});
+    const i = await choose(opts, {prompt:'Who do you approach?'});
+    if (i === menu.length) break;
+    const k = menu[i][0];
+    if (done.has(k)) { await say(k === 'notice' ? 'player' : k, {nkechi:`Candidate, I don tell you everything. Go and do something.`, notice:`I've read it. "Subject to council approval."`, zee:`Chat is still talking about you. Some love, some... not love.`, kunle:`I'm still here. Journalists don't leave until the story does.`, sule:`Oga, I don talk. Make dem no see me with you too much.`}[k], {shot:k}); continue; }
+    await visits[k](); done.add(k);
+  }
+  window.__visits = done;
+  await say('alhaja', S.clues.length >= 3 ? `You have been busy. Good. You know more now than most people in this market.` : `You came back quickly. Did you really listen?`, {shot:'alhaja'});
+  await fadeOut();
+}
+
+async function sceneDapo(){
+  shot('arrival'); A.amb(.08, .02, .1);
+  await fadeIn(); A.horn();
+  await caption(`A black SUV parts the crowd. <em>Chief Dapo Martins</em> steps out, gold tie shining, two young men behind him.`, 3600);
+  await say('dapo', `Ah! The presidential candidate, in my market! You should have called me first. Lagos has protocol.`);
+  await say('dapo', `Come, walk with me small. Two big men should not argue in front of market women.`);
+  await say('tobi', `(quietly) Don't go anywhere alone with that man.`, {shot:'tobi'});
+  shot('arrival');
+  const c = await choose([{t:'Walk with him. Hear what he wants.'}, {t:'Anything you want to say, say it here, in front of everyone.'}]);
+  if (c === 0) {
+    shot('dapo'); A.amb(.02, .01, 0);
+    await caption(`Behind the market, in the shade. An open briefcase sits on a plastic table between you.`, 3200);
+    await say('dapo', `This levy is small money. Let it run until after the election, and my people will fund your rallies in every Lagos ward. Fifty million naira.`);
+    const d = await choose([{t:'Deal. Keep it quiet.', tag:'Accept'}, {t:"I'm not for sale, Chief."}, {t:'Let me think about it.'}], {timer:12, dflt:2, prompt:'Fifty million naira'});
+    if (d === 0) { S.flags.deal = true; record("You accepted Chief Dapo's fifty million naira."); A.sting(); toast('This decision will follow you.');
+      await say('dapo', `Wise. Very wise. You will go far.`); rel('dapo', 3, false); rel('tobi', -2, 'Tobi saw you shake his hand.'); }
+    else if (d === 1) { S.flags.refused = true; record("You refused Chief Dapo's money."); await say('dapo', `Not for sale. Everybody is for sale; it's only the price we haven't found.`); rel('dapo', -2); rel('tobi', 1, false); }
+    else { S.flags.stalled = true; record('You told Chief Dapo you would think about his offer.'); await say('dapo', `Think fast. Elections don't wait.`); }
+  } else { S.flags.publicly = true; rel('alhaja', 1, 'The market heard you refuse a private meeting.'); }
+
+  shot('crowd'); A.amb(.08, .02, .1);
+  if (S.flags.deal) {
+    await say('dapo', `My people! The candidate and I have reached an understanding. The levy continues, for development!`);
+    await caption(`Silence. Then murmuring. Alhaja Rukayat looks at you for a long moment.`, 3200);
+    rel('alhaja', -3); rel('nkechi', -2, false); S.flags.duel = 'skipped'; return void await fadeOut();
+  }
+  // ---- Face-off: use what you learned in the market ----
+  await caption(`Dapo climbs onto a crate. This is a face-off: <em>use what you found</em> in the market to win the crowd.`, 3600);
+  $('meter').hidden = false; let crowd = 50; $('knob').style.left = '50%';
+  const move = d => { crowd = Math.max(0, Math.min(100, crowd + d)); $('knob').style.left = crowd + '%'; if (d > 0) { A.good(); A.crowdCheer(); } else if (d < 0) A.bad(); };
+  const rounds = [
+    {dapo:`This levy builds the market! New roofs, new drains. Development costs money!`,
+     opts:[{t:'Then why does your own notice say it is still waiting for council approval?', need:'notice', d:25, r:`Dapo's smile slips. People near the pole start reading the small print aloud.`},
+           {t:'Development? I see the same broken roof I saw this morning.', d:5, r:`A few laughs. Dapo shrugs it off.`},
+           {t:'You are a thief, and everybody here knows it!', d:-20, r:`"Can you prove it?" Dapo asks, smiling. You can't. Not yet.`}]},
+    {dapo:`My collectors are council officials. Everything is official and receipted.`,
+     opts:[{t:"Official receipts carry a council stamp. Mama Nkechi's has a phone number.", need:'receipt', d:25, r:`Mama Nkechi climbs onto a crate and holds the receipt up high. The crowd roars.`, shot:'receipt'},
+           {t:'People say you hold the contract yourself.', need:'contract', d:15, r:`"People say," Dapo sneers. But the crowd is listening now.`},
+           {t:'Show us their ID cards, then.', d:0, r:`His boys look at each other. Nobody produces an ID.`}]},
+    {dapo:`These traders don't even pay tax. Why are they complaining?`,
+     opts:[{t:"They pay ₦2,000 every morning for a ticket. Where does that money go?", need:'ticket', d:15, r:`"Every morning!" someone shouts. The whole aisle joins in.`},
+           {t:'Nobody likes taxes, Chief. Let us be reasonable.', d:-5, r:`The traders go quiet. That sounded like his side.`},
+           {t:'Traders, refuse to pay anything from today!', d:-15, r:`Cheers, then worry. Alhaja frowns: "You want them arrested?"`}]}
+  ];
+  for (const [i, rd] of rounds.entries()) {
+    shot('crowd');
+    await say('dapo', rd.dapo);
+    const k = await choose(rd.opts, {timer:16, dflt:-1, prompt:`Round ${i + 1} of 3`});
+    if (k < 0) { await caption(`You hesitate. Dapo laughs, and the crowd laughs with him.`, 2600); move(-15); continue; }
+    const o = rd.opts[k];
+    await say('player', o.t);
+    if (o.shot) shot(o.shot);
+    move(o.d); await caption(o.r, 3000);
+  }
+  $('meter').hidden = true;
+  if (crowd >= 75) { S.flags.duel = 'won'; record('You beat Chief Dapo in front of the whole market.');
+    await say('dapo', `This is not over. You don't know Lagos.`, {shot:'crowd'});
+    shot('cheer'); A.crowdCheer(); await caption(`He climbs back into the SUV. His collectors melt away. The market erupts.`, 3400); rel('alhaja', 2); rel('nkechi', 1, false); rel('dapo', -2, false); }
+  else if (crowd >= 50) { S.flags.duel = 'draw'; record('Your face-off with Chief Dapo ended in a stand-off.');
+    await say('dapo', `We'll talk again, candidate. Somewhere quieter.`, {shot:'crowd'}); await caption(`He leaves, but his collectors stay at the gate.`, 2800); }
+  else { S.flags.duel = 'lost'; record('Chief Dapo won the crowd.'); await say('dapo', `You see? Big grammar, no evidence. Go and campaign somewhere else.`, {shot:'crowd'}); await caption(`People turn back to their stalls. Some shake their heads at you.`, 2800); rel('alhaja', -1); }
+  await fadeOut();
+}
+
+async function sceneFinale(){
+  shot('alhaja'); A.amb(.07, .01, .06);
+  await fadeIn();
+  await say('alhaja', `The women want to hear it from your mouth, in front of everybody. What will you do about this levy?`);
+  const c = await choose([
+    {t:'Take it to the council and the courts, and publish where every naira of market money goes.'},
+    {t:'Bring traders, council and Chief Dapo to one table and agree a fair fee.'},
+    {t:"I'll pay this week's levy for every trader myself.", tag:'Pay'},
+    {t:'Be patient. Things will change after the election.', hide:!S.flags.deal}
+  ], {prompt:'The choice the market will remember'});
+  S.flags.final = ['fight', 'table', 'pay', 'patient'][c];
+  if (c === 0) { await say('player', `This levy was never approved. I will take it to the council and to court, and I will publish where every naira of this market's money goes. Hold me to it.`);
+    rel('alhaja', 2); rel('nkechi', 2, false); rel('kunle', 1, false); rel('dapo', -2, false); record('You promised to fight the levy in council and court, and to publish the accounts.');
+    shot('cheer'); A.crowdCheer(); await caption(S.flags.duel === 'won' ? `The market sings your name down the aisle.` : `Slowly, then all at once, the market cheers.`, 3200); }
+  else if (c === 1) { await say('player', `Nobody wins a war in a market. I'll bring the traders, the council and Chief Dapo to one table and we will agree a fee people can actually pay.`);
+    rel('alhaja', 1); rel('dapo', 1, false); record('You offered to broker talks between traders, council and Chief Dapo.');
+    shot('cheer'); await caption(`Polite applause. Hope, with a little suspicion.`, 3000); }
+  else if (c === 2) { await say('player', `This week, the levy is on me. Every trader. Go and sell in peace.`);
+    rel('nkechi', 2); rel('kunle', -2, 'Generous, or vote buying? Kunle is already typing.'); S.flags.paidLevy = true; record('You paid a week of the levy for every trader.');
+    shot('kunle'); await caption(`Cheers from the stalls. And one reporter, writing very fast.`, 3000); }
+  else { await say('player', `Please, be patient. Things will change after the election.`); rel('alhaja', -2); rel('nkechi', -2, false); record('You asked the traders to wait until after the election.');
+    shot('crowd'); await caption(`Chief Dapo smiles from across the aisle. Nobody else does.`, 3000); }
+  await fadeOut();
+  // the car at dusk: a quiet moment with Tobi
+  shot('dusk'); A.amb(.0, .05, .15);
+  await fadeIn();
+  await say('tobi', S.flags.deal ? `Fifty million naira, ${first()}. I didn't sign up to run that kind of campaign.` : `That was a long morning. How are you feeling?`);
+  const f = await choose(S.flags.deal ? [{t:"It's how politics works, Tobi. Grow up."}, {t:"You're right. I need to think about what I just did."}] : [{t:'Proud. We did something real today.'}, {t:'Worried. Dapo will come back.'}, {t:"Tired. And it's only day three."}], {prompt:'Tobi is waiting'});
+  if (S.flags.deal) { if (f === 0) { await say('tobi', `Then maybe you need a different campaign manager.`); rel('tobi', -2); } else { await say('tobi', `That's the friend I know. We'll find a way out of it.`); rel('tobi', 1); } }
+  else { await say('tobi', ['Me too. That market will remember you.', 'He will. But so will they.', 'Day three. Only one hundred and something to go.'][f]); rel('tobi', 1, false); }
+  await fadeOut();
+  showRecap();
+}
+
+// ===================== Recap and notebook =====================
+function headline(){
+  const f = S.flags;
+  if (f.deal) return `Market levy "will continue," says candidate after closed-door meeting with contractor`;
+  if (f.final === 'pay') return `Candidate pays traders' levy: generosity or vote buying?`;
+  if (f.duel === 'won' && f.final === 'fight') return `"Never approved": candidate exposes illegal Lagos market levy`;
+  if (f.final === 'table') return `Candidate promises peace talks over disputed market levy`;
+  if (f.duel === 'lost') return `Contractor outtalks presidential hopeful at Oja Tuntun`;
+  return `Presidential candidate spends morning in Oja Tuntun Market`;
+}
+function relRows(ids){ return ids.map(id => { const v = S.rel[id], p = PEOPLE[id]; const w = Math.abs(v) * 10;
+  const word = v >= 3 ? 'trusts you' : v >= 1 ? 'warming to you' : v === 0 ? 'undecided' : v >= -2 ? 'doubts you' : 'against you';
+  return `<div class="rel"><span class="face" style="--pc:${p.color};background-image:url('${p.img}')"></span><div><div>${esc(p.name)}</div><div class="meter-s"><i class="${v < 0 ? 'neg' : ''}" style="${v < 0 ? `right:50%;width:${w}%` : `left:50%;width:${w}%`}"></i></div></div><em>${word}</em></div>`; }).join(''); }
+function notebookHTML(){
+  const met = Object.keys(PEOPLE).filter(k => k !== 'ade' && (S.rel[k] !== 0 || ['tobi', 'alhaja'].includes(k)));
+  return `<h2>${esc(S.name)}'s notebook</h2>
+    <h3>Clues</h3><ul>${Object.entries(CLUES).map(([k, c]) => S.clues.includes(k) ? `<li>✓ ${esc(c.name)}</li>` : `<li class="locked">? Something you haven't found yet</li>`).join('')}</ul>
+    <h3>People</h3><div style="display:grid;gap:8px">${relRows(met)}</div>
+    ${S.choices.length ? `<h3>What you did</h3><ul>${S.choices.map(c => `<li>• ${esc(c)}</li>`).join('')}</ul>` : ''}`;
+}
+$('notesBtn').onclick = e => { e.stopPropagation(); $('notebook').innerHTML = notebookHTML(); $('notes').hidden = false; };
+$('notesClose').onclick = () => { $('notes').hidden = true; };
+function showRecap(){
+  $('recapInner').innerHTML = `
+    <div class="kicker">End of Chapter 1 · The Levy</div>
+    <div class="headline"><small>City Desk · tomorrow's front page</small>${esc(headline())}</div>
+    <div class="book"><h2>Your choices</h2><ul>${S.choices.map(c => `<li>• ${esc(c)}</li>`).join('')}</ul>
+      <h3>Clues found: ${S.clues.length} of ${Object.keys(CLUES).length}</h3>
+      <h3>Where people stand</h3><div style="display:grid;gap:8px">${relRows(['tobi', 'alhaja', 'nkechi', 'kunle', 'zee', 'sule', 'dapo'])}</div></div>
+    <div class="headline" style="font-size:19px"><small>Coming in Chapter 2 · Lagos Streets</small>${S.flags.deal ? 'Chief Dapo expects his money to buy more than silence.' : S.flags.duel === 'won' ? 'Chief Dapo wants revenge, and the okada ban gives him a way.' : 'An okada ban, a police checkpoint and a video that could end your campaign.'}</div>
+    <div class="row"><button class="btn" id="replayBtn">Play Chapter 1 again</button></div>
+    <p class="fine">Fictional story. Simulated campaign, not a prediction.</p>`;
+  $('recap').hidden = false; $('hud').hidden = true; $('chap').hidden = true; S.scene = SCRIPT.length; save();
+  $('replayBtn').onclick = () => { try { localStorage.removeItem('asorock.film'); } catch(e) {} location.reload(); };
+}
+
+// ===================== Title and boot =====================
+let pick = 'lp';
+function renderPicks(){ $('picks').innerHTML = PARTIES.map(p => `<button class="pick" data-p="${p.id}" aria-pressed="${p.id === pick}" style="--pc:${p.color}"><img src="${p.img}" alt="${p.short} candidate"><span>${p.short}</span></button>`).join('');
+  document.querySelectorAll('.pick').forEach(b => b.onclick = () => { pick = b.dataset.p; renderPicks(); }); }
+renderPicks();
+shot('lagos'); $('fade').classList.add('out');
+async function run(from = 0){
+  $('title').hidden = true; $('hud').hidden = false; $('chap').hidden = false; $('rotate').hidden = false; setTimeout(() => $('rotate').hidden = true, 6000);
+  document.body.classList.add('cine'); $('stage').classList.add('cine');
+  A.init(); A.setOn(A.on);
+  for (let i = from; i < SCRIPT.length; i++) { S.scene = i; save(); $('fade').classList.remove('out'); await sleep(500); await SCRIPT[i](); }
+}
+$('startBtn').onclick = () => { S.party = pick; S.name = $('pname').value.trim() || 'Candidate'; S.clues = []; S.choices = []; S.flags = {}; for (const k in S.rel) S.rel[k] = 0; run(0); };
+const saved = load();
+if (saved && saved.scene < SCRIPT.length) { $('resumeRow').hidden = false; $('resumeBtn').onclick = () => { Object.assign(S, saved); run(saved.scene); }; }
+if (TEST) window.__story = {S, choose: i => window.__pending && window.__pending(i)};
+</script>
