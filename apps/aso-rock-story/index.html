@@ -1,0 +1,658 @@
+<meta charset="utf-8">
+<title>Road to Aso Rock</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap">
+<style>
+/* Layout: a cinematic story screen. The scene is a wide world the camera pans across; dialogue rises from the bottom; a handwritten campaign notebook holds clues and relationships. */
+:root{
+  --night:#0E0F12; --panel:rgba(14,15,18,.86); --panel-solid:#17191E; --line:rgba(255,255,255,.14);
+  --chalk:#F4F1E8; --muted:#B5B1A6; --ink:#1C1A16; --paper:#F3EAD3;
+  --gold:#F2C14E; --green:#2FBF71; --red:#E5484D; --flag:#008751;
+  --hand:'Caveat', 'Segoe Print', 'Comic Sans MS', cursive;
+  --body:'Bricolage Grotesque', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color-scheme:dark;
+}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{background:var(--night);color:var(--chalk);font-family:var(--body);font-size:16px;overflow:hidden;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.app{position:relative;height:100%;max-width:620px;margin:0 auto;overflow:hidden;background:#000}
+
+/* World and camera */
+.stage{position:absolute;inset:0;overflow:hidden}
+.world{position:absolute;left:0;top:0;height:100%;background-size:100% 100%;will-change:transform}
+.world::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.55),transparent 30%),linear-gradient(to bottom,rgba(0,0,0,.45),transparent 18%);pointer-events:none;z-index:50}
+.fade{position:absolute;inset:0;background:#000;z-index:80;opacity:1;transition:opacity .7s;pointer-events:none}
+.fade.out{opacity:0}
+.actor{position:absolute;bottom:5%;transform-origin:50% 100%;pointer-events:none;transition:filter .3s, opacity .4s}
+.actor img{display:block;height:100%;width:auto;filter:drop-shadow(0 8px 6px rgba(0,0,0,.55));transform-origin:50% 100%;animation:idle 3.2s ease-in-out infinite;animation-delay:var(--d,0s)}
+.actor.flip img{transform:scaleX(-1)}
+.actor.walking img{animation:walk .34s ease-in-out infinite}
+.actor.flip.walking img{animation:walkf .34s ease-in-out infinite}
+.actor.clip img{animation:none}
+.actor.dim{filter:brightness(.7) saturate(.85)}
+.actor.speaking{filter:none}
+.actor .shadow{position:absolute;left:15%;right:15%;bottom:-1.5%;height:4%;border-radius:50%;background:rgba(0,0,0,.35);filter:blur(3px);z-index:-1}
+@keyframes idle{0%,100%{transform:rotate(-.8deg)}50%{transform:rotate(.8deg) translateY(-.6%)}}
+@keyframes walk{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-2.5%) rotate(1.5deg)}}
+@keyframes walkf{0%,100%{transform:scaleX(-1) translateY(0) rotate(-1.5deg)}50%{transform:scaleX(-1) translateY(-2.5%) rotate(1.5deg)}}
+.prop{position:absolute;pointer-events:none}
+.notice{width:6.5%;aspect-ratio:3/4;background:linear-gradient(#FFFDF4,#EDE4CC);border:1px solid #BCA97D;box-shadow:0 3px 6px rgba(0,0,0,.4);transform:rotate(-4deg);display:grid;place-items:center;font:700 7px/1.1 var(--body);color:#5A2A12;text-align:center;padding:2px}
+.hotspot{position:absolute;z-index:40;transform:translate(-50%,-50%);display:grid;justify-items:center;gap:4px;border:0;background:none;padding:6px}
+.hotspot .ring{width:34px;height:34px;border-radius:50%;border:2.5px solid #fff;background:rgba(255,255,255,.18);box-shadow:0 0 0 0 rgba(255,255,255,.6);animation:pulse 1.8s ease-out infinite;display:grid;place-items:center}
+.hotspot .ring svg{width:16px;height:16px}
+.hotspot .lbl{font-size:12.5px;font-weight:800;background:rgba(14,15,18,.85);border:1px solid var(--line);border-radius:999px;padding:3px 9px;white-space:nowrap}
+.hotspot.done .ring{animation:none;opacity:.55;border-color:var(--green);background:rgba(47,191,113,.2)}
+.hotspot.done .lbl{opacity:.75}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,255,255,.55)}100%{box-shadow:0 0 0 16px rgba(255,255,255,0)}}
+
+/* HUD */
+.hud{position:absolute;z-index:60;left:0;right:0;top:0;display:flex;align-items:center;gap:8px;padding:calc(10px + env(safe-area-inset-top,0px)) max(14px,env(safe-area-inset-right,0px)) 10px max(14px,env(safe-area-inset-left,0px))}
+.hud .chap{flex:1;min-width:0;font-family:var(--hand);font-size:22px;line-height:1;color:var(--paper);text-shadow:0 2px 6px #000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hud .chap small{display:block;font-family:var(--body);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;text-shadow:none}
+.pill{height:38px;border-radius:999px;border:1px solid var(--line);background:var(--panel);display:inline-flex;align-items:center;gap:6px;padding:0 12px;font-weight:700;font-size:14px;backdrop-filter:blur(6px)}
+.pill svg{width:18px;height:18px}
+.objective{position:absolute;z-index:60;left:max(14px,env(safe-area-inset-left,0px));top:calc(58px + env(safe-area-inset-top,0px));max-width:72%;font-size:13px;font-weight:700;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:8px;padding:6px 10px;transition:opacity .4s}
+.continue-explore{position:absolute;z-index:61;right:max(14px,env(safe-area-inset-right,0px));bottom:calc(18px + env(safe-area-inset-bottom,0px));border:0;border-radius:999px;background:var(--gold);color:#1B1606;font-weight:800;padding:12px 18px;box-shadow:0 6px 16px rgba(0,0,0,.5)}
+.continue-explore:disabled{background:#4A4637;color:#9E9886;box-shadow:none}
+.hint{position:absolute;z-index:60;left:50%;bottom:calc(76px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);font-size:12.5px;color:var(--muted);background:var(--panel);border-radius:999px;padding:5px 12px;white-space:nowrap}
+
+/* Narration caption */
+.caption{position:absolute;z-index:65;left:50%;top:24%;transform:translateX(-50%);width:min(88%,480px);text-align:center;font-size:17px;line-height:1.5;color:var(--chalk);text-shadow:0 2px 10px #000,0 0 2px #000;opacity:0;transition:opacity .5s;pointer-events:none}
+.caption.show{opacity:1;pointer-events:auto}
+.caption em{font-style:normal;color:var(--gold)}
+
+/* Dialogue */
+.dlg{position:absolute;z-index:70;left:0;right:0;bottom:0;padding:14px max(14px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px));background:linear-gradient(to top,rgba(10,11,13,.97) 70%,rgba(10,11,13,0));transform:translateY(105%);transition:transform .35s cubic-bezier(.3,.9,.3,1)}
+.dlg.show{transform:none}
+.who{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.face{width:46px;height:46px;border-radius:50%;flex-shrink:0;background-color:#2A2C33;background-repeat:no-repeat;background-size:240% auto;background-position:50% 4%;border:2px solid var(--pc,var(--gold))}
+.who b{display:block;font-size:16px;font-weight:800}
+.who span{font-size:12px;color:var(--muted)}
+.line{font-size:17px;line-height:1.5;min-height:3em;max-width:62ch}
+.line .q{color:var(--gold)}
+.tap{display:flex;justify-content:flex-end;margin-top:6px;font-size:12px;color:var(--muted);gap:6px;align-items:center}
+.tap i{display:inline-block;width:0;height:0;border-left:6px solid var(--gold);border-top:5px solid transparent;border-bottom:5px solid transparent;animation:nudge 1s ease-in-out infinite}
+@keyframes nudge{50%{transform:translateX(3px)}}
+.choices{display:grid;gap:8px;margin-top:10px}
+.choice{display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.06);font-weight:600;line-height:1.3;font-size:15.5px}
+.choice:hover{border-color:var(--gold);background:rgba(242,193,78,.1)}
+.choice:disabled{opacity:.45;cursor:not-allowed}
+.choice .tag{font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);border:1px solid currentColor;border-radius:999px;padding:2px 7px;white-space:nowrap}
+.choice .tag.lock{color:var(--muted)}
+.ctimer{height:5px;border-radius:3px;background:rgba(255,255,255,.12);overflow:hidden;margin-top:10px}
+.ctimer i{display:block;height:100%;background:var(--gold);transform-origin:left;transition:transform linear}
+
+/* Face-off meter */
+.meter{position:absolute;z-index:66;left:50%;top:calc(62px + env(safe-area-inset-top,0px));transform:translateX(-50%);width:min(86%,420px);background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 12px}
+.meter .lbl{display:flex;justify-content:space-between;font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.meter .bar{height:10px;border-radius:5px;background:linear-gradient(90deg,var(--red),#7a6b55 50%,var(--green));margin-top:6px;position:relative}
+.meter .knob{position:absolute;top:-4px;width:6px;height:18px;border-radius:3px;background:#fff;box-shadow:0 0 0 2px #000;transition:left .6s cubic-bezier(.3,1.4,.5,1);margin-left:-3px}
+
+/* Toasts: consequences */
+.toasts{position:absolute;z-index:75;left:50%;top:calc(110px + env(safe-area-inset-top,0px));transform:translateX(-50%);display:grid;gap:6px;width:min(90%,420px);pointer-events:none}
+.toast{display:flex;gap:8px;align-items:center;background:var(--panel-solid);border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:14px;font-weight:600;box-shadow:0 8px 20px rgba(0,0,0,.5);animation:tin .35s ease-out, tout .4s ease-in 3.4s forwards}
+.toast svg{width:20px;height:20px;flex-shrink:0}
+@keyframes tin{from{opacity:0;transform:translateY(-8px)}}
+@keyframes tout{to{opacity:0;transform:translateY(-6px)}}
+
+/* Overlays: title, notebook, recap */
+.overlay{position:absolute;inset:0;z-index:90;overflow:auto;background:var(--night)}
+.overlay .inner{max-width:520px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:calc(18px + env(safe-area-inset-top,0px)) calc(24px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px}
+.title-hero{position:relative;border-radius:16px;overflow:hidden;aspect-ratio:4/3;max-width:100%;background:url('assets/scenes/market.webp') center/cover}
+.title-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(10,11,13,.95),rgba(10,11,13,.15) 60%)}
+.title-hero h1{position:absolute;z-index:1;left:16px;right:16px;bottom:12px;margin:0;font-family:var(--hand);font-weight:700;font-size:clamp(40px,12vw,58px);line-height:.9;color:var(--paper)}
+.title-hero h1 small{display:block;font-family:var(--body);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);font-weight:800;margin-bottom:6px}
+.blurb{margin:0;line-height:1.5;color:#DCD8CC}
+.sect{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:800}
+.picks{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.pick{display:grid;justify-items:center;gap:3px;padding:8px 4px 6px;border-radius:12px;border:1px solid var(--line);background:radial-gradient(circle at 50% 35%,color-mix(in srgb,var(--pc) 35%,transparent),transparent 70%),#1A1C21;font-size:12px;font-weight:800;min-width:0}
+.pick img{height:96px;width:auto;max-width:100%;object-fit:contain}
+.pick small{font-weight:600;color:var(--muted);font-size:10.5px;line-height:1.2;text-align:center}
+.pick[aria-pressed="true"]{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}
+.field{display:grid;gap:6px}
+.field input{background:#1A1C21;border:1px solid var(--line);border-radius:10px;padding:11px 12px;font:inherit;color:var(--chalk)}
+.btn{border:0;border-radius:12px;background:var(--gold);color:#1B1606;font-weight:800;padding:14px 16px;font-size:16px}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--chalk)}
+.row{display:flex;gap:8px;flex-wrap:wrap}.row>.btn{flex:1}
+.fine{font-size:12px;color:var(--muted);text-align:center;margin:0}
+.notebook{background:var(--paper);color:var(--ink);border-radius:14px;padding:16px 16px 18px;box-shadow:0 10px 30px rgba(0,0,0,.5);background-image:repeating-linear-gradient(transparent 0 27px,rgba(70,90,140,.18) 27px 28px)}
+.notebook h2{margin:0 0 6px;font-family:var(--hand);font-size:32px;line-height:1}
+.notebook h3{margin:14px 0 4px;font-family:var(--hand);font-size:24px;line-height:1;color:#7A2E12}
+.notebook ul{margin:0;padding:0;list-style:none;display:grid;gap:4px}
+.notebook li{font-family:var(--hand);font-size:21px;line-height:1.15}
+.notebook li.locked{color:#8F8670}
+.rel{display:grid;grid-template-columns:34px 1fr auto;gap:8px;align-items:center;font-family:var(--hand);font-size:20px}
+.rel .face{width:30px;height:30px;border-width:1.5px}
+.rel .meter-s{height:8px;border-radius:4px;background:rgba(0,0,0,.12);position:relative;overflow:hidden}
+.rel .meter-s i{position:absolute;top:0;bottom:0;left:50%;background:#2E7D4F}
+.rel .meter-s i.neg{background:#B23A2E}
+.rel em{font-style:normal;font-size:17px;color:#5B5444;white-space:nowrap}
+.headline{font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:22px;line-height:1.2;color:var(--ink);background:#F7F4EA;border-radius:10px;padding:12px 14px;border-top:6px solid var(--ink)}
+.headline small{display:block;font-family:var(--body);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#6E6757;font-weight:800;margin-bottom:6px}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+</style>
+
+<div class="app" id="app">
+  <div class="stage" id="stage">
+    <div class="world" id="world"></div>
+    <div class="fade" id="fade"></div>
+  </div>
+  <div class="hud">
+    <div class="chap" id="chap"><small id="chapNo">Chapter 1</small>The Levy</div>
+    <button class="pill" id="notesBtn" aria-label="Campaign notebook"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/></svg>Notes</button>
+    <button class="pill" id="muteBtn" aria-label="Sound"></button>
+  </div>
+  <div class="objective" id="objective" hidden></div>
+  <div class="meter" id="meter" hidden><div class="lbl"><span>Crowd against you</span><span>Crowd with you</span></div><div class="bar"><span class="knob" id="knob" style="left:50%"></span></div></div>
+  <div class="caption" id="caption"></div>
+  <div class="toasts" id="toasts"></div>
+  <button class="continue-explore" id="exploreDone" hidden>Continue</button>
+  <div class="hint" id="hint" hidden>Tap the ground to walk. Tap a circle to look or talk.</div>
+  <section class="dlg" id="dlg" aria-live="polite">
+    <div class="who" id="who"><span class="face" id="dlgFace"></span><div><b id="dlgName"></b><span id="dlgRole"></span></div></div>
+    <div class="line" id="dlgLine"></div>
+    <div class="tap" id="dlgTap"><span>Tap to continue</span><i></i></div>
+    <div class="choices" id="choices"></div>
+    <div class="ctimer" id="ctimer" hidden><i id="ctbar"></i></div>
+  </section>
+
+  <div class="overlay" id="title">
+    <div class="inner">
+      <div class="title-hero"><h1><small>A campaign story</small>Road to Aso Rock</h1></div>
+      <p class="blurb">Six candidates want the Villa. You are one of them. Walk the market, listen, choose your words. People will remember what you say, and every choice changes how the story ends.</p>
+      <div class="sect">Choose your candidate</div>
+      <div class="picks" id="picks" role="group" aria-label="Candidates"></div>
+      <div class="field"><label class="sect" for="pname">Your name</label><input id="pname" maxlength="28" placeholder="e.g. Amaka Obi" autocomplete="off"></div>
+      <div class="row"><button class="btn" id="startBtn">Begin Chapter 1</button></div>
+      <div class="row" id="resumeRow" hidden><button class="btn ghost" id="resumeBtn">Continue where you left off</button></div>
+      <p class="fine">Real parties, fictional candidates and characters. Choices shape the story; vote buying, violence and lies never pay off clean.</p>
+    </div>
+  </div>
+
+  <div class="overlay" id="notes" hidden>
+    <div class="inner">
+      <div class="notebook" id="notebook"></div>
+      <button class="btn" id="notesClose">Back to the market</button>
+    </div>
+  </div>
+
+  <div class="overlay" id="recap" hidden>
+    <div class="inner" id="recapInner"></div>
+  </div>
+</div>
+
+<script>
+// ===================== Data =====================
+const PARTIES = [
+  {id:'apc', short:'APC', name:'All Progressives Congress', color:'#1E88E5', img:'assets/candidates/apc.webp'},
+  {id:'pdp', short:'PDP', name:'Peoples Democratic Party', color:'#E53935', img:'assets/candidates/pdp.webp'},
+  {id:'lp', short:'LP', name:'Labour Party', color:'#2E9E4F', img:'assets/candidates/lp.webp'},
+  {id:'apga', short:'APGA', name:'All Progressives Grand Alliance', color:'#D9A400', img:'assets/candidates/apga.webp'},
+  {id:'sdp', short:'SDP', name:'Social Democratic Party', color:'#2B47B8', img:'assets/candidates/sdp.webp'},
+  {id:'adc', short:'ADC', name:'African Democratic Congress', color:'#C0392B', img:'assets/candidates/adc.webp'}
+];
+// Fictional people of Oja Tuntun Market. Relationship scores run from -5 to +5.
+const PEOPLE = {
+  tobi:   {name:'Tobi Adeyemi', role:'Your campaign manager', img:'assets/society/agents.webp', f:false, color:'#F2C14E'},
+  alhaja: {name:'Alhaja Rukayat', role:"Market women's leader", img:'assets/society/women.webp', clip:'women', f:true, color:'#1FA38F'},
+  nkechi: {name:'Mama Nkechi', role:'Tomato seller', img:'assets/society/traders.webp', clip:'traders', f:true, color:'#E07A1F'},
+  sule:   {name:'Sule', role:'Okada rider', img:'assets/society/riders.webp', clip:'riders', f:false, color:'#F28C28'},
+  zee:    {name:'Zee', role:'Live-streamer', img:'assets/society/creators.webp', f:false, color:'#E5484D'},
+  kunle:  {name:'Kunle Bello', role:'City Desk reporter', img:'assets/society/press.webp', clip:'press', f:false, color:'#3D6BE0'},
+  dapo:   {name:'Chief Dapo Martins', role:'Levy contractor', img:'assets/society/lobby.webp', f:false, color:'#B8962E'},
+  ade:    {name:'Sergeant Ade', role:'Police', img:'assets/society/police.webp', clip:'police', f:false, color:'#2F4A8A'}
+};
+const CLUES = {
+  ticket:  {name:"Mama Nkechi pays ₦2,000 a day for her ticket, plus the new ₦5,000 levy"},
+  receipt: {name:"The levy receipt has no council stamp, only a phone number"},
+  notice:  {name:"The levy notice says 'subject to council approval'"},
+  contract:{name:"Sule says Chief Dapo holds the collection contract himself"}
+};
+const SCENES = {street:{img:'assets/scenes/street.webp'}, market:{img:'assets/scenes/market.webp'}};
+
+// ===================== State =====================
+const S = {party:null, name:'', clues:[], rel:{}, flags:{}, choices:[], scene:0};
+for (const k of Object.keys(PEOPLE)) S.rel[k] = 0;
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const P = () => PARTIES.find(p => p.id === S.party);
+const first = () => (S.name.split(/\s+/)[0] || 'Candidate');
+const sleep = ms => new Promise(r => setTimeout(r, TEST ? Math.min(ms, 60) : ms));
+const TEST = location.hash === '#test';
+function save(){ try { localStorage.setItem('asorock.story', JSON.stringify(S)); } catch(e) {} }
+function load(){ try { const v = JSON.parse(localStorage.getItem('asorock.story') || 'null'); return v && v.party ? v : null; } catch(e) { return null; } }
+
+// ===================== Sound and voices =====================
+const A = {ctx:null, on:true, master:null, crowd:null, traffic:null, hornRate:0, hornT:null,
+  init(){ if (this.ctx) return; try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) { return; }
+    const c = this.ctx; this.master = c.createGain(); this.master.gain.value = this.on ? 1 : 0; this.master.connect(c.destination);
+    const noise = () => { const b = c.createBuffer(1, c.sampleRate * 2, c.sampleRate), d = b.getChannelData(0); let l = 0; for (let i = 0; i < d.length; i++) { l = (l + .02 * (Math.random() * 2 - 1)) / 1.02; d[i] = l * 3.5; } const s = c.createBufferSource(); s.buffer = b; s.loop = true; return s; };
+    const n1 = noise(), bp = c.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 700; bp.Q.value = .7;
+    this.crowd = c.createGain(); this.crowd.gain.value = 0; n1.connect(bp).connect(this.crowd).connect(this.master); n1.start();
+    const lfo = c.createOscillator(), lg = c.createGain(); lfo.frequency.value = .3; lg.gain.value = 260; lfo.connect(lg).connect(bp.frequency); lfo.start();
+    const n2 = noise(), lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 160;
+    this.traffic = c.createGain(); this.traffic.gain.value = 0; n2.connect(lp).connect(this.traffic).connect(this.master); n2.start(); },
+  setOn(v){ this.on = v; if (this.master) this.master.gain.setTargetAtTime(v ? 1 : 0, this.ctx.currentTime, .05); },
+  amb(crowd, traffic, horns){ if (!this.ctx) return; const t = this.ctx.currentTime; this.crowd.gain.setTargetAtTime(crowd, t, .8); this.traffic.gain.setTargetAtTime(traffic, t, .8); this.hornRate = horns; clearTimeout(this.hornT); this.loop(); },
+  loop(){ this.hornT = setTimeout(() => { if (Math.random() < this.hornRate) this.horn(); this.loop(); }, 1400 + Math.random() * 2600); },
+  tone(f, s, d, type, v, f2){ const c = this.ctx; if (!c) return; const o = c.createOscillator(), g = c.createGain(); o.type = type; o.frequency.setValueAtTime(f, c.currentTime + s); if (f2) o.frequency.exponentialRampToValueAtTime(f2, c.currentTime + s + d);
+    g.gain.setValueAtTime(0, c.currentTime + s); g.gain.linearRampToValueAtTime(v, c.currentTime + s + .015); g.gain.exponentialRampToValueAtTime(.0001, c.currentTime + s + d); o.connect(g).connect(this.master); o.start(c.currentTime + s); o.stop(c.currentTime + s + d + .05); },
+  horn(){ const b = [330, 392, 440][Math.floor(Math.random() * 3)], n = Math.random() < .4 ? 2 : 1; for (let i = 0; i < n; i++) { this.tone(b, i * .22, .18, 'square', .03); this.tone(b * 1.26, i * .22, .18, 'sawtooth', .02); } },
+  pick(){ this.tone(660, 0, .12, 'triangle', .07); },
+  remember(){ [784, 988, 1175].forEach((f, i) => this.tone(f, i * .07, .5, 'sine', .05)); },
+  good(){ [523, 659, 784].forEach((f, i) => this.tone(f, i * .08, .35, 'triangle', .08)); },
+  bad(){ this.tone(196, 0, .3, 'square', .05, 140); },
+  crowdCheer(){ if (!this.ctx) return; const t = this.ctx.currentTime; this.crowd.gain.setTargetAtTime(.16, t, .1); setTimeout(() => this.crowd.gain.setTargetAtTime(.05, this.ctx.currentTime, .6), 1400); }
+};
+const V = { ok:'speechSynthesis' in window, voices:[],
+  load(){ if (!this.ok) return; try { this.voices = speechSynthesis.getVoices().filter(v => /^en/i.test(v.lang)); } catch(e) {} },
+  pick(f){ const vs = this.voices; if (!vs.length) return null; const r = v => (/en[-_]NG/i.test(v.lang) ? 0 : /en[-_](ZA|KE|GH|GB)/i.test(v.lang) ? 1 : 2);
+    const fem = /female|woman|ezinne|samantha|victoria|karen|moira|tessa|serena|zira|susan|hazel|libby|sonia|leah|aria|jenny/i; const s = [...vs].sort((a, b) => r(a) - r(b)); const top = s.filter(v => r(v) === r(s[0])); return top.find(v => fem.test(v.name) === f) || top[0]; },
+  say(text, f, pitch){ if (!this.ok || !A.on || TEST) return; try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); const v = this.pick(f); if (v) { u.voice = v; u.lang = v.lang; } u.rate = .98; u.pitch = pitch ?? (f ? 1.1 : .85); speechSynthesis.speak(u); } catch(e) {} },
+  stop(){ if (this.ok) try { speechSynthesis.cancel(); } catch(e) {} } };
+V.load(); if (V.ok) try { speechSynthesis.onvoiceschanged = () => V.load(); } catch(e) {}
+const ICON_ON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 9a4 4 0 0 1 0 6M19 6a8 8 0 0 1 0 12"/></svg>';
+const ICON_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M17 9l5 6M22 9l-5 6"/></svg>';
+function paintMute(){ $('muteBtn').innerHTML = A.on ? ICON_ON : ICON_OFF; $('muteBtn').setAttribute('aria-label', A.on ? 'Sound on' : 'Sound off'); }
+try { A.on = localStorage.getItem('asorock.sound') !== '0'; } catch(e) {}
+paintMute();
+$('muteBtn').onclick = () => { A.init(); A.setOn(!A.on); if (!A.on) V.stop(); paintMute(); try { localStorage.setItem('asorock.sound', A.on ? '1' : '0'); } catch(e) {} };
+
+// ===================== Clips (animated cut-outs) =====================
+const clipCache = {};
+function clipBlob(name){ if (!clipCache[name]) clipCache[name] = fetch(`assets/anim/${name}.webp`).then(r => r.ok ? r.blob() : null).catch(() => null); return clipCache[name]; }
+async function playClip(img, name){ const tok = String(+(img.dataset.tok || 0) + 1); img.dataset.tok = tok; const b = await clipBlob(name); if (!b || img.dataset.tok !== tok) return false; const u = URL.createObjectURL(b), old = img.dataset.blob; img.src = u; img.dataset.blob = u; if (old) setTimeout(() => URL.revokeObjectURL(old), 500); return true; }
+function setStill(img, src){ img.dataset.tok = String(+(img.dataset.tok || 0) + 1); const old = img.dataset.blob; delete img.dataset.blob; img.src = src; if (old) setTimeout(() => URL.revokeObjectURL(old), 500); }
+
+// ===================== World, camera, actors =====================
+const W = {w:0, h:0, cam:0, actors:{}, player:null, px:0};
+function vw(){ return $('stage').clientWidth; }
+function setWorld(key){
+  const world = $('world'), h = $('stage').clientHeight;
+  W.h = h; W.w = Math.max(vw(), Math.round(h * 4 / 3));
+  world.style.width = W.w + 'px'; world.style.backgroundImage = `url('${SCENES[key].img}')`;
+  world.innerHTML = ''; W.actors = {};
+  const pa = P();
+  W.player = addActor('player', pa.img, .5, .37);
+  W.player.el.style.setProperty('--d', '-1.2s');
+}
+let a0 = null;
+function addActor(id, img, x, hFrac, opts = {}){
+  const el = document.createElement('div'); el.className = 'actor'; el.style.height = (hFrac * 100) + '%';
+  el.style.bottom = (opts.bottom ?? 5) + '%'; el.style.zIndex = String(opts.z ?? 10);
+  el.innerHTML = `<span class="shadow"></span><img alt="">`;
+  el.querySelector('img').onload = () => place(W.actors[id] || a0, (W.actors[id] || a0).x);
+  el.querySelector('img').src = img; el.style.setProperty('--d', `${-(Math.random() * 3).toFixed(2)}s`);
+  $('world').appendChild(el);
+  const a = {id, el, img:el.querySelector('img'), x, still:img}; a0 = a;
+  place(a, x); W.actors[id] = a; return a;
+}
+function place(a, x){ a.x = x; a.el.style.left = `calc(${x * 100}% - ${a.el.offsetWidth / 2}px)`; }
+function camTo(x, instant){ const target = Math.max(0, Math.min(W.w - vw(), x * W.w - vw() / 2)); W.cam = target; const w = $('world'); w.style.transition = instant ? 'none' : 'transform .9s cubic-bezier(.4,0,.2,1)'; w.style.transform = `translateX(${-target}px)`; }
+function walkTo(x){
+  x = Math.max(.06, Math.min(.94, x));
+  const a = W.player; const dist = Math.abs(x - a.x) * W.w; if (dist < 4) return Promise.resolve();
+  const dur = TEST ? 50 : Math.max(350, dist / 210 * 1000);
+  a.el.classList.add('walking'); a.el.classList.toggle('flip', x < a.x);
+  const startX = a.x, t0 = performance.now(), wstart = W.cam;
+  return new Promise(res => { const step = now => { const k = Math.min(1, (now - t0) / dur), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+      const cx = startX + (x - startX) * e; place(a, cx);
+      const target = Math.max(0, Math.min(W.w - vw(), cx * W.w - vw() / 2)); const w = $('world'); w.style.transition = 'none'; w.style.transform = `translateX(${-target}px)`; W.cam = target;
+      if (k < 1) requestAnimationFrame(step); else { a.el.classList.remove('walking'); res(); } };
+    requestAnimationFrame(step); });
+}
+function face(a, towardsX){ a.el.classList.toggle('flip', towardsX < a.x); }
+async function fadeIn(){ await sleep(80); $('fade').classList.add('out'); await sleep(700); }
+async function fadeOut(){ $('fade').classList.remove('out'); await sleep(700); }
+
+// ===================== Narrative primitives =====================
+let advance = null;
+$('dlg').addEventListener('click', e => { if (e.target.closest('.choice')) return; if (advance) advance(); });
+$('caption').addEventListener('click', () => advance && advance());
+document.addEventListener('keydown', e => { if ((e.key === ' ' || e.key === 'Enter') && advance && !document.querySelector('.choice')) { e.preventDefault(); advance(); } });
+function speakers(id){ for (const [k, a] of Object.entries(W.actors)) { a.el.classList.toggle('dim', !!id && k !== id && k !== 'player'); a.el.classList.toggle('speaking', k === id); } }
+async function caption(html, ms = 2600){
+  const c = $('caption'); c.innerHTML = html; c.classList.add('show');
+  await new Promise(r => { advance = r; setTimeout(r, TEST ? 30 : ms); }); advance = null;
+  c.classList.remove('show'); await sleep(450);
+}
+function typeLine(text){
+  const el = $('dlgLine'); el.textContent = '';
+  return new Promise(res => { let i = 0, done = false; const full = text;
+    const fin = () => { if (done) return; done = true; clearInterval(t); el.innerHTML = esc(full); res(); };
+    const t = setInterval(() => { i += 2; el.textContent = full.slice(0, i); if (i >= full.length) fin(); }, TEST ? 1 : 18);
+    advance = fin; });
+}
+async function say(id, text){
+  const pp = id === 'player' ? {name:S.name, role:`${P().short} candidate`, img:P().img, color:P().color, f:/^(pdp|sdp|adc)$/.test(S.party)} : PEOPLE[id];
+  $('dlgFace').style.cssText = `--pc:${pp.color};background-image:url('${pp.img}')`;
+  $('dlgName').textContent = pp.name; $('dlgRole').textContent = pp.role;
+  $('choices').innerHTML = ''; $('ctimer').hidden = true; $('dlgTap').hidden = true; $('who').hidden = false;
+  $('dlg').classList.add('show'); speakers(id);
+  const a = W.actors[id];
+  if (a && pp.clip) playClip(a.img, pp.clip).then(ok => ok && a.el.classList.add('clip'));
+  V.say(text, pp.f);
+  await typeLine(text);
+  $('dlgTap').hidden = false;
+  await new Promise(r => { advance = r; if (TEST) setTimeout(r, 5); }); advance = null;
+  if (a && pp.clip) { setStill(a.img, a.still); a.el.classList.remove('clip'); }
+  V.stop();
+}
+// options: [{t, tag?, need?: clueId, hide?}]; returns chosen index. timer: seconds; on timeout returns dflt.
+async function choose(options, {timer = 0, dflt = -1, who = 'player', prompt = ''} = {}){
+  const pp = P();
+  $('dlgFace').style.cssText = `--pc:${pp.color};background-image:url('${pp.img}')`;
+  $('dlgName').textContent = S.name; $('dlgRole').textContent = prompt || 'What do you say?';
+  $('dlgLine').textContent = ''; $('dlgTap').hidden = true; $('dlg').classList.add('show'); speakers(null);
+  const vis = options.map((o, i) => ({...o, i})).filter(o => !o.hide);
+  $('choices').innerHTML = vis.map(o => { const locked = o.need && !S.clues.includes(o.need);
+    return `<button class="choice" data-i="${o.i}" ${locked ? 'disabled' : ''}><span>${esc(o.t)}</span>${locked ? `<span class="tag lock">Needs a clue</span>` : o.tag ? `<span class="tag">${esc(o.tag)}</span>` : ''}</button>`; }).join('');
+  const r = await new Promise(res => {
+    document.querySelectorAll('.choice').forEach(b => b.onclick = () => { A.pick(); res(+b.dataset.i); });
+    if (timer) { const bar = $('ctbar'); $('ctimer').hidden = false; bar.style.transition = 'none'; bar.style.transform = 'scaleX(1)';
+      requestAnimationFrame(() => requestAnimationFrame(() => { bar.style.transition = `transform ${timer}s linear`; bar.style.transform = 'scaleX(0)'; }));
+      setTimeout(() => res(dflt), timer * 1000); }
+    if (TEST) window.__pending = res;
+  });
+  window.__pending = null;
+  $('choices').innerHTML = ''; $('ctimer').hidden = true;
+  return r;
+}
+function hideDlg(){ $('dlg').classList.remove('show'); speakers(null); }
+const ICON_REMEMBER = '<svg viewBox="0 0 24 24" fill="none" stroke="#F2C14E" stroke-width="2" stroke-linecap="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/><circle cx="12" cy="12" r="3" fill="#F2C14E"/></svg>';
+const ICON_CLUE = '<svg viewBox="0 0 24 24" fill="none" stroke="#2FBF71" stroke-width="2" stroke-linecap="round"><circle cx="10" cy="10" r="6"/><path d="M14.5 14.5 20 20"/></svg>';
+function toast(text, icon = ICON_REMEMBER){ const t = document.createElement('div'); t.className = 'toast'; t.innerHTML = icon + `<span>${esc(text)}</span>`; $('toasts').appendChild(t); setTimeout(() => t.remove(), 4000); }
+function rel(id, d, note){ S.rel[id] = Math.max(-5, Math.min(5, S.rel[id] + d)); if (note !== false) { A.remember(); toast(note || `${PEOPLE[id].name} will remember that.`); } }
+function clue(id){ if (S.clues.includes(id)) return; S.clues.push(id); A.good(); toast(`Clue noted: ${CLUES[id].name}`, ICON_CLUE); }
+function record(text){ S.choices.push(text); }
+function objective(t){ const o = $('objective'); if (!t) { o.hidden = true; return; } o.textContent = t; o.hidden = false; }
+
+// Free exploration: hotspots are [{id, label, x, y, icon, run: async fn, required}]. Resolves when the player taps Continue.
+function explore(spots, {minDone = 0, doneLabel = 'Continue', hint = true} = {}){
+  return new Promise(res => {
+    hideDlg(); const world = $('world'); const btn = $('exploreDone');
+    let busy = false; const done = new Set();
+    const render = () => {
+      world.querySelectorAll('.hotspot').forEach(h => h.remove());
+      for (const s of spots) { if (s.when && !s.when()) continue;
+        const b = document.createElement('button'); b.className = 'hotspot' + (done.has(s.id) ? ' done' : ''); b.dataset.id = s.id;
+        b.style.left = (s.x * 100) + '%'; b.style.top = (s.y * 100) + '%';
+        b.innerHTML = `<span class="ring">${s.icon === 'look' ? '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><circle cx="12" cy="12" r="3"/><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/></svg>' : '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><path d="M4 5h16v10H9l-5 4z"/></svg>'}</span><span class="lbl">${esc(s.label)}</span>`;
+        b.onclick = async e => { e.stopPropagation(); if (busy) return; busy = true; $('hint').hidden = true; btn.hidden = true;
+          await walkTo(s.standX ?? s.x - .08); if (s.faceX !== undefined) face(W.player, s.faceX); else face(W.player, s.x);
+          await s.run(done.has(s.id)); done.add(s.id); hideDlg(); busy = false; render(); };
+        world.appendChild(b); }
+      btn.hidden = false; btn.textContent = doneLabel; btn.disabled = done.size < minDone;
+    };
+    const ground = async e => { if (busy || e.target.closest('.hotspot')) return; const r = $('stage').getBoundingClientRect(); const wx = (e.clientX - r.left + W.cam) / W.w; $('hint').hidden = true; busy = true; await walkTo(wx); busy = false; };
+    $('stage').addEventListener('click', ground);
+    btn.onclick = () => { if (done.size < minDone) return; $('stage').removeEventListener('click', ground); world.querySelectorAll('.hotspot').forEach(h => h.remove()); btn.hidden = true; $('hint').hidden = true; window.__explore = null; res(done); };
+    if (hint) $('hint').hidden = false;
+    render();
+    // a slow look around so players see there is more of the market to explore
+    if (!TEST) { busy = true; const px = W.player.x; setTimeout(() => camTo(.95), 300); setTimeout(() => camTo(.05), 1700); setTimeout(() => { camTo(px); busy = false; }, 3100); }
+    window.__explore = {spots, done, finish: () => btn.onclick(), tap: id => world.querySelector(`.hotspot[data-id="${id}"]`)?.click()};
+  });
+}
+
+// ===================== Chapter 1: The Levy =====================
+const SCRIPT = [sceneConvoy, sceneMarket, sceneDapo, sceneFinale];
+async function sceneConvoy(){
+  setWorld('street'); A.amb(.02, .06, .6);
+  const tobi = addActor('tobi', PEOPLE.tobi.img, .62, .34);
+  addActor('crowd1', PEOPLE.nkechi.img, .86, .24, {bottom:22, z:5}); addActor('crowd2', PEOPLE.alhaja.img, .93, .25, {bottom:21, z:5});
+  place(W.player, .48); camTo(.52, true); face(tobi, .4);
+  await fadeIn();
+  await caption(`Lagos. 7:40 a.m.<br><em>Day three</em> of your campaign for president.`);
+  await caption(`Your convoy has not moved in twenty minutes. Up ahead, traders from Oja Tuntun Market have dragged their tables across the road.`, 3200);
+  await say('tobi', `${first()}, they've blocked the road since dawn. The council has added a new levy: five thousand naira a day, on top of their market tickets.`);
+  await say('tobi', `Every rival campaign would love a photo of you stuck in traffic behind tinted glass. We need to decide. Now.`);
+  const c = await choose([
+    {t:"Get out. I'll walk in and talk to them myself."},
+    {t:"Call the police to clear the road."},
+    {t:"Turn the convoy around. We're late for the rally."}
+  ], {timer:15, dflt:3, prompt:'Decide before the moment passes'});
+  if (c === 0) { S.flags.walked = true; record('You stepped out of your car and walked to the blockade.');
+    await say('player', `Open the door, Tobi. If they've stopped the road, they want to be heard. So we listen.`);
+    rel('tobi', 1, false); rel('alhaja', 1, 'The traders saw you step out of your car.'); }
+  else if (c === 1 || c === 3) { S.flags.police = true;
+    if (c === 3) { await say('tobi', `You're frozen. Fine, I'll make the call.`); record('You hesitated, and Tobi called the police.'); rel('tobi', -1, 'Tobi had to decide for you.'); }
+    else { await say('player', `Call the police. We can't campaign from a traffic jam.`); record('You called the police to clear the road.'); }
+    const ade = addActor('ade', PEOPLE.ade.img, .76, .36);
+    await say('ade', `Sir, ma, we'll clear them. Traders, carry your tables commot for road! Now now!`);
+    await caption(`Shouting. A table goes over. Tomatoes roll under the convoy's wheels. The crowd turns to stare at your car.`, 3200);
+    rel('alhaja', -2, "Alhaja Rukayat will remember who sent the police.");
+    await say('tobi', `That... could have gone better. We still have to go in there and fix this.`); ade.el.remove(); delete W.actors.ade; }
+  else { S.flags.reversed = true; record('You tried to turn the convoy around.');
+    await say('tobi', `If we reverse now, that's the headline: the candidate who ran from a market. Five minutes. Please.`);
+    await say('player', `Five minutes. Then we leave.`);
+    rel('tobi', -1, 'Tobi noticed you wanted to leave.'); toast('Someone in the crowd filmed your convoy reversing.'); }
+  hideDlg(); await walkTo(.9); await fadeOut();
+}
+
+async function sceneMarket(){
+  setWorld('market'); A.amb(.06, .01, .08);
+  const alhaja = addActor('alhaja', PEOPLE.alhaja.img, .3, .33);
+  const nkechi = addActor('nkechi', PEOPLE.nkechi.img, .13, .34);
+  const sule = addActor('sule', PEOPLE.sule.img, .9, .34);
+  const zee = addActor('zee', PEOPLE.zee.img, .63, .31, {bottom:10, z:8});
+  const kunle = addActor('kunle', PEOPLE.kunle.img, .77, .34);
+  const tobi = addActor('tobi', PEOPLE.tobi.img, .52, .32, {bottom:8, z:9});
+  const notice = document.createElement('div'); notice.className = 'prop notice'; notice.style.cssText = 'left:44%;top:34%'; notice.innerHTML = 'LEVY<br>₦5,000<br>DAILY'; $('world').appendChild(notice);
+  place(W.player, .42); camTo(.38, true); face(W.player, .34); face(tobi, .3);
+  await fadeIn();
+  await caption(`<em>Oja Tuntun Market.</em> Tomatoes, yams, plastic basins, gossip. Everybody is watching you.`, 2800);
+  if (S.flags.police) { await say('alhaja', `So. You sent police before you sent greetings. That is how you want to start with us?`);
+    const c = await choose([{t:'That was a mistake. I am sorry, Alhaja.'}, {t:'The road had to be cleared. Let us move on.'}]);
+    if (c === 0) { await say('alhaja', `Hmm. At least you can say sorry. Many of them cannot.`); rel('alhaja', 1); record('You apologised to Alhaja Rukayat for the police.'); }
+    else { await say('alhaja', `"Move on." Okay o. We will see.`); rel('alhaja', -1); } }
+  else if (S.flags.reversed) await say('alhaja', `My daughter showed me a video of your convoy reversing. And yet here you are. Hmm. Welcome, I suppose.`);
+  else await say('alhaja', `A candidate who walks on his own feet into my market! Welcome. My women will tell you everything.`);
+  await say('alhaja', `Don't make speeches yet. Go and see what my women are suffering. Listen to them. Then come back to me.`);
+  objective('Talk to the traders. Find out who is really collecting the levy.');
+  hideDlg();
+  await explore([
+    {id:'nkechi', label:'Mama Nkechi', x:.13, y:.52, standX:.22, faceX:.1, run: async again => {
+      if (again) { await say('nkechi', `Candidate, I don tell you everything. Go and do something.`); return; }
+      await say('nkechi', `${S.party === 'pdp' || S.party === 'sdp' || S.party === 'adc' ? 'Madam' : 'Oga'} candidate, see this ticket. Two thousand naira every morning before I sell one tomato.`);
+      clue('ticket');
+      await say('nkechi', `And now this new levy. Five thousand naira! Some days my profit no reach five thousand.`);
+      const c = await choose([{t:'How long has the levy been running?'}, {t:"I'll fix this. You have my word."}, {t:'Have you tried paying it in instalments?'}]);
+      if (c === 0) { await say('nkechi', `Two weeks now. Since Chief Dapo's boys started coming with their receipt books.`);
+        await say('nkechi', `See the receipt. You see council stamp there? Only phone number.`); clue('receipt'); rel('nkechi', 1, false); }
+      else if (c === 1) { await say('nkechi', `Your word. Every candidate get word. Okay. Take this receipt and remember us when you dey Abuja.`); clue('receipt'); rel('nkechi', 1, 'Mama Nkechi has heard promises before.'); S.flags.promisedNkechi = true; }
+      else { await say('nkechi', `Instalment? Na loan I go collect to pay levy? Abeg, go and talk to another person.`); rel('nkechi', -2); }
+    }},
+    {id:'notice', label:'Levy notice', icon:'look', x:.465, y:.40, standX:.43, faceX:.5, run: async again => {
+      await say('player', `"MARKET DEVELOPMENT LEVY. Five thousand naira daily. By order." And at the bottom, in small print...`);
+      await say('player', `"Subject to council approval." So the council never approved it.`); clue('notice'); }},
+    {id:'zee', label:'Zee (live)', x:.63, y:.56, standX:.56, faceX:.63, run: async again => {
+      if (again) { await say('zee', `Chat is still talking about you. Some love, some... not love.`); return; }
+      await say('zee', `We're LIVE! Forty thousand people watching! Candidate, say something to Lagos!`);
+      const c = await choose([{t:"I'm here to listen, not to perform. The traders should talk, not me."}, {t:'Please stop filming. This is not a show.'}, {t:'Hello Lagos! Watch this.', tag:'Dance'}], {timer:10, dflt:1});
+      if (c === 0) { await say('zee', `Okay, okay! Chat says "finally a politician who listens." Respect.`); rel('zee', 2); S.flags.youth = 1; record('You told Zee\'s livestream you came to listen.'); }
+      else if (c === 1) { await say('zee', `Wow. Chat says you're hiding something. I'm still streaming, by the way.`); rel('zee', -2); S.flags.youth = -1; }
+      else { await caption(`You dance three steps of a song you half know. The market roars with laughter.`, 2600); await say('zee', `The comments are going CRAZY. Half love it, half say "this is not serious."`); rel('zee', 1); S.flags.youth = 0; S.flags.danced = true; record('You danced on Zee\'s livestream.'); }
+    }},
+    {id:'kunle', label:'Kunle Bello', x:.77, y:.52, standX:.7, faceX:.77, run: async again => {
+      if (again) { await say('kunle', `I'm still here. Journalists don't leave until the story does.`); return; }
+      await say('kunle', `Kunle Bello, City Desk. Off the record, candidate: do you know who holds the collection contract for this levy?`);
+      const c = await choose([
+        {t:'Sule says it is Chief Dapo himself. Dig into it.', need:'contract'},
+        {t:'On the record: this levy was never approved by the council.', need:'notice'},
+        {t:'No comment.'}]);
+      if (c === 0) { await say('kunle', `Dapo Martins? That's... interesting. I'll pull the council records tonight.`); rel('kunle', 2); S.flags.kunleDigs = true; record('You pointed a reporter at the levy contract.'); }
+      else if (c === 1) { await say('kunle', `You've read the notice. Good. That's a quote I can print.`); rel('kunle', 1); S.flags.onRecord = true; record('You told the press, on the record, that the levy was never approved.'); }
+      else { await say('kunle', `No comment. Every politician's favourite song.`); rel('kunle', -1); }
+    }},
+    {id:'sule', label:'Sule', x:.9, y:.52, standX:.82, faceX:.9, run: async again => {
+      if (again) { await say('sule', `Oga, I don talk. Make dem no see me with you too much.`); return; }
+      await say('sule', `Candidate, I fit tell you something, but you no hear am from me o.`);
+      const c = await choose([{t:'Go on. Nobody will know it came from you.'}, {t:"Here's a thousand naira. Talk.", tag:'Pay'}, {t:"I don't listen to gossip."}]);
+      if (c === 2) { await say('sule', `Okay o. Na your choice.`); return; }
+      if (c === 1) { S.flags.paidSule = true; rel('sule', 1, 'Paying for information gets around the market.'); record('You paid Sule for information.'); }
+      else rel('sule', 1, false);
+      await say('sule', `Na Chief Dapo Martins get the contract. The council never sign am. The money dey enter him own pocket.`); clue('contract');
+    }}
+  ], {minDone:2, doneLabel:'Go back to Alhaja'});
+  objective(null);
+  await walkTo(.4); face(W.player, .34);
+  const n = S.clues.length;
+  await say('alhaja', n >= 3 ? `You have been busy. Good. You know more now than most people in this market.` : `You came back quickly. Did you really listen?`);
+  await fadeOut();
+}
+
+async function sceneDapo(){
+  setWorld('market'); A.amb(.08, .02, .1);
+  const alhaja = addActor('alhaja', PEOPLE.alhaja.img, .3, .34);
+  const nkechi = addActor('nkechi', PEOPLE.nkechi.img, .2, .34, {z:8});
+  const dapo = addActor('dapo', PEOPLE.dapo.img, .6, .37);
+  const tobi = addActor('tobi', PEOPLE.tobi.img, .47, .33, {bottom:7, z:9});
+  place(W.player, .4); camTo(.48, true); face(W.player, .6); face(dapo, .4);
+  await fadeIn();
+  await caption(`A black SUV parts the crowd. <em>Chief Dapo Martins</em> steps out, gold tie shining, two young men behind him.`, 3000);
+  await say('dapo', `Ah! The presidential candidate, in my market! You should have called me first. Lagos has protocol.`);
+  await say('dapo', `Come, walk with me small. Two big men should not argue in front of market women.`);
+  await say('tobi', `(quietly) Don't go anywhere alone with that man.`);
+  const c = await choose([{t:'Walk with him. Hear what he wants.'}, {t:'Anything you want to say, say it here, in front of everyone.'}]);
+  if (c === 0) {
+    await walkTo(.7); face(W.player, .6); place(dapo, .78); face(dapo, .7); camTo(.7);
+    await say('dapo', `This levy is small money. Let it run until after the election, and my people will fund your rallies in every Lagos ward. Fifty million naira.`);
+    const d = await choose([{t:'Deal. Keep it quiet.', tag:'Accept'}, {t:"I'm not for sale, Chief."}, {t:'Let me think about it.'}], {timer:12, dflt:2, prompt:'Fifty million naira'});
+    if (d === 0) { S.flags.deal = true; record('You accepted Chief Dapo\'s fifty million naira.'); toast('This decision will follow you.');
+      await say('dapo', `Wise. Very wise. You will go far.`); rel('dapo', 3, false); rel('tobi', -2, 'Tobi saw you shake his hand.'); }
+    else if (d === 1) { S.flags.refused = true; record('You refused Chief Dapo\'s money.'); await say('dapo', `Not for sale. Everybody is for sale; it's only the price we haven't found.`); rel('dapo', -2); rel('tobi', 1, false); }
+    else { S.flags.stalled = true; record('You told Chief Dapo you would think about his offer.'); await say('dapo', `Think fast. Elections don't wait.`); }
+    await walkTo(.45); place(dapo, .62); face(dapo, .45); face(W.player, .62); camTo(.5);
+  } else { S.flags.publicly = true; rel('alhaja', 1, 'The market heard you refuse a private meeting.'); }
+
+  if (S.flags.deal) {
+    await say('dapo', `My people! The candidate and I have reached an understanding. The levy continues, for development!`);
+    await caption(`Silence. Then murmuring. Alhaja Rukayat looks at you for a long moment.`, 2800);
+    rel('alhaja', -3); rel('nkechi', -2, false); S.flags.duel = 'skipped'; return void await fadeOut();
+  }
+  // ---- Face-off: use what you learned in the market ----
+  await caption(`The crowd closes in. This is a face-off: <em>use what you found</em> in the market to win them over.`, 3000);
+  $('meter').hidden = false; let crowd = 50;
+  const move = d => { crowd = Math.max(0, Math.min(100, crowd + d)); $('knob').style.left = crowd + '%'; if (d > 0) { A.good(); A.crowdCheer(); } else A.bad(); };
+  const rounds = [
+    {dapo:`This levy builds the market! New roofs, new drains. Development costs money!`,
+     opts:[{t:'Then why does your own notice say it is still waiting for council approval?', need:'notice', d:25, r:`Dapo's smile slips. People near the pole start reading the small print aloud.`},
+           {t:'Development? I see the same broken roof I saw this morning.', d:5, r:`A few laughs. Dapo shrugs it off.`},
+           {t:'You are a thief, and everybody here knows it!', d:-20, r:`"Can you prove it?" Dapo asks, smiling. You can't. Not yet.`}]},
+    {dapo:`My collectors are council officials. Everything is official and receipted.`,
+     opts:[{t:"Official receipts carry a council stamp. Mama Nkechi's has a phone number.", need:'receipt', d:25, r:`Mama Nkechi holds the receipt up high. The crowd roars.`},
+           {t:'People say you hold the contract yourself.', need:'contract', d:15, r:`"People say," Dapo sneers. But the crowd is listening now.`},
+           {t:'Show us their ID cards, then.', d:0, r:`His boys look at each other. Nobody produces an ID.`}]},
+    {dapo:`These traders don't even pay tax. Why are they complaining?`,
+     opts:[{t:"They pay ₦2,000 every morning for a ticket. Where does that money go?", need:'ticket', d:15, r:`"Every morning!" someone shouts. The whole aisle joins in.`},
+           {t:'Nobody likes taxes, Chief. Let us be reasonable.', d:-5, r:`The traders go quiet. That sounded like his side.`},
+           {t:'Traders, refuse to pay anything from today!', d:-15, r:`Cheers, then worry. Alhaja frowns: "You want them arrested?"`}]}
+  ];
+  for (const [i, rd] of rounds.entries()) {
+    await say('dapo', rd.dapo);
+    const k = await choose(rd.opts, {timer:16, dflt:-1, prompt:`Round ${i + 1} of 3`});
+    if (k < 0) { await caption(`You hesitate. Dapo laughs, and the crowd laughs with him.`, 2200); move(-15); continue; }
+    move(rd.opts[k].d); hideDlg(); await caption(rd.opts[k].r, 2600);
+  }
+  $('meter').hidden = true;
+  if (crowd >= 75) { S.flags.duel = 'won'; record('You beat Chief Dapo in front of the whole market.');
+    await say('dapo', `This is not over. You don't know Lagos.`); await caption(`He climbs back into the SUV. His collectors melt away. The market erupts.`, 2600); rel('alhaja', 2); rel('nkechi', 1, false); rel('dapo', -2, false); }
+  else if (crowd >= 50) { S.flags.duel = 'draw'; record('Your face-off with Chief Dapo ended in a stand-off.');
+    await say('dapo', `We'll talk again, candidate. Somewhere quieter.`); await caption(`He leaves, but his collectors stay at the gate.`, 2400); }
+  else { S.flags.duel = 'lost'; record('Chief Dapo won the crowd.'); await say('dapo', `You see? Big grammar, no evidence. Go and campaign somewhere else.`); await caption(`People turn back to their stalls. Some shake their heads at you.`, 2400); rel('alhaja', -1); }
+  await fadeOut();
+}
+
+async function sceneFinale(){
+  setWorld('market'); A.amb(.07, .01, .06);
+  const alhaja = addActor('alhaja', PEOPLE.alhaja.img, .34, .34);
+  const nkechi = addActor('nkechi', PEOPLE.nkechi.img, .22, .34, {z:8});
+  const kunle = addActor('kunle', PEOPLE.kunle.img, .64, .34, {z:8});
+  const zee = addActor('zee', PEOPLE.zee.img, .74, .33, {bottom:9, z:7});
+  place(W.player, .46); camTo(.44, true); face(W.player, .34);
+  await fadeIn();
+  await say('alhaja', `The women want to hear it from your mouth, in front of everybody. What will you do about this levy?`);
+  const c = await choose([
+    {t:'Take it to the council and the courts, and publish where every naira of market money goes.'},
+    {t:'Bring traders, council and Chief Dapo to one table and agree a fair fee.'},
+    {t:"I'll pay this week's levy for every trader myself.", tag:'Pay'},
+    {t:'Be patient. Things will change after the election.', hide:!S.flags.deal}
+  ], {prompt:'The choice the market will remember'});
+  S.flags.final = ['fight', 'table', 'pay', 'patient'][c];
+  if (c === 0) { await say('player', `This levy was never approved. I will take it to the council and to court, and I will publish where every naira of this market's money goes. Hold me to it.`);
+    rel('alhaja', 2); rel('nkechi', 2, false); rel('kunle', 1, false); rel('dapo', -2, false); record('You promised to fight the levy in council and court, and to publish the accounts.'); }
+  else if (c === 1) { await say('player', `Nobody wins a war in a market. I'll bring the traders, the council and Chief Dapo to one table and we will agree a fee people can actually pay.`);
+    rel('alhaja', 1); rel('dapo', 1, false); record('You offered to broker talks between traders, council and Chief Dapo.'); }
+  else if (c === 2) { await say('player', `This week, the levy is on me. Every trader. Go and sell in peace.`);
+    rel('nkechi', 2); rel('kunle', -2, 'Generous, or vote buying? Kunle is already typing.'); S.flags.paidLevy = true; record('You paid a week of the levy for every trader.'); }
+  else { await say('player', `Please, be patient. Things will change after the election.`); rel('alhaja', -2); rel('nkechi', -2, false); record('You asked the traders to wait until after the election.'); }
+  hideDlg(); await sleep(400);
+  // the car: a quiet moment with Tobi
+  await fadeOut();
+  setWorld('street'); A.amb(.01, .05, .3);
+  const tobi = addActor('tobi', PEOPLE.tobi.img, .56, .34); place(W.player, .46); camTo(.5, true); face(tobi, .46); face(W.player, .56);
+  await fadeIn();
+  await say('tobi', S.flags.deal ? `Fifty million naira, ${first()}. I didn't sign up to run that kind of campaign.` : `That was a long morning. How are you feeling?`);
+  const f = await choose(S.flags.deal ? [{t:"It's how politics works, Tobi. Grow up."}, {t:"You're right. I need to think about what I just did."}] : [{t:'Proud. We did something real today.'}, {t:'Worried. Dapo will come back.'}, {t:"Tired. And it's only day three."}]);
+  if (S.flags.deal) { if (f === 0) { await say('tobi', `Then maybe you need a different campaign manager.`); rel('tobi', -2); } else { await say('tobi', `That's the friend I know. We'll find a way out of it.`); rel('tobi', 1); } }
+  else { await say('tobi', ['Me too. That market will remember you.', 'He will. But so will they.', 'Day three. Only one hundred and something to go.'][f]); rel('tobi', 1, false); }
+  hideDlg(); await fadeOut();
+  showRecap();
+}
+
+// ===================== Recap and notebook =====================
+function headline(){
+  const f = S.flags;
+  if (f.deal) return {paper:'City Desk', text:`Market levy "will continue," says candidate after closed-door meeting with contractor`};
+  if (f.final === 'pay') return {paper:'City Desk', text:`Candidate pays traders' levy: generosity or vote buying?`};
+  if (f.duel === 'won' && f.final === 'fight') return {paper:'City Desk', text:`"Never approved": candidate exposes illegal Lagos market levy`};
+  if (f.final === 'table') return {paper:'City Desk', text:`Candidate promises peace talks over disputed market levy`};
+  if (f.duel === 'lost') return {paper:'City Desk', text:`Contractor outtalks presidential hopeful at Oja Tuntun`};
+  return {paper:'City Desk', text:`Presidential candidate spends morning in Oja Tuntun Market`};
+}
+function relRows(ids){ return ids.map(id => { const v = S.rel[id], p = PEOPLE[id]; const w = Math.abs(v) * 10;
+  const word = v >= 3 ? 'trusts you' : v >= 1 ? 'warming to you' : v === 0 ? 'undecided' : v >= -2 ? 'doubts you' : 'against you';
+  return `<div class="rel"><span class="face" style="--pc:${p.color};background-image:url('${p.img}')"></span><div><div>${esc(p.name)}</div><div class="meter-s"><i class="${v < 0 ? 'neg' : ''}" style="${v < 0 ? `right:50%;width:${w}%` : `left:50%;width:${w}%`}"></i></div></div><em>${word}</em></div>`; }).join(''); }
+function notebookHTML(){
+  const met = Object.keys(PEOPLE).filter(k => k !== 'ade' && (S.rel[k] !== 0 || ['tobi', 'alhaja'].includes(k)));
+  return `<h2>${esc(S.name)}'s notebook</h2>
+    <h3>Clues</h3><ul>${Object.entries(CLUES).map(([k, c]) => S.clues.includes(k) ? `<li>✓ ${esc(c.name)}</li>` : `<li class="locked">? Something you haven't found yet</li>`).join('')}</ul>
+    <h3>People</h3><div style="display:grid;gap:6px">${relRows(met)}</div>
+    ${S.choices.length ? `<h3>What you did</h3><ul>${S.choices.map(c => `<li>• ${esc(c)}</li>`).join('')}</ul>` : ''}`;
+}
+$('notesBtn').onclick = () => { $('notebook').innerHTML = notebookHTML(); $('notes').hidden = false; };
+$('notesClose').onclick = () => { $('notes').hidden = true; };
+function showRecap(){
+  const h = headline();
+  $('recapInner').innerHTML = `
+    <div class="sect">End of Chapter 1 · The Levy</div>
+    <div class="headline"><small>${h.paper} · tomorrow's front page</small>${esc(h.text)}</div>
+    <div class="notebook"><h2>Your choices</h2><ul>${S.choices.map(c => `<li>• ${esc(c)}</li>`).join('')}</ul>
+      <h3>Clues found: ${S.clues.length} of ${Object.keys(CLUES).length}</h3>
+      <h3>Where people stand</h3><div style="display:grid;gap:6px">${relRows(['tobi', 'alhaja', 'nkechi', 'kunle', 'zee', 'sule', 'dapo'])}</div></div>
+    <div class="headline" style="font-size:18px"><small>Coming in Chapter 2 · Lagos Streets</small>${S.flags.deal ? 'Chief Dapo expects his money to buy more than silence.' : S.flags.duel === 'won' ? 'Chief Dapo wants revenge, and the okada ban gives him a way.' : 'An okada ban, a police checkpoint and a video that could end your campaign.'}</div>
+    <div class="row"><button class="btn" id="replayBtn">Play Chapter 1 again</button></div>
+    <p class="fine">Fictional story. Simulated campaign, not a prediction.</p>`;
+  $('recap').hidden = false; S.scene = SCRIPT.length; save();
+  $('replayBtn').onclick = () => { try { localStorage.removeItem('asorock.story'); } catch(e) {} location.reload(); };
+}
+
+// ===================== Title and boot =====================
+let pick = 'lp';
+function renderPicks(){ $('picks').innerHTML = PARTIES.map(p => `<button class="pick" data-p="${p.id}" aria-pressed="${p.id === pick}" style="--pc:${p.color}"><img src="${p.img}" alt="${p.short} candidate"><span>${p.short}</span><small>${esc(p.name)}</small></button>`).join('');
+  document.querySelectorAll('.pick').forEach(b => b.onclick = () => { pick = b.dataset.p; renderPicks(); }); }
+renderPicks();
+async function run(from = 0){
+  $('title').hidden = true; A.init(); A.setOn(A.on);
+  for (let i = from; i < SCRIPT.length; i++) { S.scene = i; save(); $('fade').classList.remove('out'); await SCRIPT[i](); }
+}
+$('startBtn').onclick = () => { S.party = pick; S.name = $('pname').value.trim() || 'Candidate'; S.clues = []; S.choices = []; S.flags = {}; for (const k in S.rel) S.rel[k] = 0; run(0); };
+const saved = load();
+if (saved && saved.scene < SCRIPT.length) { $('resumeRow').hidden = false; $('resumeBtn').onclick = () => { Object.assign(S, saved); run(saved.scene); }; }
+if (TEST) window.__story = {S, choose: i => window.__pending && window.__pending(i), explore: () => window.__explore};
+</script>

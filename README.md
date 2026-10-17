@@ -150,3 +150,14 @@ The product is now **Politikat**, a politics-only social app (polls on seven top
 - **Moving characters**: 20 five-second clips made with Higgsfield (Kling 3.0) from the character images: each candidate walks up and punches the air when a gate opens, and shakes their head, turns and walks away when sent back; eight gate characters (trader, women's leader, okada rider, journalist, police, security, electoral official, judge) talk and gesture while asking. Clips are cut out to transparent animated WebP in `assets/anim/` (8 frames a second, about 300 px tall, 0.3 to 0.6 MB each) and load only when needed; characters without a clip fall back to the still image.
 - **Voices**: the person at each gate reads the challenge aloud and an announcer calls the verdict and the winner, using the device's speech engine (a Nigerian English voice where installed, otherwise the closest English voice; women and men get different voices and pitch). The sound button turns voices off too.
 - Real parties, fictional candidates. ADC's green, yellow and red come from its constitution's flag description.
+
+## Road to Aso Rock: story mode (Chapter 1, The Levy)
+
+`apps/aso-rock-story/index.html` replaces the boom-gate race as the published game. It is a choice-driven campaign story in the style of narrative adventure games: you pick any of the six candidates and play through Lagos.
+
+- **Explore**: tap the ground to walk; the camera pans across a wide market. Tap people to talk and objects to look. Four clues are hidden in the market.
+- **Talk**: dialogue with choices, some on a timer. Characters remember what you say; a note appears when a choice matters.
+- **Face-off**: three rounds against Chief Dapo in front of the crowd. Answers backed by clues win the crowd; insults and incitement lose it.
+- **Relationships and endings**: seven characters (Tobi, Alhaja Rukayat, Mama Nkechi, Sule, Zee, Kunle Bello, Chief Dapo) track trust from -5 to +5. Tomorrow's headline and the Chapter 2 teaser change with your choices (walk in or send police, take the fifty million or refuse, fight the levy, broker talks, or pay it yourself).
+- **Notebook**: clues, where people stand and what you did; progress saves on the device.
+- All characters and the market are fictional. The old race game stays in `apps/aso-rock/`.
